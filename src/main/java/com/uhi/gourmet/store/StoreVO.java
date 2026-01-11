@@ -1,8 +1,10 @@
 package com.uhi.gourmet.store;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Setter
+@Getter
 public class StoreVO {
     private int store_id;           // 가게 고유번호 (PK)
     private String user_id;         // 점주 아이디 (FK)

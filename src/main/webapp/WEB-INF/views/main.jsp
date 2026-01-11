@@ -42,17 +42,20 @@
             <tbody>
                 <c:choose>
                     <c:when test="${not empty storeList}">
-                        <c:forEach var="store" items="${storeList}">
+                        <%-- [수정] end="5"를 추가하여 제목(Top 6)에 맞게 최대 6개만 출력되도록 제한함 --%>
+                        <c:forEach var="store" items="${storeList}" end="5">
                             <tr onclick="location.href='${pageContext.request.contextPath}/store/detail?storeId=${store.store_id}'" 
                                 style="cursor: pointer;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='white'">
                                 
                                 <td align="center">
-                                    <c:if test="${not empty store.store_img}">
-                                        <img src="${pageContext.request.contextPath}/upload/${store.store_img}" width="80" height="60" style="object-fit:cover;">
-                                    </c:if>
-                                    <c:if test="${empty store.store_img}">
-                                        <span style="color: #ccc; font-size: 12px;">No Image</span>
-                                    </c:if>
+                                    <c:choose>
+                                        <c:when test="${not empty store.store_img}">
+                                            <img src="${pageContext.request.contextPath}/resources/upload/${store.store_img}" width="80" height="60" style="object-fit:cover;">
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span style="color: #ccc; font-size: 12px;">No Image</span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </td>
                                 
                                 <td align="center">[${store.store_category}]</td>

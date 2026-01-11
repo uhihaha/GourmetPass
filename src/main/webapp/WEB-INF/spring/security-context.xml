@@ -9,21 +9,42 @@
 		class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
 
 	<security:http auto-config="true" use-expressions="true">
-		<security:csrf disabled="true" />
+		<security:csrf disabled="false" />
 
 		<security:intercept-url
 			pattern="/member/mypage**"
 			access="hasAnyRole('ROLE_USER', 'ROLE_OWNER')" />
+		<security:intercept-url
+			pattern="/member/edit**"
+			access="hasAnyRole('ROLE_USER', 'ROLE_OWNER')" />
+
+		<security:intercept-url
+			pattern="/book/manage**"
+			access="hasRole('ROLE_OWNER')" />
+		<security:intercept-url
+			pattern="/wait/updateStatus**"
+			access="hasRole('ROLE_OWNER')" />
+
+		<security:intercept-url
+			pattern="/wait/register**"
+			access="hasRole('ROLE_USER')" />
+		<security:intercept-url
+			pattern="/wait/myStatus**"
+			access="hasRole('ROLE_USER')" />
+
 		<security:intercept-url pattern="/**"
 			access="permitAll" />
 
 		<security:form-login login-page="/member/login"
-			login-processing-url="/login" username-parameter="username"
-			password-parameter="password" default-target-url="/"
+			login-processing-url="/login" 
+			username-parameter="username"
+			password-parameter="password" 
+			default-target-url="/"
 			authentication-failure-url="/member/login?error=true" />
 
 		<security:logout logout-url="/logout"
-			logout-success-url="/" invalidate-session="true"
+			logout-success-url="/" 
+			invalidate-session="true"
 			delete-cookies="JSESSIONID" />
 	</security:http>
 

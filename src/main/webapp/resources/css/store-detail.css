@@ -1,0 +1,73 @@
+@charset "UTF-8";
+
+/* 1. 예약 시스템 관련 스타일 */
+.time-btn {
+    padding: 8px 15px; margin: 5px; border: 1px solid #ccc;
+    background-color: #f9f9f9; cursor: pointer; border-radius: 5px;
+    transition: 0.2s; width: 85px;
+}
+.time-btn:hover:not(:disabled) { background-color: #e0e0e0; }
+.time-btn.active { background-color: #ff3d00; color: white; border-color: #ff3d00; font-weight: bold; }
+.time-btn:disabled { background-color: #eee; color: #bbb; cursor: not-allowed; border-color: #ddd; }
+.step-title { font-weight: bold; margin-bottom: 10px; display: block; }
+
+/* 2. 메뉴 섹션 그리드 레이아웃 */
+.menu-section { margin: 40px 0; }
+.menu-group-title { 
+    font-size: 20px; font-weight: bold; margin-bottom: 20px; 
+    padding-left: 12px; border-left: 5px solid #ff3d00; 
+}
+.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.menu-card { 
+    display: flex; align-items: center; padding: 15px; 
+    border: 1px solid #eee; border-radius: 12px; 
+    background: #fff; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.menu-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+.menu-card img, .menu-card .no-img { 
+    width: 100px; height: 100px; object-fit: cover; 
+    border-radius: 10px; margin-right: 15px; background: #f5f5f5;
+}
+.menu-details { flex: 1; }
+.menu-name { font-size: 17px; font-weight: bold; color: #333; margin-bottom: 8px; }
+.menu-price { font-size: 18px; color: #ff3d00; font-weight: bold; }
+.best-label { font-size: 10px; background: #ff3d00; color: #fff; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
+
+/* 3. 토글 및 액션 버튼 */
+.toggle-wrapper { text-align: center; margin: 30px 0; }
+.btn-toggle {
+    padding: 12px 60px; background: #fff; border: 1px solid #ddd;
+    border-radius: 30px; color: #555; font-weight: bold; cursor: pointer;
+    transition: 0.3s; font-size: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.btn-toggle:hover { background: #fdfdfd; border-color: #ff3d00; color: #ff3d00; }
+
+.action-btn-container { display: flex; gap: 20px; margin: 30px 0; }
+.btn-main {
+    flex: 1; padding: 18px; font-size: 18px; font-weight: bold;
+    border-radius: 12px; cursor: pointer; transition: 0.3s; border: 2px solid #ff3d00;
+}
+.btn-booking { background: #ff3d00; color: #fff; }
+.btn-waiting { background: #fff; color: #ff3d00; }
+.btn-main:hover { opacity: 0.9; transform: translateY(-2px); }
+
+/* 4. 인터랙션 영역 공통 */
+.interaction-area { padding: 35px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+#booking-area { background-color: #fffaf0; border: 1px solid #ffe0b2; }
+#waiting-area { background-color: #f0fff4; border: 1px solid #c6f6d5; }
+
+/* 5. 폼 요소 */
+.form-input { padding: 12px; width: 100%; border: 1px solid #ddd; border-radius: 8px; background: #fff; }
+#bookDate { background: #f5f5f5; color: #777; }
+
+.time-slot-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+.btn-confirm-booking {
+    padding: 18px 70px; font-size: 18px; font-weight: bold; background: #ff3d00; 
+    color: white; border: none; border-radius: 40px; cursor: pointer; box-shadow: 0 6px 20px rgba(255,61,0,0.3);
+}
+.btn-confirm-waiting {
+    width: 100%; margin-top: 20px; padding: 15px; background: #2f855a; 
+    color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
+}
+
+@media (max-width: 768px) { .menu-grid { grid-template-columns: 1fr; } .action-btn-container { flex-direction: column; } }

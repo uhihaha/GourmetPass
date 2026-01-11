@@ -1,9 +1,12 @@
 package com.uhi.gourmet.member;
 
 import java.util.Date;
-import lombok.Data;
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class MemberVO {
     private String user_id;      // 아이디
     private String user_pw;      // 비밀번호 (암호화되어 저장됨)

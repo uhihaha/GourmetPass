@@ -61,6 +61,12 @@ public class StoreServiceImpl implements StoreService {
         return null;
     }
 
+    // 점주 ID로 가게 정보 조회 (MemberController에서 사용)
+    @Override
+    public StoreVO get_store_by_user_id(String userId) {
+        return storeMapper.getStoreByUserId(userId);
+    }
+
     @Override
     @Transactional
     public void addMenu(MenuVO vo, String userId) {

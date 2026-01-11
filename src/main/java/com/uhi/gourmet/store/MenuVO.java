@@ -1,8 +1,10 @@
 package com.uhi.gourmet.store;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Setter
+@Getter
 public class MenuVO {
     private int menu_id; // (기본)메뉴 ID
     private int store_id; // (외래)가게 ID(1대 다 관계)

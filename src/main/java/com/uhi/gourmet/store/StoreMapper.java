@@ -19,7 +19,7 @@ public interface StoreMapper {
     // 특정 가게의 상세 정보 조회 (store_id 기준)
     StoreVO getStoreDetail(int store_id);
 
-    // 특정 가게에 등록된 메뉴 리스트 조회
+    // 특정 가게에 등록된 메뉴 리스트 조회 (MemberController의 마이페이지 로직과 일치)
     List<MenuVO> getMenuList(int store_id);
 
     // 가게 상세 페이지 열람 시 조회수 증가
@@ -28,7 +28,7 @@ public interface StoreMapper {
     // 가게 정보 등록 (점주 user_id 포함)
     void insertStore(StoreVO store);
 
-    // 점주 아이디로 해당 점주의 가게 1개 조회 (1:1 구조)
+    // 점주 아이디로 해당 점주의 가게 1개 조회 (1:1 구조, MemberController에서 사용)
     StoreVO getStoreByUserId(String user_id);
 
     // 가게 정보 수정 (점주 아이디는 변경하지 않음)
@@ -37,7 +37,7 @@ public interface StoreMapper {
     // 메뉴 등록 (특정 가게에 메뉴 추가)
     void insertMenu(MenuVO menu);
 
-    // 메뉴 삭제 (menu_id 기준)
+    // 메뉴 삭제 (menu_id 기준, 마이페이지 관리용)
     void deleteMenu(int menu_id);
 
     // 메뉴 수정 (이름, 가격, 이미지, 대표여부 등 변경)
@@ -45,6 +45,5 @@ public interface StoreMapper {
 
     // 메뉴 단건 조회 (수정 화면용 상세 조회)
     MenuVO getMenuDetail(int menu_id);
-    
     
 }

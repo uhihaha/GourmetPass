@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uhi.gourmet.wait.WaitMapper">
+
+	<insert id="insertWait">
+		INSERT INTO WAIT (wait_id, user_id, store_id,
+		people_cnt, wait_num,
+		wait_status, wait_date)
+		VALUES (SEQ_WAIT.NEXTVAL,
+		#{user_id, jdbcType=VARCHAR}, #{store_id, jdbcType=INTEGER},
+		#{people_cnt, jdbcType=INTEGER}, #{wait_num, jdbcType=INTEGER},
+		'WAITING', SYSDATE)
+	</insert>
+
+	<select id="selectMaxWaitNum" resultType="Integer">
+		SELECT MAX(wait_num)
+		FROM WAIT
+		WHERE store_id = #{store_id}
+		AND TO_CHAR(wait_date, 'YYYYMMDD') = TO_CHAR(SYSDATE, 'YYYYMMDD')
+	</select>
+
+	<select id="selectCurrentWaitCount" resultType="int">
+		SELECT COUNT(*)
+		FROM WAIT
+		WHERE store_id = #{store_id}
+		AND wait_status = 'WAITING'
+		AND TO_CHAR(wait_date, 'YYYYMMDD') = TO_CHAR(SYSDATE, 'YYYYMMDD')
+	</select>
+
+	<select id="selectMyWaitList"
+		resultType="com.uhi.gourmet.wait.WaitVO">
+		SELECT * FROM WAIT WHERE user_id = #{user_id} ORDER BY
+		wait_date DESC
+	</select>
+
+	<select id="selectStoreWaitList"
+		resultType="com.uhi.gourmet.wait.WaitVO">
+		SELECT * FROM WAIT
+		WHERE store_id = #{store_id}
+		AND TO_CHAR(wait_date, 'YYYYMMDD') = TO_CHAR(SYSDATE, 'YYYYMMDD')
+		ORDER BY wait_num ASC
+	</select>
+
+	<update id="updateWaitStatus">
+		UPDATE WAIT
+		SET wait_status = #{status, jdbcType=VARCHAR}
+		WHERE wait_id = #{wait_id, jdbcType=INTEGER}
+	</update>
+
+</mapper>

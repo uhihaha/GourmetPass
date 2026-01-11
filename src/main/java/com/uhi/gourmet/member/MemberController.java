@@ -1,6 +1,7 @@
 package com.uhi.gourmet.member;
 
 import java.security.Principal;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -16,21 +17,28 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.uhi.gourmet.member.MemberService; // Service 인터페이스 import
+import com.uhi.gourmet.book.BookService;
+import com.uhi.gourmet.book.BookVO;
+import com.uhi.gourmet.wait.WaitService;
+import com.uhi.gourmet.wait.WaitVO;
 import com.uhi.gourmet.store.StoreMapper;
 import com.uhi.gourmet.store.StoreVO;
 
 @Controller
-@RequestMapping("/member") 
+@RequestMapping("/member")
 public class MemberController {
 
     @Autowired
-    private MemberService memberService; // 변경: Mapper -> Service 사용
+    private MemberService memberService; 
 
     @Autowired
-    private StoreMapper storeMapper; // 조회용으로 유지 (필요 시 StoreService로 분리 가능)
+    private StoreMapper storeMapper; 
 
-    // 암호화 인코더(BCryptPasswordEncoder)는 Service 내부로 이동했으므로 제거
+    @Autowired
+    private BookService book_service;
+
+    @Autowired
+    private WaitService wait_service;
 
     @Value("${kakao.js.key}")
     private String kakaoJsKey;
@@ -39,105 +47,103 @@ public class MemberController {
         model.addAttribute("kakaoJsKey", kakaoJsKey);
     }
 
-    // ================= [로그인 & 로그아웃] =================
-    
-    @GetMapping("/login") 
-    public String loginPage() {
+    // ================= [로그인] =================
+
+    @GetMapping("/login")
+    public String loginPage(@RequestParam(value = "error", required = false) String error, Model model) {
+        if (error != null) {
+            model.addAttribute("msg", "아이디 또는 비밀번호를 확인해주세요.");
+        }
         return "member/login";
     }
-    
-    // ================= [회원가입] =================
 
-    @GetMapping("/signup/select") 
-    public String joinSelect() {
+    // ================= [회원가입 단계별 경로] =================
+
+    @GetMapping("/signup/select")
+    public String signupSelectPage() {
         return "member/signup_select";
     }
 
-    @GetMapping("/signup/general") 
-    public String joinGeneralPage(Model model) {
+    @GetMapping("/signup/general")
+    public String signupGeneralPage(Model model) {
         addKakaoKeyToModel(model);
-        return "member/signup_general";
+        return "member/signup_general"; 
     }
 
     @PostMapping("/joinProcess")
-    public String joinProcess(MemberVO vo) {
-        // 로직 이임: 암호화 및 권한 설정은 Service가 담당
-        memberService.joinMember(vo);
-        return "redirect:/member/login"; 
+    public String joinGeneralProcess(MemberVO vo, RedirectAttributes rttr) {
+        memberService.joinMember(vo); 
+        rttr.addFlashAttribute("msg", "회원가입이 완료되었습니다. 로그인해주세요.");
+        return "redirect:/member/login";
     }
 
-    @GetMapping("/signup/owner1") 
-    public String ownerStep1(Model model) {
+    @GetMapping("/signup/owner1")
+    public String signupOwner1Page(Model model) {
         addKakaoKeyToModel(model);
-        return "member/signup_owner1";
+        return "member/signup_owner1"; 
     }
-
+    
     @PostMapping("/signup/ownerStep1")
-    public String ownerStep1Process(MemberVO memberVo, HttpSession session) {
-        session.setAttribute("tempMember", memberVo);
+    public String signupOwner1Process(MemberVO member, HttpSession session) {
+        session.setAttribute("tempMember", member);
         return "redirect:/member/signup/owner2";
     }
 
     @GetMapping("/signup/owner2")
-    public String ownerStep2(HttpSession session, Model model) {
-        if (session.getAttribute("tempMember") == null) {
-            return "redirect:/member/signup/owner1";
-        }
+    public String signupOwner2Page(Model model) {
         addKakaoKeyToModel(model);
         return "member/signup_owner2";
     }
 
-    @PostMapping("/signup/ownerFinal")
-    public String ownerFinalProcess(StoreVO storeVo, HttpSession session) {
-        MemberVO memberVo = (MemberVO) session.getAttribute("tempMember");
-        if (memberVo == null) return "redirect:/member/signup/owner1";
-
-        // 로직 이임: 트랜잭션(@Transactional) 처리도 Service 내부에서 수행
-        memberService.joinOwner(memberVo, storeVo);
-
-        session.removeAttribute("tempMember");
+    @PostMapping("/signup/ownerFinal") 
+    public String joinOwnerProcess(StoreVO store, HttpSession session, RedirectAttributes rttr) {
+        MemberVO member = (MemberVO) session.getAttribute("tempMember");
+        if (member != null) {
+            memberService.joinOwner(member, store);
+            session.removeAttribute("tempMember");
+            rttr.addFlashAttribute("msg", "점주 가입 신청이 완료되었습니다.");
+        }
         return "redirect:/member/login";
     }
 
-    // ================= [마이페이지 & 수정 & 탈퇴] =================
+    // ================= [마이페이지 및 기타] =================
 
     @GetMapping("/mypage")
     public String mypage(Principal principal, Model model, HttpServletRequest request) {
-        String userId = principal.getName();
-        
-        // 1. 회원 기본 정보 로드 (Service 사용)
-        MemberVO member = memberService.getMember(userId);
+        String user_id = principal.getName();
+        MemberVO member = memberService.getMember(user_id);
         model.addAttribute("member", member);
 
-        // 2. 점주 권한인 경우 (1:1 구조 반영)
-        // Store 조회 로직은 일단 기존 Mapper 유지 (추후 StoreService 생성 권장)
         if (request.isUserInRole("ROLE_OWNER")) {
-            StoreVO store = storeMapper.getStoreByUserId(userId);
-            model.addAttribute("store", store); 
-            
+            StoreVO store = storeMapper.getStoreByUserId(user_id);
+            model.addAttribute("store", store);
             if (store != null) {
+                // StoreMapper의 메서드명을 getMenuList로 통일
                 model.addAttribute("menuList", storeMapper.getMenuList(store.getStore_id()));
+                List<BookVO> store_book_list = book_service.get_store_book_list(store.getStore_id());
+                model.addAttribute("store_book_list", store_book_list);
             }
-            
             return "member/mypage_owner";
+        } else {
+            List<BookVO> my_book_list = book_service.get_my_book_list(user_id);
+            model.addAttribute("my_book_list", my_book_list);
+            List<WaitVO> my_wait_list = wait_service.get_my_wait_list(user_id);
+            model.addAttribute("my_wait_list", my_wait_list);
+            return "member/mypage";
         }
-        
-        return "member/mypage";
     }
 
     @GetMapping("/edit")
     public String editPage(Principal principal, Model model) {
         String userId = principal.getName();
-        // Service 사용
         MemberVO member = memberService.getMember(userId);
         model.addAttribute("member", member);
         addKakaoKeyToModel(model);
-        return "member/member_edit"; 
+        return "member/member_edit";
     }
     
     @PostMapping("/edit")
     public String updateProcess(MemberVO vo, RedirectAttributes rttr) {
-        // 로직 이임: 비밀번호 암호화 여부 판단은 Service가 담당
         memberService.updateMember(vo);
         rttr.addFlashAttribute("msg", "회원 정보가 수정되었습니다.");
         return "redirect:/member/mypage";
@@ -145,10 +151,7 @@ public class MemberController {
 
     @PostMapping("/delete")
     public String deleteMember(@RequestParam("user_id") String user_id, HttpSession session, RedirectAttributes rttr) {
-        // Service 사용
         memberService.deleteMember(user_id);
-        
-        // Security Context 및 세션 정리는 컨트롤러(프레젠테이션 계층)의 역할이 맞으므로 유지
         SecurityContextHolder.clearContext();
         if (session != null) {
             session.invalidate();
@@ -157,12 +160,9 @@ public class MemberController {
         return "redirect:/";
     }
 
-    // ================= [AJAX] =================
-
     @PostMapping("/idCheck")
     @ResponseBody
     public String idCheck(@RequestParam("user_id") String user_id) {
-        // Service 사용
         int count = memberService.checkIdDuplicate(user_id);
         return (count > 0) ? "fail" : "success";
     }

@@ -4,117 +4,81 @@
 
 <jsp:include page="../common/header.jsp" />
 
-<style>
-    /* [통일] main.jsp와 동일하게 80% 너비 및 레이아웃 유지 */
-    .search-container { width: 80%; margin: 20px auto; padding: 25px; background: #fff; border: 1px solid #ddd; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); box-sizing: border-box; }
-    .filter-row { display: flex; align-items: center; gap: 25px; flex-wrap: wrap; margin-bottom: 15px; }
-    .search-row { display: flex; align-items: center; gap: 10px; width: 100%; padding-top: 15px; border-top: 1px solid #eee; }
-    
-    .input-search { flex: 1; padding: 10px 15px; border: 2px solid #eee; border-radius: 8px; font-size: 15px; transition: 0.3s; }
-    .input-search:focus { border-color: #ff3d00; outline: none; }
-    
-    .cat-chip { cursor: pointer; padding: 6px 15px; border-radius: 20px; border: 1px solid #ddd; background: #fff; font-size: 14px; transition: 0.2s; }
-    .cat-chip:hover { border-color: #ff3d00; color: #ff3d00; }
-    .cat-chip.active { background: #ff3d00; color: #fff; border-color: #ff3d00; font-weight: bold; }
+<%-- 맛집 목록 전용 스타일 및 스크립트 연결 --%>
+<link rel="stylesheet" href="<c:url value='/resources/css/store_list.css'/>">
+<script src="<c:url value='/resources/js/store_list.js'/>"></script>
 
-    /* [통일] 테이블 스타일 및 너비 80% 고정 */
-    .store-table { width: 80%; margin: 0 auto 50px; border-collapse: collapse; background: #fff; border: 1px solid #ddd; }
-    .store-table th { background: #f8f9fa; padding: 15px; border-bottom: 2px solid #eee; text-align: center; }
-    .store-table td { padding: 15px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
-</style>
+<div class="list-wrapper">
+    <div class="filter-card">
+        <form id="filterForm" action="${pageContext.request.contextPath}/store/list" method="get">
+            <div class="filter-row">
+                <div class="filter-item">
+                    <label>📍 지역</label>
+                    <select name="region" onchange="submitFilter()" class="wire-select">
+                        <option value="">전체 지역</option>
+                        <option value="서울" ${region == '서울' ? 'selected' : ''}>서울</option>
+                        <option value="경기" ${region == '경기' ? 'selected' : ''}>경기</option>
+                        <option value="부산" ${region == '부산' ? 'selected' : ''}>부산</option>
+                    </select>
+                </div>
 
-<div class="search-container" style="text-align: left;">
-    <form id="filterForm" action="${pageContext.request.contextPath}/store/list" method="get">
-        <div class="filter-row">
-            <div>
-                <b style="margin-right:10px;">📍 지역</b>
-                <select name="region" onchange="submitFilter()" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-                    <option value="">전체 지역</option>
-                    <option value="서울" ${region == '서울' ? 'selected' : ''}>서울</option>
-                    <option value="경기" ${region == '경기' ? 'selected' : ''}>경기</option>
-                    <option value="부산" ${region == '부산' ? 'selected' : ''}>부산</option>
-                </select>
+                <div class="filter-item">
+                    <label>📂 카테고리</label>
+                    <input type="hidden" name="category" id="selectedCategory" value="${category}">
+                    <div class="chip-group">
+                        <div class="cat-chip ${empty category ? 'active' : ''}" onclick="selectCategory('')">전체</div>
+                        <div class="cat-chip ${category == '한식' ? 'active' : ''}" onclick="selectCategory('한식')">한식</div>
+                        <div class="cat-chip ${category == '일식' ? 'active' : ''}" onclick="selectCategory('일식')">일식</div>
+                        <div class="cat-chip ${category == '중식' ? 'active' : ''}" onclick="selectCategory('중식')">중식</div>
+                        <div class="cat-chip ${category == '양식' ? 'active' : ''}" onclick="selectCategory('양식')">양식</div>
+                        <div class="cat-chip ${category == '카페' ? 'active' : ''}" onclick="selectCategory('카페')">카페</div>
+                    </div>
+                </div>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <b style="margin-left:10px;">📂 카테고리</b>
-                <input type="hidden" name="category" id="selectedCategory" value="${category}">
-                
-                <div class="cat-chip ${empty category ? 'active' : ''}" onclick="selectCategory('')">전체</div>
-                <div class="cat-chip ${category == '한식' ? 'active' : ''}" onclick="selectCategory('한식')">한식</div>
-                <div class="cat-chip ${category == '일식' ? 'active' : ''}" onclick="selectCategory('일식')">일식</div>
-                <div class="cat-chip ${category == '중식' ? 'active' : ''}" onclick="selectCategory('중식')">중식</div>
-                <div class="cat-chip ${category == '양식' ? 'active' : ''}" onclick="selectCategory('양식')">양식</div>
-                <div class="cat-chip ${category == '카페' ? 'active' : ''}" onclick="selectCategory('카페')">카페</div>
+            <div class="search-row-box">
+                <input type="text" name="keyword" value="${keyword}" class="wire-input" placeholder="찾으시는 맛집 이름을 입력하세요">
+                <button type="button" onclick="submitFilter()" class="btn-wire-search">검색</button>
             </div>
-        </div>
+        </form>
+    </div>
 
-        <div class="search-row">
-            <input type="text" name="keyword" value="${keyword}" class="input-search" placeholder="가게 이름으로 검색해 보세요" onkeypress="if(event.keyCode==13){submitFilter();}">
-            <button type="button" onclick="submitFilter()" style="padding: 10px 25px; background: #333; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                검색
-            </button>
-        </div>
-    </form>
-</div>
-
-<table class="store-table">
-    <thead>
-        <tr>
-            <th width="120">사진</th>
-            <th width="100">카테고리</th>
-            <th>가게명</th>
-            <th>지역/주소</th>
-            <th width="80">조회수</th>
-            <th width="120">상세보기</th>
-        </tr>
-    </thead>
-    <tbody>
+    <div class="store-grid">
         <c:choose>
             <c:when test="${not empty storeList}">
                 <c:forEach var="store" items="${storeList}">
-                    <%-- [통일] main.jsp와 동일한 행 마우스 효과 적용 --%>
-                    <tr onclick="location.href='detail?storeId=${store.store_id}'" 
-                        style="cursor: pointer;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='white'">
-                        <td align="center">
+                    <div class="store-card" onclick="location.href='detail?storeId=${store.store_id}'">
+                        <div class="store-img-box">
                             <c:choose>
                                 <c:when test="${not empty store.store_img}">
-                                    <%-- [통일] 프로젝트 공통 resources 경로 적용 --%>
-                                    <img src="${pageContext.request.contextPath}/resources/upload/${store.store_img}" width="100" height="75" style="object-fit: cover; border-radius: 6px;">
+                                    <img src="${pageContext.request.contextPath}/resources/upload/${store.store_img}">
                                 </c:when>
-                                <c:otherwise>
-                                    <span style="color: #ccc; font-size: 12px;">No Image</span>
-                                </c:otherwise>
+                                <c:otherwise><span class="no-img-text">No Image</span></c:otherwise>
                             </c:choose>
-                        </td>
-                        <td align="center"><span style="font-size:13px; color:#777;">${store.store_category}</span></td>
-                        <td>
-                            <strong style="font-size: 17px;">${store.store_name}</strong>
-                            <c:if test="${store.store_cnt >= 100}"><span style="color:red; font-size:10px; margin-left:5px;">[HOT]</span></c:if>
-                        </td>
-                        <td>${store.store_addr1}</td>
-                        <td align="center" style="color: red; font-weight: bold;">${store.store_cnt}</td>
-                        <td align="center">
-                            <button style="padding: 6px 15px; background: #fff; border: 1px solid #333; cursor: pointer; border-radius: 4px;">상세보기</button>
-                        </td>
-                    </tr>
+                        </div>
+                        <div class="store-info">
+                            <div class="store-cat-row">
+                                <span class="cat-text">${store.store_category}</span>
+                                <c:if test="${store.store_cnt >= 100}"><span class="hot-badge">HOT</span></c:if>
+                            </div>
+                            <h3 class="store-name">${store.store_name}</h3>
+                            <p class="store-addr">${store.store_addr1}</p>
+                            <div class="store-footer">
+                                <span class="view-cnt">👀 조회 ${store.store_cnt}</span>
+                                <span class="btn-detail-link">상세보기 ❯</span>
+                            </div>
+                        </div>
+                    </div>
                 </c:forEach>
             </c:when>
             <c:otherwise>
-                <tr><td colspan="6" align="center" style="padding:100px; color:#999;">검색 결과가 없습니다. 😢</td></tr>
+                <div class="empty-msg-box">
+                    <p>검색 결과가 없습니다. 😢</p>
+                    <button onclick="location.href='list'" class="btn-reset">필터 초기화</button>
+                </div>
             </c:otherwise>
         </c:choose>
-    </tbody>
-</table>
-
-<script>
-    function submitFilter() {
-        document.getElementById('filterForm').submit();
-    }
-    function selectCategory(cat) {
-        document.getElementById('selectedCategory').value = cat;
-        submitFilter();
-    }
-</script>
+    </div>
+</div>
 
 <jsp:include page="../common/footer.jsp" />

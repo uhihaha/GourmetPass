@@ -43,7 +43,6 @@
         form.submit();
     }
 
-    // 전체 내역 토글 함수
     function toggleHistory() {
         const area = document.getElementById('full-history-area');
         const btn = document.getElementById('history-toggle-btn');
@@ -90,6 +89,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0;">
                             <div>
                                 <span class="badge-cat" style="background: #e65100;">확정된 예약</span>
+                                <%-- [에러 해결] BookVO에 store_name 속성을 추가하여 정상 호출됨 --%>
                                 <h3 style="margin: 10px 0;">${activeBook.store_name}</h3>
                                 <p style="color: #666; margin: 0;">예약 일시: <b><fmt:formatDate value="${activeBook.book_date}" pattern="MM월 dd일 HH:mm"/></b> / ${activeBook.people_cnt}명</p>
                             </div>
@@ -114,13 +114,29 @@
             <c:forEach var="item" items="${finishedWaits}">
                 <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
                     <span><b>${item.store_name}</b> (웨이팅) - <fmt:formatDate value="${item.wait_date}" pattern="MM/dd"/></span>
-                    <button class="btn-action" onclick="location.href='<c:url value='/review/write?store_id=${item.store_id}&wait_id=${item.wait_id}'/>'">리뷰 쓰기</button>
+                    <%-- [리뷰 1회 제한] review_id 존재 여부에 따라 버튼 분기 --%>
+                    <c:choose>
+                        <c:when test="${item.review_id == null}">
+                            <button class="btn-action" onclick="location.href='<c:url value='/review/write?store_id=${item.store_id}&wait_id=${item.wait_id}'/>'">리뷰 쓰기</button>
+                        </c:when>
+                        <c:otherwise>
+                            <button class="btn-action" disabled style="background:#eee; color:#999; border-color:#ccc; cursor:default;">작성 완료</button>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </c:forEach>
             <c:forEach var="item" items="${finishedBooks}">
                 <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
                     <span><b>${item.store_name}</b> (예약) - <fmt:formatDate value="${item.book_date}" pattern="MM/dd"/></span>
-                    <button class="btn-action" onclick="location.href='<c:url value='/review/write?store_id=${item.store_id}&book_id=${item.book_id}'/>'">리뷰 쓰기</button>
+                    <%-- [리뷰 1회 제한] review_id 존재 여부에 따라 버튼 분기 --%>
+                    <c:choose>
+                        <c:when test="${item.review_id == null}">
+                            <button class="btn-action" onclick="location.href='<c:url value='/review/write?store_id=${item.store_id}&book_id=${item.book_id}'/>'">리뷰 쓰기</button>
+                        </c:when>
+                        <c:otherwise>
+                            <button class="btn-action" disabled style="background:#eee; color:#999; border-color:#ccc; cursor:default;">작성 완료</button>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </c:forEach>
             <c:if test="${empty finishedWaits and empty finishedBooks}">

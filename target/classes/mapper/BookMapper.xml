@@ -15,9 +15,10 @@
 
     <select id="selectMyBookList"
         resultType="com.uhi.gourmet.book.BookVO">
-        SELECT B.*, S.store_name 
+        SELECT B.*, S.store_name, R.review_id
         FROM BOOK B
         JOIN STORE S ON B.store_id = S.store_id
+        LEFT OUTER JOIN REVIEW R ON B.book_id = R.book_id
         WHERE B.user_id = #{user_id} 
         ORDER BY B.book_date DESC
     </select>

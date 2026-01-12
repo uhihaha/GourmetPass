@@ -2,43 +2,64 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
-    </div> 
-    
-    <div style="height: 100px;"></div> 
+    </div> <div class="footer-spacer"></div> 
 
-    <div style="position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background-color: #f9f9f9; border-top: 2px solid #ddd; z-index: 1030;">
-        <div style="width: 80%; margin: 0 auto; height: 100%; display: flex; justify-content: space-around; align-items: center;">
+    <footer class="wire-footer">
+        <div class="footer-inner">
+            <a href="<c:url value='/'/>" class="foot-btn">
+                <span class="foot-icon">🏠</span>
+                <span class="foot-label">홈</span>
+            </a>
             
-            <a href="<c:url value='/'/>" style="text-align: center; text-decoration: none; color: #333;">🏠<br><small>홈</small></a>
+            <a href="<c:url value='/store/list'/>" class="foot-btn">
+                <span class="foot-icon">🔍</span>
+                <span class="foot-label">검색</span>
+            </a>
             
-            <a href="<c:url value='/store/list'/>" style="text-align: center; text-decoration: none; color: #333;">🔍<br><small>검색</small></a>
-            
+            <%-- [교정] c:choose 제거 후 sec:authorize 단독 사용으로 문법 오류 해결 --%>
             <sec:authorize access="isAnonymous()">
-                <a href="<c:url value='/member/login'/>" style="text-align: center; text-decoration: none; color: #333;">📅<br><small>이용현황</small></a>
+                <a href="<c:url value='/member/login'/>" class="foot-btn">
+                    <span class="foot-icon">📅</span>
+                    <span class="foot-label">이용현황</span>
+                </a>
             </sec:authorize>
             
             <sec:authorize access="isAuthenticated()">
                 <sec:authorize access="hasRole('ROLE_USER')">
-                    <a href="<c:url value='/wait/myStatus'/>" style="text-align: center; text-decoration: none; color: #333;">📅<br><small>이용현황</small></a>
+                    <a href="<c:url value='/wait/myStatus'/>" class="foot-btn">
+                        <span class="foot-icon">📅</span>
+                        <span class="foot-label">이용현황</span>
+                    </a>
                 </sec:authorize>
                 <sec:authorize access="hasRole('ROLE_OWNER')">
-                    <a href="<c:url value='/book/manage'/>" style="text-align: center; text-decoration: none; color: #333;">📅<br><small>예약관리</small></a>
+                    <a href="<c:url value='/book/manage'/>" class="foot-btn">
+                        <span class="foot-icon">⚙️</span>
+                        <span class="foot-label">관리</span>
+                    </a>
                 </sec:authorize>
             </sec:authorize>
             
+            <%-- 마이페이지/로그인 섹션 --%>
             <sec:authorize access="isAnonymous()">
-                <a href="<c:url value='/member/login'/>" style="text-align: center; text-decoration: none; color: #333;">👤<br><small>로그인</small></a>
-            </sec:authorize>
-            
-            <sec:authorize access="isAuthenticated()">
-                <a href="<c:url value='/member/mypage'/>" style="text-align: center; color: #ff3d00; text-decoration: none;">
-                    <sec:authorize access="hasRole('ROLE_OWNER')">🏪<br><small>매장관리</small></sec:authorize>
-                    <sec:authorize access="hasRole('ROLE_USER')">👤<br><small>MY</small></sec:authorize>
+                <a href="<c:url value='/member/login'/>" class="foot-btn">
+                    <span class="foot-icon">👤</span>
+                    <span class="foot-label">로그인</span>
                 </a>
             </sec:authorize>
-            
+            <sec:authorize access="isAuthenticated()">
+                <a href="<c:url value='/member/mypage'/>" class="foot-btn active-my">
+                    <sec:authorize access="hasRole('ROLE_OWNER')">
+                        <span class="foot-icon">🏪</span>
+                        <span class="foot-label">매장</span>
+                    </sec:authorize>
+                    <sec:authorize access="hasRole('ROLE_USER')">
+                        <span class="foot-icon">👤</span>
+                        <span class="foot-label">MY</span>
+                    </sec:authorize>
+                </a>
+            </sec:authorize>
         </div>
-    </div>
+    </footer>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

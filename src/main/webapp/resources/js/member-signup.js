@@ -38,7 +38,11 @@ $(document).ready(function() {
         const pw = $("#user_pw").val();
         const pwConfirm = $("#user_pw_confirm").val();
         
-        if(pw === "" && pwConfirm === "") { $("#pwCheckMsg").text(""); return; }
+        // [수정] 정보 수정 시 둘 다 비어있으면 메시지를 지우고 로직 종료
+        if(pw === "" && pwConfirm === "") { 
+            $("#pwCheckMsg").text(""); 
+            return; 
+        }
         
         if(pw === pwConfirm) { 
             $("#pwCheckMsg").html("<span class='msg-ok'>비밀번호가 일치합니다.</span>"); 
@@ -51,11 +55,22 @@ $(document).ready(function() {
 
     // 3. 폼 전송 검증
     $("#joinForm").submit(function() {
-        // 수정 페이지일 경우(readonly) 아이디 체크 패스
-        if($("#user_id").attr("readonly")) { isIdChecked = true; }
+        // [추가] 수정 페이지 여부 확인 (아이디 필드가 readonly인지 체크)
+        const isEditPage = $("#user_id").attr("readonly");
+
+        // 수정 페이지일 경우 아이디 중복체크 패스
+        if(isEditPage) { isIdChecked = true; }
+
+        // [추가] 정보 수정 시 비밀번호를 입력하지 않았다면 검증 통과 (기존 비번 유지용)
+        const pw = $("#user_pw").val();
+        const pwConfirm = $("#user_pw_confirm").val();
+        if(isEditPage && pw === "" && pwConfirm === "") {
+            isPwMatched = true;
+        }
 
         if(!isIdChecked) { alert("아이디 중복확인을 해주세요."); $("#user_id").focus(); return false; }
         if(!isPwMatched) { alert("비밀번호가 일치하지 않습니다."); $("#user_pw").focus(); return false; }
+        
         return true; 
     });
 });

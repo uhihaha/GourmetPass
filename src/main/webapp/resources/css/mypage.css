@@ -1,0 +1,26 @@
+/* /resources/css/mypage.css */
+.mypage-wrapper { width: 80%; max-width: 600px; margin: 40px auto; font-family: sans-serif; }
+.profile-card { background: #fff; border: 2px solid #333; border-radius: 15px; padding: 30px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
+.profile-label { font-size: 13px; color: #888; text-transform: uppercase; }
+.user-name { margin: 5px 0; }
+.user-name small { font-weight: normal; color: #999; }
+.user-meta { margin: 0; font-size: 14px; color: #666; }
+.profile-icon { font-size: 45px; }
+.menu-container { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.button-row { display: flex; gap: 12px; width: 100%; }
+.logout-form { flex: 1; margin: 0; padding: 0; }
+.btn-wire { flex: 1; padding: 18px 0; border: 1px solid #333; border-radius: 8px; background: #fff; text-align: center; text-decoration: none; color: #333; font-weight: bold; font-size: 16px; cursor: pointer; box-sizing: border-box; display: block; }
+.btn-wire:hover { background: #f5f5f5; }
+.btn-logout { width: 100%; border: 1px solid #333; }
+.btn-full { width: 100%; background: #333; color: #fff; }
+.section-divider { margin: 40px 0; border: 0; border-top: 1px solid #eee; }
+.review-section { margin-top: 50px; text-align: left; }
+.review-title { margin-bottom: 20px; font-size: 18px; }
+.review-card { border: 1px solid #eee; border-radius: 10px; padding: 20px; margin-bottom: 15px; background: #fff; }
+.review-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.store-link { font-weight: bold; color: #333; text-decoration: none; font-size: 16px; }
+.star-rating { color: #f1c40f; margin-top: 5px; }
+.btn-delete-small { background: none; border: 1px solid #ddd; color: #999; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+.review-content { margin: 15px 0; font-size: 14px; line-height: 1.6; color: #444; }
+.review-date { font-size: 12px; color: #bbb; }
+.empty-review { text-align: center; padding: 50px; border: 1px dashed #ccc; border-radius: 10px; color: #bbb; }

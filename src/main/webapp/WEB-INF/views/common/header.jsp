@@ -5,43 +5,55 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gourmet Pass</title>
+
+<link rel="stylesheet" href="<c:url value='/resources/css/common.css'/>">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<style>
-    body { text-align: center; font-family: sans-serif; margin: 0; padding: 0; }
-    .nav-bar { background-color: #eee; padding: 15px; border-bottom: 2px solid #ddd; }
-    /* 규격 고정용 래퍼 */
-    .page-wrapper { width: 80%; margin: 0 auto; padding-top: 30px; min-height: 600px; text-align: left; }
-    a { text-decoration: none; color: black; font-weight: bold; }
-    a:hover { color: red; }
-    .nav-inner { width: 80%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-</style>
+
+<script>
+    const APP_CONFIG = {
+        contextPath: "${pageContext.request.contextPath}",
+        csrfName: "${_csrf.parameterName}",
+        csrfToken: "${_csrf.token}"
+    };
+</script>
 </head>
 <body>
-    <div class="nav-bar">
+    <nav class="wire-nav">
         <div class="nav-inner">
-            <h2 style="margin: 0;"><a href="<c:url value='/'/>">Gourmet Pass</a></h2>
-            <div>
-                <a href="<c:url value='/store/list'/>">맛집 검색</a>
+            <h2 class="logo-text">
+                <a href="<c:url value='/'/>">GOURMET PASS</a>
+            </h2>
+            <div class="nav-links">
+                <a href="<c:url value='/store/list'/>" class="nav-item">맛집 검색</a>
+                
                 <sec:authorize access="isAnonymous()">
-                    | <a href="<c:url value='/member/login'/>">로그인</a>
-                    | <a href="<c:url value='/member/signup/select'/>">회원가입</a>
+                    <span class="divider">|</span>
+                    <a href="<c:url value='/member/login'/>" class="nav-item">로그인</a>
+                    <span class="divider">|</span>
+                    <a href="<c:url value='/member/signup/select'/>" class="nav-item">회원가입</a>
                 </sec:authorize>
+                
                 <sec:authorize access="isAuthenticated()">
                     <sec:authentication property="principal" var="user" />
-                    | <span><b>${user.username}</b>님</span>
+                    <span class="divider">|</span>
+                    <span class="user-welcome"><b>${user.username}</b>님</span>
+                    
                     <sec:authorize access="hasRole('ROLE_OWNER')">
-                        | <a href="<c:url value='/member/mypage'/>" style="color: blue;">[매장관리]</a>
+                        <a href="<c:url value='/member/mypage'/>" class="nav-item owner-link">[매장관리]</a>
                     </sec:authorize>
                     <sec:authorize access="hasRole('ROLE_USER')">
-                        | <a href="<c:url value='/member/mypage'/>">[마이페이지]</a>
+                        <a href="<c:url value='/member/mypage'/>" class="nav-item">[마이페이지]</a>
                     </sec:authorize>
-                    | <form action="<c:url value='/logout'/>" method="post" style="display: inline;">
+                    
+                    <form action="<c:url value='/logout'/>" method="post" class="logout-form-inline">
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
-                        <button type="submit" style="background:none; border:none; cursor:pointer; font-weight:bold;">로그아웃</button>
+                        <button type="submit" class="btn-logout-text">로그아웃</button>
                     </form>
                 </sec:authorize>
             </div>
         </div>
-    </div>
+    </nav>
+
     <div class="page-wrapper">

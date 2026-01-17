@@ -2,8 +2,6 @@
 package com.uhi.gourmet.book;
 
 import java.security.Principal;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,9 +27,14 @@ public class BookController {
     @Autowired
     private StoreMapper store_mapper;
 
-    // 1. 점주용 실시간 관리 페이지 로드 로직
+    /**
+     * [1] 점주용 실시간 매장 관리 센터
+     * [404 해결] 리턴 경로를 실제 파일 위치인 "book/manage"로 수정했습니다.
+     */
     @GetMapping("/manage")
     public String manage_page(Principal principal, Model model) {
+        if (principal == null) return "redirect:/member/login";
+        
         String user_id = principal.getName();
         StoreVO store = store_mapper.getStoreByUserId(user_id);
         
@@ -41,42 +44,53 @@ public class BookController {
             model.addAttribute("store_wait_list", wait_service.get_store_wait_list(store_id));
             model.addAttribute("store", store);
         }
-        return "book/manage";
+        
+        // DispatcherServlet이 /WEB-INF/views/book/manage.jsp를 찾도록 경로 고정
+        return "book/manage"; 
     }
 
-    // 2. 예약 등록 프로세스 (리팩토링: 날짜 처리 로직 서비스 위임)
+    /**
+     * [2] 예약 등록 프로세스
+     * [교정] 예약 완료 시 웨이팅 현황(myStatus)이 아닌 마이페이지(mypage)로 리다이렉트합니다.
+     */
     @PostMapping("/register")
     public String register_book(BookVO vo, Principal principal,
                                 @RequestParam("store_id") int store_id,
                                 @RequestParam("book_date") String date,
                                 @RequestParam("book_time") String time,
-                                @RequestParam(value="people_cnt", defaultValue="1") int people_cnt) {
+                                @RequestParam(value="people_cnt", defaultValue="1") int people_cnt,
+                                @RequestParam(value="book_price", required=false, defaultValue="0") int book_price) {
         
         if (principal == null) return "redirect:/member/login";
 
         try {
-            // [수정 포인트] 컨트롤러의 책임을 파라미터 수집 및 VO 세팅으로 한정
+            // DDL 기반 VO 데이터 세팅
             vo.setUser_id(principal.getName());
             vo.setStore_id(store_id);
             vo.setPeople_cnt(people_cnt);
+            vo.setBook_price(book_price);
 
-            // [수정 포인트] 날짜 파싱 및 병합(SimpleDateFormat) 로직을 서비스로 이전
+            // 날짜(YYYY-MM-DD)와 시간(HH:mm)을 결합하여 TIMESTAMP로 파싱하는 로직은 서비스에서 수행
             book_service.register_book(vo, date, time);
             
+            // 예약은 줄서기가 아니므로 마이페이지 내 예약 섹션으로 안내하는 것이 정석입니다.
+            return "redirect:/member/mypage";
+            
         } catch (Exception e) {
-            // 서비스에서 던진 RuntimeException 등을 캐치하여 에러 처리
-            System.err.println("!!! [BOOK ERROR] : " + e.getMessage());
-            return "redirect:/store/detail?store_id=" + store_id;
+            System.err.println("!!! [BOOK REGISTER ERROR] : " + e.getMessage());
+            return "redirect:/store/detail?storeId=" + store_id;
         }
-        
-        return "redirect:/member/mypage";
     }
 
-    // 3. 예약 상태 업데이트 처리 (방문/노쇼)
+    /**
+     * [3] 예약 상태 업데이트 (입장/노쇼)
+     */
     @PostMapping("/updateStatus")
     public String update_status(@RequestParam("book_id") int book_id, 
                                 @RequestParam("status") String status) {
         book_service.update_book_status(book_id, status);
+        
+        // 상태 변경 후 다시 점주용 관리 페이지로 복귀
         return "redirect:/book/manage";
     }
 }

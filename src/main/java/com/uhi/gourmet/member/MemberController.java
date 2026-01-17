@@ -2,9 +2,7 @@
 package com.uhi.gourmet.member;
 
 import java.security.Principal;
-import java.util.ArrayList; // 추가
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -21,9 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.uhi.gourmet.book.BookService;
-import com.uhi.gourmet.book.BookVO;
 import com.uhi.gourmet.wait.WaitService;
-import com.uhi.gourmet.wait.WaitVO;
 import com.uhi.gourmet.store.StoreMapper;
 import com.uhi.gourmet.store.StoreVO;
 import com.uhi.gourmet.review.ReviewService; 
@@ -134,17 +130,16 @@ public class MemberController {
         }
     }
 
-    // [수정 포인트: 로직을 서비스로 위임하여 코드 슬림화]
-    @GetMapping("/myStatus")
+    /* [오류 해결] 404 에러 방지를 위해 실제 파일 위치인 wait 폴더를 지정합니다. */
+    @GetMapping("/wait_status")
     public String myStatus(Principal principal, Model model) {
         if (principal == null) return "redirect:/member/login";
         
         String user_id = principal.getName();
-        
-        // 모든 복잡한 필터링 및 통계 계산은 Service Layer에서 수행
         model.addAllAttributes(memberService.getMyStatusSummary(user_id));
         
-        return "member/myStatus"; 
+        // wait 폴더 내의 wait_status.jsp를 호출하도록 수정
+        return "wait/wait_status"; 
     }
 
     @GetMapping("/edit")

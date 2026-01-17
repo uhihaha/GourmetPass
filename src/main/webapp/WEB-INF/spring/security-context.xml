@@ -24,6 +24,7 @@
 			pattern="/member/edit/**"
 			access="hasAnyRole('ROLE_USER', 'ROLE_OWNER')" />
 
+
 		<security:intercept-url pattern="/store/list"
 			access="permitAll" />
 		<security:intercept-url pattern="/store/detail"
@@ -31,8 +32,13 @@
 		<security:intercept-url pattern="/store/api/**"
 			access="permitAll" />
 
+		<security:intercept-url pattern="/store/reviews/**"
+			access="hasAnyRole('ROLE_USER', 'ROLE_OWNER')" />
+
+
 		<security:intercept-url pattern="/store/**"
 			access="hasRole('ROLE_OWNER')" />
+
 
 		<security:intercept-url
 			pattern="/book/manage**" access="hasRole('ROLE_OWNER')" />
@@ -42,6 +48,7 @@
 			pattern="/wait/register**" access="hasRole('ROLE_USER')" />
 		<security:intercept-url
 			pattern="/wait/myStatus**" access="hasRole('ROLE_USER')" />
+
 
 		<security:intercept-url pattern="/**"
 			access="permitAll" />

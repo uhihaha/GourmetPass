@@ -86,4 +86,13 @@ public class WaitServiceImpl implements WaitService {
         
         return summary;
     }
+
+    /**
+     * [추가] 특정 웨이팅의 상세 정보를 가져오는 메서드
+     * 역할: DB에서 wait_id로 정보를 조회하여 Mapper로부터 VO를 전달받음
+     */
+    @Override
+    public WaitVO get_wait_detail(int wait_id) {
+        return wait_mapper.selectWaitDetail(wait_id);
+    }
 }

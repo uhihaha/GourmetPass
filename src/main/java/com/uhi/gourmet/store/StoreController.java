@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.uhi.gourmet.book.BookService;
+import com.uhi.gourmet.member.MemberService;
+import com.uhi.gourmet.member.MemberVO;
 import com.uhi.gourmet.review.ReviewService;
 import com.uhi.gourmet.review.ReviewVO;
 import com.uhi.gourmet.wait.WaitService;
@@ -37,6 +39,9 @@ public class StoreController {
 
     @Autowired
     private BookService bookService;
+    
+    @Autowired
+    private MemberService memberService;
 
     @Autowired
     private ReviewService reviewService;
@@ -47,6 +52,14 @@ public class StoreController {
 
     @Value("${kakao.js.key}")
     private String kakaoJsKey;
+    
+	//portOne 결제 시작을 위한 변수
+    @Value("${portone.imp.init}")
+    private String impInit;
+    @Value("${portone.pg}")
+    private String pg;	// 테스트 결제를 위한 변수
+    
+    
 
     // 1. 맛집 목록 조회 (카테고리, 지역, 검색어 필터링)
     @GetMapping("/list")
@@ -68,7 +81,22 @@ public class StoreController {
     // 2. 맛집 상세 정보 조회 (최근 리뷰 3개 요약 포함)
     @GetMapping("/detail")
     public String storeDetail(@RequestParam("storeId") int storeId, Model model, Principal principal) {
-        storeService.plusViewCount(storeId);
+        
+    	// 결제를 위한 JSP에 멤버정보 넣기
+    	if (principal != null) {
+            // principal.getName()은 현재 로그인한 사용자의 ID를 반환합니다.
+            // memberService에 ID로 회원 객체를 가져오는 메서드가 있다고 가정합니다.
+    		
+    		System.out.println("ID : " + principal.getName());
+            MemberVO loginUser = memberService.getMember(principal.getName()); 
+            System.out.println(loginUser);
+            
+            
+            // JSP에서 사용할 수 있도록 "loginUser"라는 이름으로 전달
+            model.addAttribute("loginUser", loginUser);
+        }
+    	
+    	storeService.plusViewCount(storeId);	// 조회수 증가
         
         StoreVO store = storeService.getStoreDetail(storeId);
         List<MenuVO> menuList = storeService.getMenuList(storeId);
@@ -96,6 +124,8 @@ public class StoreController {
         model.addAttribute("menuList", menuList);
         model.addAttribute("reviewList", reviewList);
         model.addAttribute("kakaoJsKey", kakaoJsKey);
+        model.addAttribute("impInit", impInit);	// portone 결제를 위한 변수
+        model.addAttribute("pg", pg);	// portone 결제를 위한 변수
 
         // 리뷰 작성 자격 체크
         boolean canWriteReview = (principal != null) && reviewService.checkReviewEligibility(principal.getName(), storeId);
@@ -145,22 +175,7 @@ public class StoreController {
         return "redirect:/book/manage"; 
     }
 
-    // 예약 상태 제어 (예약확정 -> 입장확인 -> 식사완료)
-    @PostMapping("/book/updateStatus")
-    public String updateBookStatus(@RequestParam("book_id") int bookId, 
-                                 @RequestParam("status") String status,
-                                 @RequestParam(value="user_id", required=false) String userId) {
-        
-        bookService.update_book_status(bookId, status);
-        
-        if (userId != null && !userId.isEmpty()) {
-            String msg = "예약 상태가 [" + status + "]로 변경되었습니다.";
-            messagingTemplate.convertAndSend("/topic/wait/" + userId, msg);
-        }
-        
-        return "redirect:/member/mypage";
-    }
-
+    
     // ================= [가게 및 메뉴 정보 관리] =================
 
     @GetMapping("/register")

@@ -1,7 +1,7 @@
 /* src/main/webapp/resources/css/store_detail.css */
 @charset "UTF-8";
 
-/* 1. 기본 레이아웃 */
+/* 1. 湲곕낯 �젅�씠�븘�썐 */
 .detail-wrapper { 
     width: 90%; 
     max-width: 1000px; 
@@ -9,7 +9,7 @@
     text-align: left; 
 }
 
-/* 2. 헤더 및 메타 정보 */
+/* 2. �뿤�뜑 諛� 硫뷀� �젙蹂� */
 .detail-header { 
     margin-bottom: 35px; 
     border-bottom: 2px solid #333; 
@@ -29,7 +29,7 @@
     gap: 15px; 
 }
 
-/* 3. 메인 정보 카드 (Bold Wire 표준) */
+/* 3. 硫붿씤 �젙蹂� 移대뱶 (Bold Wire �몴以�) */
 .info-main-card { 
     display: flex; 
     gap: 30px; 
@@ -90,7 +90,7 @@
     font-weight: 900; 
 }
 
-/* 4. 액션 버튼 그룹 (상호 보완적 디자인) */
+/* 4. �븸�뀡 踰꾪듉 洹몃９ (�긽�샇 蹂댁셿�쟻 �뵒�옄�씤) */
 .detail-action-group { 
     display: flex; 
     gap: 20px; 
@@ -122,7 +122,7 @@
     border-color: #ff3d00;
 }
 
-/* 5. 인터랙션 카드 (예약/웨이팅 폼) */
+/* 5. �씤�꽣�옓�뀡 移대뱶 (�삁�빟/�썾�씠�똿 �뤌) */
 .interaction-card { 
     border: 2px solid #333; 
     border-radius: 15px; 
@@ -142,7 +142,7 @@
     gap: 10px;
 }
 
-/* 6. 시간 선택 그리드 */
+/* 6. �떆媛� �꽑�깮 洹몃━�뱶 */
 .time-grid { 
     display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
@@ -170,7 +170,7 @@
     cursor: not-allowed; 
 }
 
-/* 7. 리뷰 요약 및 카드 섹션 */
+/* 7. 由щ럭 �슂�빟 諛� 移대뱶 �꽮�뀡 */
 .review-summary-section {
     margin-top: 60px;
 }
@@ -188,13 +188,37 @@
     gap: 20px;
 }
 
-/* 8. 기타 요소 */
+/* 예약 가능 버튼 */
+.time-btn {
+    padding: 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* 예약 완료/불가 버튼 (회색 처리) */
+.time-btn:disabled {
+    background-color: #e9e9e9;
+    color: #bbb;
+    border: 1px solid #ddd;
+    cursor: not-allowed;
+    text-decoration: line-through; /* 시각적으로 마감됨을 강조 */
+}
+
+.time-btn.active {
+    background-color: #333;
+    color: #fff;
+    border-color: #333;
+}
+
+/* 8. 湲고� �슂�냼 */
 #map {
     box-shadow: 8px 8px 0px #333;
     transition: 0.3s;
 }
 
-/* 모바일 대응 */
+/* 紐⑤컮�씪 ���쓳 */
 @media (max-width: 800px) {
     .info-main-card { flex-direction: column; padding: 20px; }
     .store-img-section { flex: none; width: 100%; height: 220px; }

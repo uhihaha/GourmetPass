@@ -32,7 +32,8 @@
 		<security:intercept-url pattern="/store/api/**"
 			access="permitAll" />
 
-		<security:intercept-url pattern="/store/reviews/**"
+		<security:intercept-url
+			pattern="/store/reviews/**"
 			access="hasAnyRole('ROLE_USER', 'ROLE_OWNER')" />
 
 
@@ -48,6 +49,18 @@
 			pattern="/wait/register**" access="hasRole('ROLE_USER')" />
 		<security:intercept-url
 			pattern="/wait/myStatus**" access="hasRole('ROLE_USER')" />
+
+
+		<!-- pay security 설정 -->
+		<!-- 점주와 사용자의 환불기능 -->
+		<!-- <security:intercept-url pattern="/pay/api/v1/payment/refund" access="hasAnyRole('ROLE_OWNER', 
+			'ROLE_USER')" /> <security:intercept-url pattern="/pay/api/**" access="hasRole('ROLE_USER')" 
+			/> -->
+		<security:intercept-url
+			pattern="/pay/api/v1/payment/refund**"
+			access="hasAnyRole('ROLE_OWNER', 'ROLE_USER')" />
+		<security:intercept-url pattern="/pay/api/**"
+			access="hasRole('ROLE_USER')" />
 
 
 		<security:intercept-url pattern="/**"

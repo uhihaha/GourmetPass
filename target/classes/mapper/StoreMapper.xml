@@ -133,7 +133,8 @@
         FROM BOOK
         WHERE store_id = #{store_id}
           AND TO_CHAR(book_date, 'YYYY-MM-DD') = #{book_date}
-          AND book_status NOT IN ('CANCELLED', 'NOSHOW')
+        AND book_status NOT IN ('CANCELED', 'NOSHOW')
     </select>
-
+    
+   
 </mapper>

@@ -31,9 +31,19 @@
             <%-- 카테고리 값 자체(한식, 일식 등)는 DB 매핑을 위해 한글 원본 유지 --%>
             <c:set var="categories" value="한식,일식,양식,중식,카페" />
             <c:forEach var="cat" items="${fn:split(categories, ',')}">
+                <%-- [수정] DB 데이터('한식')를 프로퍼티 키('category.Korean')로 매핑 --%>
+                <c:choose>
+                    <c:when test="${cat eq '한식'}"> <c:set var="catKey" value="category.Korean" /> </c:when>
+                    <c:when test="${cat eq '일식'}"> <c:set var="catKey" value="category.Japanese" /> </c:when>
+                    <c:when test="${cat eq '중식'}"> <c:set var="catKey" value="category.Chinese" /> </c:when>
+                    <c:when test="${cat eq '양식'}"> <c:set var="catKey" value="category.Western" /> </c:when>
+                    <c:when test="${cat eq '카페'}"> <c:set var="catKey" value="category.Cafe" /> </c:when>
+                    <c:otherwise> <c:set var="catKey" value="category.Etc" /> </c:otherwise>
+                </c:choose>
+
                 <div class="cat-chip clickable" data-url="${pageContext.request.contextPath}/store/list?category=${cat}">
-                    <%-- [핵심] DB 값(${cat})을 키로 사용하여 번역된 텍스트 출력 --%>
-                    <spring:message code="category.${cat}" text="${cat}" />
+                    <%-- 매핑된 키(catKey)를 사용하여 다국어 텍스트 출력 --%>
+                    <spring:message code="${catKey}" text="${cat}" />
                 </div>
             </c:forEach>
             <div class="cat-chip btn-all clickable" data-url="${pageContext.request.contextPath}/store/list">
@@ -64,9 +74,17 @@
                                 </c:choose>
                             </div>
                             <div class="store-info">
-                                <%-- [수정] 카드 내 카테고리 배지도 다국어화 처리 --%>
+                                <%-- [수정] 카드 내 카테고리 배지도 다국어 매핑 적용 --%>
                                 <div class="badge-cat">
-                                    <spring:message code="category.${store.store_category}" text="${store.store_category}" />
+                                    <c:choose>
+                                        <c:when test="${store.store_category eq '한식'}"> <c:set var="catKey" value="category.Korean" /> </c:when>
+                                        <c:when test="${store.store_category eq '일식'}"> <c:set var="catKey" value="category.Japanese" /> </c:when>
+                                        <c:when test="${store.store_category eq '중식'}"> <c:set var="catKey" value="category.Chinese" /> </c:when>
+                                        <c:when test="${store.store_category eq '양식'}"> <c:set var="catKey" value="category.Western" /> </c:when>
+                                        <c:when test="${store.store_category eq '카페'}"> <c:set var="catKey" value="category.Cafe" /> </c:when>
+                                        <c:otherwise> <c:set var="catKey" value="category.Etc" /> </c:otherwise>
+                                    </c:choose>
+                                    <spring:message code="${catKey}" text="${store.store_category}" />
                                 </div>
                                 <div class="store-name-row">
                                     <h3 class="store-name">${store.store_name}</h3>

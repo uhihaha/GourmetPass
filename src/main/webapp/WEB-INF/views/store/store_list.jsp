@@ -21,8 +21,16 @@
                 <select name="region" onchange="resetPageAndSubmit()" class="wire-select" style="width:200px;">
                     <option value=""><spring:message code="region.all" /></option>
                     <c:forEach var="reg" items="${fn:split('서울,경기,인천', ',')}">
+                        <%-- [수정] 지역명 매핑: 서울 -> region.Seoul --%>
+                        <c:choose>
+                            <c:when test="${reg eq '서울'}"> <c:set var="regKey" value="region.Seoul" /> </c:when>
+                            <c:when test="${reg eq '경기'}"> <c:set var="regKey" value="region.Gyeonggi" /> </c:when>
+                            <c:when test="${reg eq '인천'}"> <c:set var="regKey" value="region.Incheon" /> </c:when>
+                            <c:otherwise> <c:set var="regKey" value="region.${reg}" /> </c:otherwise>
+                        </c:choose>
+                        
                         <option value="${reg}" ${region == reg ? 'selected' : ''}>
-                            <spring:message code="region.${reg}" text="${reg}" />
+                            <spring:message code="${regKey}" text="${reg}" />
                         </option>
                     </c:forEach>
                 </select>
@@ -33,8 +41,18 @@
                 <div class="chip-group">
                     <c:set var="cats" value="한식,일식,중식,양식,카페" />
                     <c:forEach var="cat" items="${fn:split(cats, ',')}">
+                        <%-- [수정] 카테고리 필터 매핑 --%>
+                        <c:choose>
+                            <c:when test="${cat eq '한식'}"> <c:set var="catKey" value="category.Korean" /> </c:when>
+                            <c:when test="${cat eq '일식'}"> <c:set var="catKey" value="category.Japanese" /> </c:when>
+                            <c:when test="${cat eq '중식'}"> <c:set var="catKey" value="category.Chinese" /> </c:when>
+                            <c:when test="${cat eq '양식'}"> <c:set var="catKey" value="category.Western" /> </c:when>
+                            <c:when test="${cat eq '카페'}"> <c:set var="catKey" value="category.Cafe" /> </c:when>
+                            <c:otherwise> <c:set var="catKey" value="category.Etc" /> </c:otherwise>
+                        </c:choose>
+
                         <div class="cat-chip ${category == cat ? 'active' : ''}" onclick="selectCategory('${cat}')">
-                            <spring:message code="category.${cat}" text="${cat}" />
+                            <spring:message code="${catKey}" text="${cat}" />
                         </div>
                     </c:forEach>
                 </div>
@@ -57,7 +75,19 @@
                             </c:choose>
                         </div>
                         <div class="store-info">
-                            <span class="badge-cat"><spring:message code="category.${store.store_category}" text="${store.store_category}" /></span>
+                            <%-- [수정] 매장 카테고리 배지 매핑 적용 --%>
+                            <span class="badge-cat">
+                                <c:choose>
+                                    <c:when test="${store.store_category eq '한식'}"> <c:set var="catKey" value="category.Korean" /> </c:when>
+                                    <c:when test="${store.store_category eq '일식'}"> <c:set var="catKey" value="category.Japanese" /> </c:when>
+                                    <c:when test="${store.store_category eq '중식'}"> <c:set var="catKey" value="category.Chinese" /> </c:when>
+                                    <c:when test="${store.store_category eq '양식'}"> <c:set var="catKey" value="category.Western" /> </c:when>
+                                    <c:when test="${store.store_category eq '카페'}"> <c:set var="catKey" value="category.Cafe" /> </c:when>
+                                    <c:otherwise> <c:set var="catKey" value="category.Etc" /> </c:otherwise>
+                                </c:choose>
+                                <spring:message code="${catKey}" text="${store.store_category}" />
+                            </span>
+                            
                             <h3 class="store-name">${store.store_name}</h3>
                             <div class="store-meta">
                                 <span class="rating">⭐ ${store.avg_rating}</span>

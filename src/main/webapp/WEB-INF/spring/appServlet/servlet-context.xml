@@ -8,16 +8,12 @@
 		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
 
-	<context:property-placeholder
-		location="classpath:api.properties" ignore-unresolvable="true" />
+	<context:property-placeholder location="classpath:api.properties" ignore-unresolvable="true" />
 
 	<annotation-driven />
 
 	<resources mapping="/resources/**" location="/resources/" />
-	<resources mapping="/upload/**" location="${upload.path}" />
-
-	<beans:bean
-		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+	<resources mapping="/upload/**" location="/resources/upload/" /> <beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<beans:property name="prefix" value="/WEB-INF/views/" />
 		<beans:property name="suffix" value=".jsp" />
 	</beans:bean>
@@ -28,6 +24,7 @@
 				<beans:value>message.messageSource</beans:value>
 			</beans:list>
 		</beans:property>
+		<beans:property name="defaultEncoding" value="UTF-8" />
 	</beans:bean>
 
 	<beans:bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver" />
@@ -37,13 +34,12 @@
 			<beans:property name="paramName" value="lang" />
 		</beans:bean>
 	</interceptors>
-	<context:component-scan
-		base-package="com.uhi.gourmet" />
-<!-- 파일 업로드 처리 영역 -->
-	<beans:bean id="filterMultipartResolver"
+
+	<context:component-scan base-package="com.uhi.gourmet" />
+<!-- 업로드 처리 영역 -->
+	<beans:bean id="multipartResolver"
 		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-		<beans:property name="maxUploadSize" value="10485760" />
-		<beans:property name="defaultEncoding" value="UTF-8" />
+		<beans:property name="maxUploadSize" value="10485760" /> <beans:property name="defaultEncoding" value="UTF-8" />
 	</beans:bean>
 
 </beans:beans>

@@ -32,17 +32,17 @@
             <div class="nav-links">
                 <%-- [변경] 하드코딩된 텍스트를 spring:message로 대체 --%>
                 <a href="<c:url value='/store/list'/>" class="nav-item">
-                    <spring:message code="common.nav.search" />
+                    <spring:message code="common.nav.search" text="Search" />
                 </a>
 
                 <sec:authorize access="isAnonymous()">
                     <span class="divider">|</span>
                     <a href="<c:url value='/member/login'/>" class="nav-item">
-                        <spring:message code="common.nav.login" />
+                        <spring:message code="common.nav.login" text="Login" />
                     </a>
                     <span class="divider">|</span>
                     <a href="<c:url value='/member/signup/select'/>" class="nav-item">
-                        <spring:message code="common.nav.signup" />
+                        <spring:message code="common.nav.signup" text="Sign Up" />
                     </a>
                 </sec:authorize>
 
@@ -54,19 +54,21 @@
 
                     <sec:authorize access="hasRole('ROLE_OWNER')">
                         <a href="<c:url value='/member/mypage'/>" class="nav-item owner-link">
-                            <spring:message code="common.nav.owner" />
+                            <%-- [수정] 간결해진 영어 텍스트 반영 --%>
+                            <spring:message code="common.nav.owner" text="Owner" />
                         </a>
                     </sec:authorize>
                     <sec:authorize access="hasRole('ROLE_USER')">
                         <a href="<c:url value='/member/mypage'/>" class="nav-item">
-                            <spring:message code="common.nav.mypage" />
+                            <%-- [수정] 간결해진 영어 텍스트 반영 --%>
+                            <spring:message code="common.nav.mypage" text="My Page" />
                         </a>
                     </sec:authorize>
 
                     <form action="<c:url value='/logout'/>" method="post" class="logout-form-inline" style="display: inline;">
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
                         <button type="submit" class="btn-logout-text" style="background: none; border: none; cursor: pointer; text-decoration: underline;">
-                            <spring:message code="common.nav.logout" />
+                            <spring:message code="common.nav.logout" text="Logout" />
                         </button>
                     </form>
                 </sec:authorize>
@@ -89,7 +91,7 @@
                         JP </a>
                 </div>
             </div> <%-- nav-links 종결 --%>
-        </div> <%-- [수정] nav-inner 종결 --%>
+        </div> <%-- nav-inner 종결 --%>
     </nav>
 
     <div class="page-wrapper">

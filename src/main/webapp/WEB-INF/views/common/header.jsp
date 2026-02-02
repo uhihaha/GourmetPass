@@ -6,7 +6,12 @@
 <%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
 
 <!DOCTYPE html>
-<html>
+<%-- 
+    [중요] 현재 언어 코드를 HTML 태그의 lang 속성에 설정
+    - common.css에서 이 속성([lang="jp"])을 감지하여 폰트와 레이아웃을 보정합니다.
+--%>
+<c:set var="currentLang" value="${pageContext.response.locale.language}" />
+<html lang="${currentLang}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +19,11 @@
 
     <link rel="stylesheet" href="<c:url value='/resources/css/common.css'/>">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <%-- [폰트 로드] Google Fonts: Noto Sans JP (일본어 전용, common.css에서 참조) --%>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
 
     <script>
         const APP_CONFIG = {
@@ -75,7 +85,7 @@
 
                 <%-- 언어 선택 메뉴 --%>
                 <span class="divider">|</span>
-                <div class="lang-selector" style="display: inline-block; margin-left: 10px;">
+                <div class="lang-selector">
                     <a href="?lang=ko" class="lang-item ${pageContext.response.locale.language == 'ko' ? 'active-lang' : ''}"
                         style="text-decoration: none; color: ${pageContext.response.locale.language == 'ko' ? '#ff6b6b' : '#666'}; font-weight: ${pageContext.response.locale.language == 'ko' ? 'bold' : 'normal'};">
                         KO </a> 

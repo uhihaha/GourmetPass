@@ -32,7 +32,8 @@
 			</span>
 		</div>
 
-		<table class="manage-dashboard-table">
+		<div class="dashboard-table-wrapper">
+			<table class="manage-dashboard-table">
 			<thead>
 				<tr>
 					<th class="col-num">번호</th>
@@ -94,7 +95,8 @@
 					</c:if>
 				</c:forEach>
 			</tbody>
-		</table>
+			</table>
+		</div>
 	</div>
 
 	<%-- 2. 오늘 예약 섹션 --%>
@@ -126,7 +128,8 @@
 	        </c:if>
 	    </div>
 		
-		<table class="manage-dashboard-table">
+		<div class="dashboard-table-wrapper">
+			<table class="manage-dashboard-table">
 			<thead>
 				<tr>
 					<th class="col-num">시간</th>
@@ -176,7 +179,8 @@
 					</tr>
 				</c:forEach>
 			</tbody>
-		</table>
+			</table>
+		</div>
 	</div>
 </div>
 

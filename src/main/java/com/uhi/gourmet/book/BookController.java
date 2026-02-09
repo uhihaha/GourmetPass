@@ -37,7 +37,7 @@ public class BookController {
 	private StoreMapper store_mapper;
 
 	@Autowired
-	private SimpMessagingTemplate messagingTemplate;
+	private SimpMessagingTemplate messaging_template;
 
 	/**
 	 * [1] 점주용 실시간 매장 관리 센터 [404 해결] 리턴 경로를 실제 파일 위치인 "book/manage"로 수정했습니다.

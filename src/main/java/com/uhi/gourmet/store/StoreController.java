@@ -149,8 +149,12 @@ public class StoreController {
 
     @PostMapping("/register")
     public String registerStoreProcess(@ModelAttribute StoreVO vo, @RequestParam(value="file", required=false) MultipartFile file, HttpServletRequest request, Principal principal) {
+        if (vo.getStore_id() <= 0) {
+            vo.setStore_id(storeService.getNextStoreId());
+        }
         if (file != null && !file.isEmpty()) {
-            vo.setStore_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload")));
+            String savedName = buildStoredFileName(principal, "store_img", vo.getStore_id(), file);
+            vo.setStore_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload"), savedName));
         }
         storeService.registerStore(vo, principal.getName());
         return "redirect:/member/mypage";
@@ -171,7 +175,8 @@ public class StoreController {
                                      Principal principal,
                                      RedirectAttributes rttr) {
         if (file != null && !file.isEmpty()) {
-            vo.setStore_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload")));
+            String savedName = buildStoredFileName(principal, "store_img", vo.getStore_id(), file);
+            vo.setStore_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload"), savedName));
         }
         try {
             storeService.modifyStore(vo, principal.getName());
@@ -198,8 +203,12 @@ public class StoreController {
         if (principal == null) {
             return "redirect:/member/login";
         }
+        if (menuVO.getMenu_id() <= 0) {
+            menuVO.setMenu_id(storeService.getNextMenuId());
+        }
         if (file != null && !file.isEmpty()) {
-            menuVO.setMenu_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload")));
+            String savedName = buildStoredFileName(principal, "menu_img", menuVO.getMenu_id(), file);
+            menuVO.setMenu_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload"), savedName));
         }
         try {
             storeService.addMenu(menuVO, principal.getName());
@@ -227,9 +236,27 @@ public class StoreController {
     @PostMapping("/menu/update")
     public String menuUpdateProcess(@ModelAttribute MenuVO vo, @RequestParam(value="file", required=false) MultipartFile file, HttpServletRequest request, Principal principal) {
         if (file != null && !file.isEmpty()) {
-            vo.setMenu_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload")));
+            String savedName = buildStoredFileName(principal, "menu_img", vo.getMenu_id(), file);
+            vo.setMenu_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload"), savedName));
         }
         storeService.modifyMenu(vo, principal.getName());
         return "redirect:/member/mypage";
+    }
+
+    private String buildStoredFileName(Principal principal, String type, int id, MultipartFile file) {
+        String userId = (principal != null && principal.getName() != null) ? principal.getName() : "user";
+        String extension = extractFileExtension(file.getOriginalFilename());
+        return userId + "_" + type + "_" + id + extension;
+    }
+
+    private String extractFileExtension(String fileName) {
+        if (fileName == null) {
+            return "";
+        }
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
+            return "";
+        }
+        return fileName.substring(dotIndex);
     }
 }

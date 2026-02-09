@@ -47,18 +47,22 @@ public class PhotoController {
         boolean hasThumbnail = photoService.getThumbnailByStore(store_id) != null;
         boolean thumbnailSet = hasThumbnail;
 
+        String userId = principal.getName();
         for (MultipartFile file : files) {
             if (file == null || file.isEmpty()) {
                 continue;
             }
-            String savedName = storeService.uploadFile(file, realPath);
-            if (savedName == null) {
+            int photoId = photoService.getNextPhotoId();
+            String savedName = buildFileName(userId, "store_img", photoId, file.getOriginalFilename());
+            String savedPath = storeService.uploadFile(file, realPath, savedName);
+            if (savedPath == null) {
                 continue;
             }
 
             PhotoVO vo = new PhotoVO();
+            vo.setPhoto_id(photoId);
             vo.setStore_id(store_id);
-            vo.setFile_path(savedName);
+            vo.setFile_path(savedPath);
             vo.setOriginal_name(file.getOriginalFilename());
             vo.setIs_active("Y");
             vo.setSort_order(0);
@@ -129,5 +133,16 @@ public class PhotoController {
         photoService.activatePhoto(photo_id);
         rttr.addFlashAttribute("msg", "사진이 다시 표시됩니다.");
         return "redirect:/member/mypage";
+    }
+
+    private String buildFileName(String userId, String type, int seq, String originalName) {
+        String ext = "";
+        if (originalName != null) {
+            int dot = originalName.lastIndexOf('.');
+            if (dot >= 0) {
+                ext = originalName.substring(dot);
+            }
+        }
+        return userId + "_" + type + "_" + seq + ext;
     }
 }

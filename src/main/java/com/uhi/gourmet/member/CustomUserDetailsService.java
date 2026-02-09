@@ -32,7 +32,9 @@ public class CustomUserDetailsService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        
+        if (!MemberValidation.isValidUserId(username)) {
+            throw new UsernameNotFoundException("잘못된 아이디 형식입니다.");
+        }
         // 1. DB에서 회원 정보 조회
         MemberVO vo = memberMapper.getMemberById(username); 
 

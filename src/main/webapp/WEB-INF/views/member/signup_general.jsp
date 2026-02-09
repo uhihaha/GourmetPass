@@ -7,6 +7,9 @@
 
 <div class="edit-wrapper">
     <div class="edit-title">👤 일반 회원가입</div>
+    <c:if test="${not empty msg}">
+        <div class="alert-msg">${msg}</div>
+    </c:if>
 
     <form action="${pageContext.request.contextPath}/member/joinProcess" method="post" id="joinForm">
         <%-- CSRF 보안 및 좌표 저장용 숨김 필드 --%>
@@ -20,7 +23,7 @@
                 <td>
                     <div class="input-row">
                         <%-- 가입 페이지는 readonly가 아니므로 member-signup.js에서 중복확인을 강제함 [cite: 19] --%>
-                        <input type="text" name="user_id" id="user_id" required placeholder="3글자 이상">
+                        <input type="text" name="user_id" id="user_id" required placeholder="영문/숫자/언더바 4~20자">
                         <button type="button" id="btnIdCheck" class="btn-wire">중복확인</button>
                     </div>
                     <div id="idCheckMsg" class="msg-box"></div>
@@ -28,7 +31,7 @@
             </tr>
             <tr>
                 <th>비밀번호</th>
-                <td><input type="password" name="user_pw" id="user_pw" required placeholder="비밀번호 입력"></td>
+                <td><input type="password" name="user_pw" id="user_pw" required placeholder="영문/숫자/특수문자 포함 8~20자"></td>
             </tr>
             <tr>
                 <th>비밀번호 확인</th>

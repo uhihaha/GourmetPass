@@ -32,7 +32,7 @@
     </form>
     
     <div style="margin-top: 25px; font-size: 13px; color: #999;">
-        <a href="#" style="text-decoration: underline;">아이디/비밀번호를 잊으셨나요?</a>
+        <a href="<c:url value='/member/find'/>" style="text-decoration: underline;">아이디/비밀번호를 잊으셨나요?</a>
     </div>
 </div>
 

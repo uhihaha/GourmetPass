@@ -131,6 +131,19 @@
             authServerError: "<spring:message code='member.find.auth.server_error' text='서버 통신 오류가 발생했습니다.' />"
         };
     </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".lang-selector [data-lang]").forEach(function (link) {
+                var lang = link.getAttribute("data-lang");
+                if (!lang) {
+                    return;
+                }
+                var url = new URL(window.location.href);
+                url.searchParams.set("lang", lang);
+                link.setAttribute("href", url.toString());
+            });
+        });
+    </script>
 </head>
 <body>
     <nav class="wire-nav">
@@ -180,11 +193,11 @@
 
                 <span class="divider">|</span>
                 <div class="lang-selector">
-                    <a href="?lang=ko" class="lang-item ${pageContext.response.locale.language == 'ko' ? 'active-lang' : ''}">KO</a>
+                    <a href="?lang=ko" data-lang="ko" class="lang-item ${pageContext.response.locale.language == 'ko' ? 'active-lang' : ''}">KO</a>
                     <span style="margin: 0 2px; color: #ccc;">/</span>
-                    <a href="?lang=en" class="lang-item ${pageContext.response.locale.language == 'en' ? 'active-lang' : ''}">EN</a>
+                    <a href="?lang=en" data-lang="en" class="lang-item ${pageContext.response.locale.language == 'en' ? 'active-lang' : ''}">EN</a>
                     <span style="margin: 0 2px; color: #ccc;">/</span>
-                    <a href="?lang=jp" class="lang-item ${pageContext.response.locale.language == 'ja' || pageContext.response.locale.language == 'jp' ? 'active-lang' : ''}">JP</a>
+                    <a href="?lang=jp" data-lang="jp" class="lang-item ${pageContext.response.locale.language == 'ja' || pageContext.response.locale.language == 'jp' ? 'active-lang' : ''}">JP</a>
                 </div>
             </div>
         </div>

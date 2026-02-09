@@ -62,6 +62,12 @@ public class MemberServiceImpl implements MemberService {
         memberMapper.join(member);
         
         // 2. 가게 정보 생성 (생성된 회원 ID 연동)
+        if (store == null) {
+            throw new IllegalArgumentException("점주 가입을 위한 가게 정보가 필요합니다.");
+        }
+        if (store.getStore_id() <= 0) {
+            store.setStore_id(storeMapper.getNextStoreId());
+        }
         store.setUser_id(member.getUser_id());
         storeMapper.insertStore(store);
     }

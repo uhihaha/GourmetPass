@@ -88,8 +88,8 @@
             <tr>
                 <th>최대 수용 인원</th>
                 <td>
-                    <input type="number" name="max_capacity" required placeholder="0 명" oninput="autoHyphen(this)"
-                           minlength="1">
+                    <input type="number" name="max_capacity" required placeholder="0 명"
+                           oninput="autoHyphen(this)" minlength="1">
                 </td>
             </tr>
             <tr>

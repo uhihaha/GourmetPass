@@ -65,27 +65,6 @@ public class KakaoOAuthService {
         return java.util.Optional.of(filtered.toString());
     }
 
-    private java.util.Optional<String> getScope() {
-        if (scope == null || scope.trim().isEmpty()) {
-            return java.util.Optional.empty();
-        }
-        String[] scopes = scope.trim().split("\\s+");
-        StringBuilder filtered = new StringBuilder();
-        for (String entry : scopes) {
-            if ("account_email".equals(entry)) {
-                continue;
-            }
-            if (filtered.length() > 0) {
-                filtered.append(' ');
-            }
-            filtered.append(entry);
-        }
-        if (filtered.length() == 0) {
-            return java.util.Optional.empty();
-        }
-        return java.util.Optional.of(filtered.toString());
-    }
-
     public SocialProfile fetchUserProfile(String code) {
         String accessToken = getAccessToken(code);
         return getUserInfo(accessToken);

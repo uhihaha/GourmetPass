@@ -151,47 +151,47 @@ VALUES (SEQ_STORE.NEXTVAL, 'owner10', '을지로 노가리', '기타', '서울 �
 -- ========================================================
 
 -- Store 1 (강남 수라상: 1, 2)
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner01'), '불고기 정식', 15000, 'food1.jpg', 'Y');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner01'), '비빔밥', 10000, 'food2.jpg', 'N');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner01'), '불고기 정식', 15000, 'owner01_menu_img_1.jpg', 'Y');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner01'), '비빔밥', 10000, 'owner01_menu_img_2.jpg', 'N');
 
 -- Store 2 (동원동 스시: 3, 4, 5)
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner02'), '특초밥 세트', 25000, 'sushi1.jpg', 'Y');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner02'), '연어 덮밥', 18000, 'sushi2.jpg', 'N');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner02'), '냉모밀', 9000, 'noodle.jpg', 'N');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner02'), '특초밥 세트', 25000, 'owner02_menu_img_3.jpg', 'Y');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner02'), '연어 덮밥', 18000, 'owner02_menu_img_4.jpg', 'N');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner02'), '냉모밀', 9000, 'owner02_menu_img_5.jpg', 'N');
 
 -- Store 3 (홍대 멘야: 6, 7)
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner03'), '돈코츠 라멘', 11000, 'ramen1.jpg', 'Y');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner03'), '교자 만두', 5000, 'gyoza.jpg', 'N');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner03'), '돈코츠 라멘', 11000, 'owner03_menu_img_6.jpg', 'Y');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner03'), '교자 만두', 5000, 'owner03_menu_img_7.jpg', 'N');
 
 -- Store 4 (카페 성수: 8, 9, 10)
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner04'), '아메리카노', 4500, 'coffee1.jpg', 'Y');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner04'), '시그니처 라떼', 6000, 'coffee2.jpg', 'N');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner04'), '치즈 케이크', 7000, 'cake.jpg', 'N');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner04'), '아메리카노', 4500, 'owner04_menu_img_8.jpg', 'Y');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner04'), '시그니처 라떼', 6000, 'owner04_menu_img_9.jpg', 'N');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner04'), '치즈 케이크', 7000, 'owner04_menu_img_10.jpg', 'N');
 
 -- Store 5 (이태원 비스트로: 11, 12)
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner05'), '알리오 올리오', 16000, 'pasta.jpg', 'Y');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner05'), '채끝 스테이크', 35000, 'steak.jpg', 'Y');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner05'), '알리오 올리오', 16000, 'owner05_menu_img_11.jpg', 'Y');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner05'), '채끝 스테이크', 35000, 'owner05_menu_img_12.jpg', 'Y');
 
 -- Store 6 (종로 만리장성: 13, 14, 15)
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner06'), '짜장면', 8000, 'jjajang.jpg', 'N');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner06'), '짬뽕', 9000, 'jjamppong.jpg', 'Y');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner06'), '탕수육(소)', 18000, 'tangsuyuk.jpg', 'Y');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner06'), '짜장면', 8000, 'owner06_menu_img_13.jpg', 'N');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner06'), '짬뽕', 9000, 'owner06_menu_img_14.jpg', 'Y');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner06'), '탕수육(소)', 18000, 'owner06_menu_img_15.jpg', 'Y');
 
 -- Store 7 (잠실 떡볶이: 16, 17)
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner07'), '국물 떡볶이', 6000, 'tteok.jpg', 'Y');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner07'), '모듬 튀김', 5000, 'fry.jpg', 'N');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner07'), '국물 떡볶이', 6000, 'owner07_menu_img_16.jpg', 'Y');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner07'), '모듬 튀김', 5000, 'owner07_menu_img_17.jpg', 'N');
 
 -- Store 8 (여의도 쌀국수: 18, 19)
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner08'), '양지 쌀국수', 12000, 'pho.jpg', 'Y');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner08'), '스프링롤', 6000, 'roll.jpg', 'N');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner08'), '양지 쌀국수', 12000, 'owner08_menu_img_18.jpg', 'Y');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner08'), '스프링롤', 6000, 'owner08_menu_img_19.jpg', 'N');
 
 -- Store 9 (판교 갈비: 20, 21, 22)
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner09'), '양념 돼지갈비', 18000, 'pork.jpg', 'Y');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner09'), '생 삼겹살', 19000, 'samgyupsal.jpg', 'N');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner09'), '된장찌개', 5000, 'stew.jpg', 'N');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner09'), '양념 돼지갈비', 18000, 'owner09_menu_img_20.jpg', 'Y');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner09'), '생 삼겹살', 19000, 'owner09_menu_img_21.jpg', 'N');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner09'), '된장찌개', 5000, 'owner09_menu_img_22.jpg', 'N');
 
 -- Store 10 (을지로 노가리: 23, 24)
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner10'), '생맥주 500cc', 4500, 'beer.jpg', 'Y');
-INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner10'), '반건조 노가리', 12000, 'nogari.jpg', 'Y');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner10'), '생맥주 500cc', 4500, 'owner10_menu_img_23.jpg', 'Y');
+INSERT INTO MENU VALUES (SEQ_MENU.NEXTVAL, (SELECT store_id FROM STORE WHERE user_id='owner10'), '반건조 노가리', 12000, 'owner10_menu_img_24.jpg', 'Y');
 
 COMMIT;

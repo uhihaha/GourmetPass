@@ -135,7 +135,12 @@
     <%-- 4. 예약 신청 영역 --%>
     <div id="booking-area" class="interaction-card">
         <h3 class="section-title">📅 당일 예약 신청</h3>
-        <sec:authorize access="isAuthenticated()">
+        <sec:authorize access="hasRole('ROLE_OWNER')">
+            <div class="auth-guide-box">
+                점주 계정은 예약을 할 수 없습니다.
+            </div>
+        </sec:authorize>
+        <sec:authorize access="hasRole('ROLE_USER')">
             <form id="bookForm" action="<c:url value='/book/register'/>" method="post">
                 <input type="hidden" name="store_id" value="${store.store_id}">
                 <input type="hidden" id="payIdField" name="pay_id" value="">
@@ -184,7 +189,12 @@
     <%-- 5. 웨이팅 신청 영역 --%>
     <div id="waiting-area" class="interaction-card">
         <h3 class="section-title">🚶 실시간 웨이팅 신청</h3>
-        <sec:authorize access="isAuthenticated()">
+        <sec:authorize access="hasRole('ROLE_OWNER')">
+            <div class="auth-guide-box">
+                점주 계정은 웨이팅을 할 수 없습니다.
+            </div>
+        </sec:authorize>
+        <sec:authorize access="hasRole('ROLE_USER')">
             <form id="waitForm" action="<c:url value='/wait/register'/>" method="post">
                 <input type="hidden" name="store_id" value="${store.store_id}">
                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>

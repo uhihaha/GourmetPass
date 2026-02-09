@@ -1,12 +1,13 @@
 /* src/main/webapp/resources/js/member.js */
 $(document).ready(function() {
+    var MEMBER_I18N = (window.I18N && window.I18N.member) ? window.I18N.member : {};
     
     // [1] 기존 로직: 로그인/로그아웃 알림 (사용자님 제공 코드)
     const error = $("#auth-msg").data("error");
     const logout = $("#auth-msg").data("logout");
 
-    if (error) alert("아이디 또는 비밀번호가 잘못되었습니다.");
-    if (logout) alert("성공적으로 로그아웃되었습니다. 이용해 주셔서 감사합니다.");
+    if (error) alert(MEMBER_I18N.loginError || "아이디 또는 비밀번호가 잘못되었습니다.");
+    if (logout) alert(MEMBER_I18N.logoutSuccess || "성공적으로 로그아웃되었습니다. 이용해 주셔서 감사합니다.");
 
 
     // [2] 새 로직: 회원가입 상태 관리 변수
@@ -19,7 +20,7 @@ $(document).ready(function() {
         const userId = $("#user_id").val();
         
         if(userId.length < 3) {
-            alert("아이디는 3글자 이상 입력해주세요.");
+            alert(MEMBER_I18N.idMinLength || "아이디는 3글자 이상 입력해주세요.");
             return;
         }
 
@@ -32,10 +33,12 @@ $(document).ready(function() {
             },
             success: function(res) {
                 if(res === "success") {
-                    $("#idCheckMsg").html("<span class='msg-ok'>사용 가능한 아이디입니다.</span>");
+                    var idAvailable = MEMBER_I18N.idAvailable || "사용 가능한 아이디입니다.";
+                    $("#idCheckMsg").html("<span class='msg-ok'>" + idAvailable + "</span>");
                     isIdChecked = true;
                 } else {
-                    $("#idCheckMsg").html("<span class='msg-no'>이미 사용 중인 아이디입니다.</span>");
+                    var idInUse = MEMBER_I18N.idInUse || "이미 사용 중인 아이디입니다.";
+                    $("#idCheckMsg").html("<span class='msg-no'>" + idInUse + "</span>");
                     isIdChecked = false;
                 }
             }
@@ -54,10 +57,12 @@ $(document).ready(function() {
         }
 
         if(pw === pwConfirm) {
-            $("#pwCheckMsg").html("<span class='msg-ok'>비밀번호가 일치합니다.</span>");
+            var pwMatch = MEMBER_I18N.pwMatch || "비밀번호가 일치합니다.";
+            $("#pwCheckMsg").html("<span class='msg-ok'>" + pwMatch + "</span>");
             isPwMatched = true;
         } else {
-            $("#pwCheckMsg").html("<span class='msg-no'>비밀번호가 일치하지 않습니다.</span>");
+            var pwMismatch = MEMBER_I18N.pwMismatch || "비밀번호가 일치하지 않습니다.";
+            $("#pwCheckMsg").html("<span class='msg-no'>" + pwMismatch + "</span>");
             isPwMatched = false;
         }
     });
@@ -67,19 +72,19 @@ $(document).ready(function() {
     $("#joinForm, #ownerStep2Form").submit(function() {
         // 아이디 중복확인 여부 체크
         if($("#user_id").length > 0 && !isIdChecked) {
-            alert("아이디 중복확인을 해주세요.");
+            alert(MEMBER_I18N.idCheckPrompt || "아이디 중복확인을 해주세요.");
             return false;
         }
         
         // 비밀번호 일치 여부 체크
         if($("#user_pw").length > 0 && !isPwMatched) {
-            alert("비밀번호 확인이 일치하지 않습니다.");
+            alert(MEMBER_I18N.pwMismatchAlert || "비밀번호 확인이 일치하지 않습니다.");
             return false;
         }
 
         // 점주 가입 2단계: 위치 정보 체크
         if($("#store_lat").length > 0 && $("#store_lat").val() == "0.0") {
-            alert("가게 위치 검색을 통해 주소를 확정해주세요.");
+            alert(MEMBER_I18N.storeLocationRequired || "가게 위치 검색을 통해 주소를 확정해주세요.");
             return false;
         }
 
@@ -90,7 +95,8 @@ $(document).ready(function() {
  * 회원 탈퇴 처리
  */
 function dropUser(userId) {
-    if (confirm("정말로 탈퇴하시겠습니까?\n탈퇴 시 모든 예약 및 웨이팅 내역이 삭제됩니다.")) {
+    var withdrawConfirm = MEMBER_I18N.withdrawConfirmSimple || "정말로 탈퇴하시겠습니까?\n탈퇴 시 모든 예약 및 웨이팅 내역이 삭제됩니다.";
+    if (confirm(withdrawConfirm)) {
         // 탈퇴 프로세스 호출 (CSRF 토큰 필요)
         const form = document.createElement('form');
         form.method = 'POST';

@@ -4,6 +4,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 <%@ taglib uri="http://www.springframework.org/security/tags"
 	prefix="sec"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
 
 <jsp:include page="../common/header.jsp" />
 
@@ -24,13 +25,13 @@
 <div class="edit-wrapper wait-status-wrapper" style="max-width: 1100px; margin: 40px auto;"
 	data-user-id="<sec:authentication property='principal.username'/>"
 	data-active-store-id="${not empty activeWait ? activeWait.store_id : (not empty activeBook ? activeBook.store_id : '')}">
-	<div class="edit-title">📅 나의 실시간 이용 현황</div>
+	<div class="edit-title"><spring:message code="wait.status.title" text="📅 나의 실시간 이용 현황" /></div>
 
 	<%-- 1. 진행 중인 서비스 (실시간 카드) --%>
 	<div class="dashboard-card">
 		<div class="card-header">
-			<h3 class="card-title">🔥 진행 중인 서비스</h3>
-			<span class="badge-wire">현재 활동 중</span>
+			<h3 class="card-title"><spring:message code="wait.active.title" text="🔥 진행 중인 서비스" /></h3>
+			<span class="badge-wire"><spring:message code="wait.active.badge" text="현재 활동 중" /></span>
 		</div>
 
 		<c:choose>
@@ -43,43 +44,46 @@
 							<div class="history-info">
 								<c:choose>
 									<c:when test="${activeWait.wait_status == 'ING'}">
-										<span class="badge-wire badge-ing">🍽️ 식사 중</span>
+										<span class="badge-wire badge-ing"><spring:message code="wait.badge.dining" text="🍽️ 식사 중" /></span>
 									</c:when>
 									<c:when test="${activeWait.wait_status == 'CALLED'}">
-										<span class="badge-wire badge-call">📢 입장 호출!</span>
+										<span class="badge-wire badge-call"><spring:message code="wait.badge.called" text="📢 입장 호출!" /></span>
 									</c:when>
 
 									<c:when
 										test="${activeWait.wait_status == 'WAITING' and aheadCount == 0}">
-										<span class="badge-wire badge-call">🚀 곧 입장!</span>
+										<span class="badge-wire badge-call"><spring:message code="wait.badge.soon" text="🚀 곧 입장!" /></span>
 									</c:when>
 
 
 									<c:otherwise>
-										<span class="badge-wire">🚶 웨이팅 중</span>
+										<span class="badge-wire"><spring:message code="wait.badge.waiting" text="🚶 웨이팅 중" /></span>
 									</c:otherwise>
 								</c:choose>
 								<h3 class="status-store-name">${activeWait.store_name}</h3>
 								<p class="status-subtext">
 									<c:choose>
-										<c:when test="${activeWait.wait_status == 'ING'}">
-											<span class="dining-msg">맛있는 식사 되세요!</span>
-										</c:when>
-										<c:otherwise>대기 번호: <b class="status-highlight">${activeWait.wait_num}번</b>
-											<c:if test="${not empty aheadCount}">(내 앞 <b
-													class="status-highlight">${aheadCount}</b>팀)</c:if> / ${activeWait.people_cnt}명</c:otherwise>
-									</c:choose>
+									<c:when test="${activeWait.wait_status == 'ING'}">
+										<span class="dining-msg"><spring:message code="wait.msg.enjoy" text="맛있는 식사 되세요!" /></span>
+									</c:when>
+									<c:otherwise>
+										<spring:message code="wait.msg.info" arguments="${activeWait.wait_num},${activeWait.people_cnt}" text="대기 번호: {0}번 / {1}명" />
+										<c:if test="${not empty aheadCount}">
+											<spring:message code="wait.msg.ahead" arguments="${aheadCount}" text="(내 앞 {0}팀)" />
+										</c:if>
+									</c:otherwise>
+								</c:choose>
 								</p>
 							</div>
 							<div class="history-actions">
 								<c:if test="${activeWait.wait_status == 'WAITING'}">
 									<button type="button"
 										class="btn-wire btn-danger-outline wait-cancel-btn"
-										data-wait-id="${activeWait.wait_id}">웨이팅 취소</button>
+										data-wait-id="${activeWait.wait_id}"><spring:message code="wait.btn.cancel" text="웨이팅 취소" /></button>
 								</c:if>
 								<c:if test="${activeWait.wait_status == 'ING'}">
-									<button class="btn-small btn-payment js-alert"
-										data-message="결제 상세 기능 준비 중입니다.">주문 확인</button>
+                                    <button class="btn-small btn-payment js-alert"
+                                        data-message="<spring:message code='wait.msg.preparing' text='결제 상세 기능 준비 중입니다.' />"><spring:message code="wait.btn.order_check" text="주문 확인" /></button>
 								</c:if>
 							</div>
 						</div>
@@ -92,16 +96,16 @@
 					<div class="item-card status-card">
 						<div class="status-card-row">
 							<div class="history-info">
-								<span class="badge-wire">📅 예약 확정</span>
+								<span class="badge-wire"><spring:message code="wait.badge.reserved" text="📅 예약 확정" /></span>
 								<h3 class="status-store-name">${activeBook.store_name}</h3>
 								<p class="status-subtext">
-									방문 일시: <b><fmt:formatDate value="${activeBook.book_date}"
-											pattern="MM월 dd일 HH:mm" /></b>
+									<fmt:formatDate var="bookDateText" value="${activeBook.book_date}" pattern="MM월 dd일 HH:mm" />
+									<spring:message code="wait.msg.visit_time" arguments="${bookDateText}" text="방문 일시: {0}" />
 								</p>
 							</div>
 
 							<div class="history-actions history-actions-right">
-								<div class="status-visit-label">방문 예정</div>
+								<div class="status-visit-label"><spring:message code="wait.msg.upcoming" text="방문 예정" /></div>
 
 								<%-- 예약 취소 폼 --%>
 								<form action="<c:url value='/book/updateStatus'/>" method="post"
@@ -113,7 +117,7 @@
 									<%-- 취소 버튼 --%>
 									<button type="button"
 										class="btn-step btn-step-danger user-cancel-btn btn-cancel"
-										data-payid="${activeBook.pay_id}">예약 취소</button>
+										data-payid="${activeBook.pay_id}"><spring:message code="wait.history.status.book_cancelled" text="예약 취소" /></button>
 								</form>
 							</div>
 						</div>
@@ -121,7 +125,7 @@
 				</c:if>
 			</c:when>
 			<c:otherwise>
-				<div class="status-empty">현재 이용 중인 서비스가 없습니다.</div>
+				<div class="status-empty"><spring:message code="wait.msg.empty" text="현재 이용 중인 서비스가 없습니다." /></div>
 			</c:otherwise>
 		</c:choose>
 	</div>
@@ -131,10 +135,10 @@
 <div class="dashboard-card status-history-card">
     <div class="card-header"
         style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 class="card-title">📜 최근 이용 내역</h3>&nbsp;&nbsp;
+        <h3 class="card-title"><spring:message code="wait.history.title" text="📜 최근 이용 내역" /></h3>&nbsp;&nbsp;
         <a href="<c:url value='/member/history'/>" class="btn-wire"
             style="height: 32px; line-height: 30px; padding: 0 12px; font-size: 12px; text-decoration: none; color: #333;">
-            전체보기 ❯ </a>
+            <spring:message code="store.review.viewall" text="전체보기" /> ❯ </a>
     </div>
 
     <div class="history-container">
@@ -160,18 +164,18 @@
                                 <c:choose>
                                     <c:when test="${empty w.review_id}">
                                         <button class="btn-small btn-review js-review-link"
-                                            data-url="<c:url value='/review/write?store_id=${w.store_id}&wait_id=${w.wait_id}'/>">리뷰 작성</button>
+                                            data-url="<c:url value='/review/write?store_id=${w.store_id}&wait_id=${w.wait_id}'/>"><spring:message code="wait.history.btn.review" text="리뷰 작성" /></button>
                                     </c:when>
                                     <c:otherwise>
-                                        <span class="text-done">리뷰완료</span>
+                                        <span class="text-done"><spring:message code="wait.history.status.done" text="리뷰완료" /></span>
                                         <button type="button" class="btn-delete-review"
                                             data-review-id="${w.review_id}" data-store-id="${w.store_id}"
-                                            data-return-url="/member/wait_status">삭제</button>
+                                            data-return-url="/member/wait_status"><spring:message code="common.btn.delete" text="삭제" /></button>
                                     </c:otherwise>
                                 </c:choose>
                             </c:if>
                             <c:if test="${w.wait_status == 'CANCELLED'}">
-                                <span class="text-done text-done--danger">취소됨</span>
+                                <span class="text-done text-done--danger"><spring:message code="wait.history.status.cancelled" text="취소됨" /></span>
                             </c:if>
                         </div>
                     </div>
@@ -203,24 +207,24 @@
                                 <c:choose>
                                     <c:when test="${empty b.review_id}">
                                         <button class="btn-small btn-review js-review-link"
-                                            data-url="<c:url value='/review/write?store_id=${b.store_id}&book_id=${b.book_id}'/>">리뷰 작성</button>
+                                            data-url="<c:url value='/review/write?store_id=${b.store_id}&book_id=${b.book_id}'/>"><spring:message code="wait.history.btn.review" text="리뷰 작성" /></button>
                                     </c:when>
                                     <c:otherwise>
-                                        <span class="text-done">리뷰완료</span>
+                                        <span class="text-done"><spring:message code="wait.history.status.done" text="리뷰완료" /></span>
                                         <button type="button" class="btn-delete-review"
                                             data-review-id="${b.review_id}" data-store-id="${b.store_id}"
-                                            data-return-url="/member/wait_status">삭제</button>
+                                            data-return-url="/member/wait_status"><spring:message code="common.btn.delete" text="삭제" /></button>
                                     </c:otherwise>
                                 </c:choose>
                             </c:if>
                             <c:if test="${b.book_status == 'RESERVED'}">
-                                <span class="text-done text-done--success">방문예정</span>
+                                <span class="text-done text-done--success"><spring:message code="wait.history.status.reserved" text="방문예정" /></span>
                             </c:if>
                             <c:if test="${b.book_status == 'CANCELED'}">
-                                <span class="text-done text-done--cancel">예약취소</span>
+                                <span class="text-done text-done--cancel"><spring:message code="wait.history.status.book_cancelled" text="예약취소" /></span>
                             </c:if>
                             <c:if test="${b.book_status == 'NOSHOW'}">
-                                <span class="text-done text-done--noshow">NO-SHOW</span>
+                                <span class="text-done text-done--noshow"><spring:message code="wait.history.status.noshow" text="NO-SHOW" /></span>
                             </c:if>
                         </div>
                     </div>
@@ -230,7 +234,7 @@
         
         <%-- 내역이 없을 때 --%>
         <c:if test="${empty finishedWaits and empty finishedBooks}">
-            <div class="status-empty">최근 이용 내역이 없습니다.</div>
+            <div class="status-empty"><spring:message code="wait.history.empty" text="최근 이용 내역이 없습니다." /></div>
         </c:if>
     </div>
 </div>

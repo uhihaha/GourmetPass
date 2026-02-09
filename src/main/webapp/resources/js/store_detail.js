@@ -6,6 +6,8 @@
 // ================================================================
 // [A] 전역 함수 영역
 // ================================================================
+var STORE_I18N = (window.I18N && window.I18N.storeDetail) ? window.I18N.storeDetail : {};
+var COMMON_I18N = (window.I18N && window.I18N.common) ? window.I18N.common : {};
 
 window.loadAvailableSlots = function () {
     const app = document.getElementById('storeDetailApp');
@@ -27,7 +29,8 @@ window.loadAvailableSlots = function () {
     const bufferTime = new Date(now.getTime() + 10 * 60000);
     const currentTimeStr = String(bufferTime.getHours()).padStart(2, '0') + ":" + String(bufferTime.getMinutes()).padStart(2, '0');
 
-    container.html("<p class='status-text'>조회 중...</p>");
+    var loadingMsg = STORE_I18N.loading || "조회 중...";
+    container.html("<p class='status-text'>" + loadingMsg + "</p>");
     $("#selectedTime").val("");
 
     $.ajax({
@@ -44,16 +47,20 @@ window.loadAvailableSlots = function () {
                 const isPast = (bookDate === todayStr && time <= currentTimeStr);
 
                 if (isBooked || isPast) {
-                    const reason = isPast ? "마감" : "예약됨";
+                    const reason = isPast
+                        ? (STORE_I18N.reasonClosed || "마감")
+                        : (STORE_I18N.reasonBooked || "예약됨");
                     html += `<button type="button" class="time-btn disabled" disabled title="${reason}">${time}</button>`;
                 } else {
                     html += `<button type="button" class="time-btn" data-time="${time}">${time}</button>`;
                 }
             });
-            container.html(html || "<p>영업 시간이 설정되지 않았습니다.</p>");
+            var noHoursMsg = STORE_I18N.noHours || "영업 시간이 설정되지 않았습니다.";
+            container.html(html || "<p>" + noHoursMsg + "</p>");
         },
         error: function () {
-            container.html("<p class='error-text'>정보 로드 실패</p>");
+            var loadFail = STORE_I18N.loadFail || "정보 로드 실패";
+            container.html("<p class='error-text'>" + loadFail + "</p>");
         }
     });
 };
@@ -94,15 +101,18 @@ window.checkAccount = function () {
     const ownerId = app.dataset.ownerId || "";
 
     if (!loginUserInfo || !loginUserInfo.loginUserId) {
-        alert("로그인이 필요합니다");
+        var loginRequired = COMMON_I18N.loginRequired || "로그인이 필요합니다";
+        alert(loginRequired);
         return false;
     }
     if (loginUserInfo.isOwner) {
-        alert("점주 계정은 예약/웨이팅을 할 수 없습니다.");
+        var ownerBlock = STORE_I18N.ownerBlock || "점주 계정은 예약/웨이팅을 할 수 없습니다.";
+        alert(ownerBlock);
         return false;
     }
     if (loginUserInfo.loginUserId === ownerId) {
-        alert("본인 매장은 예약/웨이팅을 할 수 없습니다.");
+        var selfBlock = STORE_I18N.selfBlock || "본인 매장은 예약/웨이팅을 할 수 없습니다.";
+        alert(selfBlock);
         return false;
     }
     return true;
@@ -112,9 +122,11 @@ window.updateFavoriteButton = function (isFavorite) {
     const btn = $("#favoriteBtn");
     if (!btn.length) return;
     if (isFavorite) {
-        btn.addClass("active").text("❤️ 즐겨찾기 해제");
+        var favoriteOn = STORE_I18N.favoriteOn || "즐겨찾기 해제";
+        btn.addClass("active").text("❤️ " + favoriteOn);
     } else {
-        btn.removeClass("active").text("🤍 즐겨찾기");
+        var favoriteOff = STORE_I18N.favoriteOff || "즐겨찾기";
+        btn.removeClass("active").text("🤍 " + favoriteOff);
     }
 };
 
@@ -122,7 +134,8 @@ window.updateFavoriteCount = function (count) {
     const countEl = $("#favoriteCount");
     if (!countEl.length) return;
     const safeCount = typeof count === "number" ? count : parseInt(count, 10) || 0;
-    countEl.text("❤️ " + safeCount);
+    var countPrefix = STORE_I18N.favoriteCountPrefix || "❤️";
+    countEl.text(countPrefix + " " + safeCount);
 };
 
 window.showToast = function (message) {
@@ -136,58 +149,6 @@ window.showToast = function (message) {
     toast.textContent = message;
     toast.classList.add("show");
     setTimeout(() => toast.classList.remove("show"), 1500);
-};
-
-window.initPhotoSlider = function () {
-    const slider = $("#photoSlider");
-    if (!slider.length || slider.data("sliderInit")) {
-        return;
-    }
-
-    const slides = slider.find(".photo-slide");
-    const dotsContainer = $("#photoDots");
-    if (!slides.length) {
-        return;
-    }
-
-    slider.data("sliderInit", true);
-    let currentIndex = 0;
-    let sliderTimer = null;
-
-    const setActiveSlide = function (index) {
-        slides.removeClass("active");
-        slides.eq(index).addClass("active");
-
-        if (dotsContainer.length) {
-            dotsContainer.find(".photo-dot").removeClass("active");
-            dotsContainer.find(".photo-dot").eq(index).addClass("active");
-        }
-    };
-
-    const startSlider = function () {
-        if (slides.length <= 1) return;
-        if (sliderTimer) clearInterval(sliderTimer);
-        sliderTimer = setInterval(function () {
-            currentIndex = (currentIndex + 1) % slides.length;
-            setActiveSlide(currentIndex);
-        }, 3000);
-    };
-
-    if (dotsContainer.length) {
-        dotsContainer.empty();
-        slides.each(function (idx) {
-            const dot = $("<span>").addClass("photo-dot");
-            dot.on("click", function () {
-                currentIndex = idx;
-                setActiveSlide(currentIndex);
-                startSlider();
-            });
-            dotsContainer.append(dot);
-        });
-    }
-
-    setActiveSlide(currentIndex);
-    startSlider();
 };
 
 window.loadFavoriteStatus = function () {
@@ -247,18 +208,20 @@ $(document).ready(function () {
     const bDate = urlParams.get('book_date');
     const bTime = urlParams.get('book_time');
     const pCnt = urlParams.get('people_cnt');
-
-
+	
+	
     if (paymentStatus === 'success' && payId && bDate && bTime) {
         $("#payIdField").val(payId);
         $("#bookDate").val(bDate);
         $("#selectedTime").val(bTime);
         $("#people_cnt").val(pCnt || '1');
-        alert("결제가 완료되었습니다! 예약을 진행합니다.");
+        var paySuccessBooking = STORE_I18N.paySuccessBooking || "결제가 완료되었습니다! 예약을 진행합니다.";
+		alert(paySuccessBooking);
         $("#bookForm").submit();
-
+        
     } else if (paymentStatus === 'fail') {
-        alert("결제가 실패했습니다.");
+        var payFail = STORE_I18N.payFail || "결제가 실패했습니다.";
+        alert(payFail);
         window.history.replaceState({}, document.title, window.location.pathname + '?storeId=' + app.dataset.storeId);
     }
 
@@ -270,8 +233,8 @@ $(document).ready(function () {
         const form = this;
         const selectedTime = $("#selectedTime").val();
         const bookDate = $("#bookDate").val();
-        const peopleCnt = $("select[name='people_cnt']").val() || 1;
-        const storeId = $("input[name='store_id']").val();
+		const peopleCnt = $("select[name='people_cnt']").val() || 1;        
+		const storeId = $("input[name='store_id']").val();
         const contextPath = app.dataset.context;
 
         if ($("#payIdField").val().trim() !== "") {
@@ -280,7 +243,8 @@ $(document).ready(function () {
         }
 
         if (!selectedTime) {
-            alert("방문 시간을 선택해 주세요!");
+            var selectVisitTime = STORE_I18N.selectVisitTime || "방문 시간을 선택해 주세요!";
+            alert(selectVisitTime);
             return;
         }
 
@@ -290,14 +254,15 @@ $(document).ready(function () {
             data: {store_id: storeId, book_date: bookDate, book_time: selectedTime},
             success: async function (result) {
                 if (result === "AVAILABLE") {
-                    if (!confirm(bookDate + " " + selectedTime + " 예약을 위해 결제를 진행하시겠습니까?")) return;
+                    var confirmSuffix = STORE_I18N.confirmPaymentSuffix || "예약을 위해 결제를 진행하시겠습니까?";
+                    if (!confirm(bookDate + " " + selectedTime + " " + confirmSuffix)) return;
                     try {
                         const paymentId = "pay-" + new Date().getTime();
                         const response = await PortOne.requestPayment({
                             storeId: loginUserInfo.portOneStoreId,
                             channelKey: loginUserInfo.portOneChannelKey,
                             paymentId: paymentId,
-                            orderName: "예약 보증금",
+                            orderName: (STORE_I18N.orderName || "예약 보증금"),
                             totalAmount: 1000,
                             currency: "CURRENCY_KRW",
                             payMethod: "CARD",
@@ -316,92 +281,67 @@ $(document).ready(function () {
                                 }
                             }).done(function (pId) {
                                 $("#payIdField").val(pId);
-                                alert("결제가 완료되었습니다!");
+                                var paySuccess = STORE_I18N.paySuccess || "결제가 완료되었습니다!";
+                                alert(paySuccess);
                                 form.submit();
-                            }).fail(() => alert("결제 검증에 실패했습니다."));
+                            }).fail(() => {
+                                var payVerifyFail = STORE_I18N.payVerifyFail || "결제 검증에 실패했습니다.";
+                                alert(payVerifyFail);
+                            });
                         } else {
-                            alert("결제가 취소되었습니다: " + response.message);
+                            var payCancelledPrefix = STORE_I18N.payCancelledPrefix || "결제가 취소되었습니다:";
+                            alert(payCancelledPrefix + " " + response.message);
                         }
                     } catch (err) {
-                        alert("결제창 호출 중 오류가 발생했습니다.");
+                        var payPopupError = STORE_I18N.payPopupError || "결제창 호출 중 오류가 발생했습니다.";
+                        alert(payPopupError);
                     }
                 } else {
-                    alert("예약이 불가능합니다. (사유: " + result + ")");
+                    var unavailablePrefix = STORE_I18N.bookUnavailablePrefix || "예약이 불가능합니다. (사유:";
+                    var unavailableSuffix = STORE_I18N.bookUnavailableSuffix || ")";
+                    alert(unavailablePrefix + " " + result + unavailableSuffix);
                 }
             }
         });
     });
 
-    // 6. 웨이팅 폼 제출 핸들러 (예약과 동일하게 페이지 이동 없이 차단)
-    $("#waitForm").on("submit", function (e) {
-        e.preventDefault();
-        if (!window.checkAccount()) return;
-        this.submit();
-    });
-
-    // 6. 링크 복사 버튼
-    $("#copyLinkBtn").on("click", function () {
-        const url = window.location.href;
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url)
-                .then(() => window.showToast("링크가 복사되었습니다."))
-                .catch(() => window.showToast("링크 복사에 실패했습니다."));
+    // 6. 즐겨찾기 버튼
+    $("#favoriteBtn").on("click", function () {
+        if (!loginUserInfo || !loginUserInfo.loginUserId) {
+            var loginRequired = COMMON_I18N.loginRequired || "로그인이 필요합니다";
+            alert(loginRequired);
             return;
         }
+        const storeId = app.dataset.storeId;
+        const contextPath = (typeof APP_CONFIG !== "undefined" && APP_CONFIG.contextPath) ? APP_CONFIG.contextPath : app.dataset.context;
 
-        const temp = document.createElement("textarea");
-        temp.value = url;
-        temp.setAttribute("readonly", "");
-        temp.style.position = "absolute";
-        temp.style.left = "-9999px";
-        document.body.appendChild(temp);
-        temp.select();
-        try {
-            document.execCommand("copy");
-            window.showToast("링크가 복사되었습니다.");
-        } catch (e) {
-            window.showToast("링크 복사에 실패했습니다.");
-        } finally {
-            document.body.removeChild(temp);
-        }
+        $.ajax({
+            url: contextPath + "/favorite/toggle",
+            type: "POST",
+            data: {store_id: storeId},
+            beforeSend: function (xhr) {
+                if (typeof APP_CONFIG !== "undefined") xhr.setRequestHeader("X-CSRF-TOKEN", APP_CONFIG.csrfToken);
+            }
+        }).done(function (res) {
+            window.updateFavoriteButton(!!res.favorite);
+            window.updateFavoriteCount(res.count);
+        });
     });
 
-        window.initPhotoSlider();
+    // 7. 슬라이더 및 초기화 실행
+    window.loadFavoriteStatus();
+    window.loadAvailableSlots();
 
-        // 7. 즐겨찾기 버튼
-        $("#favoriteBtn").on("click", function () {
-            if (!loginUserInfo || !loginUserInfo.loginUserId) {
-                alert("로그인이 필요합니다");
-                return;
-            }
-            const storeId = app.dataset.storeId;
-            const contextPath = (typeof APP_CONFIG !== "undefined" && APP_CONFIG.contextPath) ? APP_CONFIG.contextPath : app.dataset.context;
-
-            $.ajax({
-                url: contextPath + "/favorite/toggle",
-                type: "POST",
-                data: {store_id: storeId},
-                beforeSend: function (xhr) {
-                    if (typeof APP_CONFIG !== "undefined") xhr.setRequestHeader("X-CSRF-TOKEN", APP_CONFIG.csrfToken);
-                }
-            }).done(function (res) {
-                window.updateFavoriteButton(!!res.favorite);
-                window.updateFavoriteCount(res.count);
+    // 8. WebSocket (선택사항)
+    if (typeof SockJS !== "undefined" && typeof Stomp !== "undefined") {
+        const socket = new SockJS(app.dataset.context + "/ws_waiting");
+        const stomp = Stomp.over(socket);
+        stomp.connect({}, function () {
+            stomp.subscribe("/topic/store/" + app.dataset.storeId + "/viewers", (msg) => {
+                var viewerPrefix = STORE_I18N.viewerPrefix || "👥";
+                var viewerSuffix = STORE_I18N.viewerSuffix || "명";
+                $("#viewerCount").text(viewerPrefix + " " + msg.body + viewerSuffix);
             });
         });
-
-        // 8. 슬라이더 및 초기화 실행
-        window.loadFavoriteStatus();
-        window.loadAvailableSlots();
-
-        // 9. WebSocket (선택사항)
-        if (typeof SockJS !== "undefined" && typeof Stomp !== "undefined") {
-            const socket = new SockJS(app.dataset.context + "/ws_waiting");
-            const stomp = Stomp.over(socket);
-            stomp.connect({}, function () {
-                stomp.subscribe("/topic/store/" + app.dataset.storeId + "/viewers", (msg) => {
-                    $("#viewerCount").text("👥 " + msg.body + "명");
-                });
-            });
-        }
-    });
+    }
+}); 

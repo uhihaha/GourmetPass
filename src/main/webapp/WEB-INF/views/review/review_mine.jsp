@@ -4,6 +4,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 <%@ taglib uri="http://www.springframework.org/security/tags"
 	prefix="sec"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
 
 <jsp:include page="../common/header.jsp" />
 
@@ -23,9 +24,9 @@
 	<div class="review-dashboard-card">
 		<div class="review-header-flex">
 			<div class="header-left">
-				<span class="badge-wire">MY ACTIVITY</span>
+				<span class="badge-wire"><spring:message code="review.mine.badge" text="MY ACTIVITY" /></span>
 				<h2 class="store-title">
-					나의 리뷰 이력 <small>총 ${pageMaker.total}건</small>
+					<spring:message code="review.mine.title" text="나의 리뷰 이력" /> <small><spring:message code="review.mine.total" arguments="${pageMaker.total}" text="총 {0}건" /></small>
 				</h2>
 			</div>
 		</div>
@@ -56,7 +57,7 @@
 								<button type="button" class="btn-delete-review"
 									data-review-id="${rev.review_id}"
 									data-store-id="${rev.store_id}"
-									data-return-url="/member/review/mine">삭제</button>
+									data-return-url="/member/review/mine"><spring:message code="common.btn.delete" text="삭제" /></button>
 							</div>
 						</div>
 
@@ -74,7 +75,7 @@
 				</c:forEach>
 			</c:when>
 			<c:otherwise>
-				<div class="review-empty-status">아직 작성하신 리뷰가 없습니다.</div>
+				<div class="review-empty-status"><spring:message code="review.mine.empty" text="아직 작성하신 리뷰가 없습니다." /></div>
 			</c:otherwise>
 		</c:choose>
 	</div>
@@ -85,7 +86,7 @@
 			<c:if test="${pageMaker.hasPreviousPage}">
 				<li class="page-item"><a class="page-link"
 					href="<c:url value='/member/review/mine?pageNum=${pageMaker.prePage}'/>"
-					data-page="${pageMaker.prePage}">PREV</a></li>
+					data-page="${pageMaker.prePage}"><spring:message code="store.list.paging.prev" text="PREV" /></a></li>
 			</c:if>
 
 			<c:forEach var="num" items="${pageMaker.navigatepageNums}">
@@ -99,7 +100,7 @@
 			<c:if test="${pageMaker.hasNextPage}">
 				<li class="page-item"><a class="page-link"
 					href="<c:url value='/member/review/mine?pageNum=${pageMaker.nextPage}'/>"
-					data-page="${pageMaker.nextPage}">NEXT</a></li>
+					data-page="${pageMaker.nextPage}"><spring:message code="store.list.paging.next" text="NEXT" /></a></li>
 			</c:if>
 		</ul>
 	</div>
@@ -107,7 +108,7 @@
 	<%-- 하단 네비게이션 버튼 --%>
 	<div class="review-footer-nav">
 		<button type="button" class="btn-wire-nav"
-			onclick="location.href='<c:url value='/member/mypage'/>'">마이페이지로</button>
+			onclick="location.href='<c:url value='/member/mypage'/>'"><spring:message code="review.mine.btn.mypage" text="마이페이지로" /></button>
 	</div>
 </div>
 

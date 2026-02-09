@@ -1,13 +1,14 @@
 <%-- WEB-INF/views/member/member_edit.jsp --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
 
 <jsp:include page="../common/header.jsp" />
 
 <link rel="stylesheet" href="<c:url value='/resources/css/member.css'/>">
 
 <div class="edit-wrapper">
-    <div class="edit-title">⚙️ 회원 정보 수정</div>
+    <div class="edit-title"><spring:message code="member.edit.title" text="⚙️ 회원 정보 수정" /></div>
     <c:if test="${not empty msg}">
         <div class="alert-msg">${msg}</div>
     </c:if>
@@ -20,51 +21,51 @@
 
         <table class="edit-table">
             <tr>
-                <th>아이디</th>
+                <th><spring:message code="member.user_id" text="아이디" /></th>
                 <td>
                     <%-- readonly 속성으로 인해 member-signup.js에서 중복확인을 자동 통과함 --%>
                     <input type="text" name="user_id" id="user_id" value="${member.user_id}" readonly>
                 </td>
             </tr>
             <tr>
-                <th>새 비밀번호</th>
-                <td><input type="password" name="user_pw" id="user_pw" placeholder="변경 시 영문/숫자/특수문자 8~20자"></td>
+                <th><spring:message code="member.edit.pw_change" text="새 비밀번호" /></th>
+                <td><input type="password" name="user_pw" id="user_pw" placeholder="<spring:message code='member.edit.pw_change.ph' text='변경 시 영문/숫자/특수문자 8~20자' />"></td>
             </tr>
             <tr>
-                <th>비밀번호 확인</th>
+                <th><spring:message code="member.user_pw_confirm" text="비밀번호 확인" /></th>
                 <td>
-                    <input type="password" id="user_pw_confirm" placeholder="비밀번호를 한 번 더 입력하세요">
+                    <input type="password" id="user_pw_confirm" placeholder="<spring:message code='member.placeholder.pw_confirm' text='비밀번호를 한 번 더 입력하세요' />">
                     <div id="pwCheckMsg" class="msg-box"></div>
                 </td>
             </tr>
             <tr>
-                <th>성명</th>
-                <td><input type="text" name="user_nm" value="${member.user_nm}" required placeholder="성함을 입력하세요"></td>
+                <th><spring:message code="member.user_nm" text="성명" /></th>
+                <td><input type="text" name="user_nm" value="${member.user_nm}" required placeholder="<spring:message code='member.placeholder.name' text='성함을 입력하세요' />"></td>
             </tr>
             <tr>
-                <th>전화번호</th>
+                <th><spring:message code="member.user_tel" text="전화번호" /></th>
                 <td>
                     <input type="text" name="user_tel" value="${member.user_tel}" required 
-                           oninput="autoHyphen(this)" maxlength="13" placeholder="숫자만 입력">
+                           oninput="autoHyphen(this)" maxlength="13" placeholder="<spring:message code='member.placeholder.tel' text='숫자만 입력' />">
                 </td>
             </tr>
 
             <%-- 이메일 인증 섹션 --%>
             <tr>
-                <th>이메일</th>
+                <th><spring:message code="member.user_email" text="이메일" /></th>
                 <td>
                     <div class="input-row">
-                        <input type="email" name="user_email" id="user_email" value="${member.user_email}" required placeholder="example@mail.com">
-                        <button type="button" id="btnEmailAuth" class="btn-wire">인증코드 발송</button>
+                        <input type="email" name="user_email" id="user_email" value="${member.user_email}" required placeholder="<spring:message code='member.placeholder.email' text='example@mail.com' />">
+                        <button type="button" id="btnEmailAuth" class="btn-wire"><spring:message code="member.btn.email_auth" text="인증코드 발송" /></button>
                     </div>
                     <div id="emailMsg" class="msg-box"></div>
                 </td>
             </tr>
             <tr>
-                <th>인증코드</th>
+                <th><spring:message code="member.auth_code" text="인증코드" /></th>
                 <td>
                     <div class="input-row">
-                        <input type="text" id="auth_code" disabled placeholder="인증코드 6자리" maxlength="6">
+                        <input type="text" id="auth_code" disabled placeholder="<spring:message code='member.placeholder.auth_code' text='인증코드 6자리' />" maxlength="6">
                         <span id="timer" style="color:red; margin-left:10px; font-weight:bold;"></span>
                     </div>
                     <div id="authMsg" class="msg-box"></div>
@@ -72,32 +73,32 @@
             </tr>
 
             <tr>
-                <th>주소</th>
+                <th><spring:message code="member.user_addr" text="주소" /></th>
                 <td>
                     <div class="input-row mb-10">
                         <input type="text" name="user_zip" id="user_zip" value="${member.user_zip}" 
-                               style="width: 120px; flex: none;" readonly placeholder="우편번호">
-                        <button type="button" onclick="execDaumPostcode('user')" class="btn-wire">주소검색</button>
+                               style="width: 120px; flex: none;" readonly placeholder="<spring:message code='member.zip_code' text='우편번호' />">
+                        <button type="button" onclick="execDaumPostcode('user')" class="btn-wire"><spring:message code="member.btn.addr_search" text="주소검색" /></button>
                     </div>
                     <input type="text" name="user_addr1" id="user_addr1" value="${member.user_addr1}" 
-                           class="mb-10" readonly placeholder="기본주소">
+                           class="mb-10" readonly placeholder="<spring:message code='member.addr1' text='기본주소' />">
                     <input type="text" name="user_addr2" id="user_addr2" value="${member.user_addr2}" 
-                           placeholder="상세 주소를 입력하세요">
-                    <div id="coordStatus" class="msg-box msg-ok">주소 변경 시 위치 정보가 자동으로 갱신됩니다.</div>
+                           placeholder="<spring:message code='member.placeholder.addr2' text='상세 주소를 입력하세요' />">
+                    <div id="coordStatus" class="msg-box msg-ok"><spring:message code="member.edit.msg.coord" text="주소 변경 시 위치 정보가 자동으로 갱신됩니다." /></div>
                 </td>
             </tr>
         </table>
 
         <div class="btn-group">
-            <button type="submit" class="btn-submit">정보 수정 완료</button>
-            <a href="<c:url value='/member/mypage'/>" class="btn-cancel">취소</a>
+            <button type="submit" class="btn-submit"><spring:message code="member.btn.update" text="정보 수정 완료" /></button>
+            <a href="<c:url value='/member/mypage'/>" class="btn-cancel"><spring:message code="common.btn.cancel" text="취소" /></a>
         </div>
     </form>
 
     <div class="withdraw-section">
         <%-- dropUser 함수는 member-signup.js에 통합됨 --%>
         <button type="button" class="btn-link-withdraw" onclick="dropUser('${member.user_id}')">
-            회원 탈퇴하기
+            <spring:message code="member.btn.withdraw" text="회원 탈퇴하기" />
         </button>
     </div>
 </div>

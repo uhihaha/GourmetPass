@@ -1,6 +1,8 @@
 /* /resources/js/review.js */
 function confirmDeleteReview(reviewId, storeId) {
-    if(confirm("이 리뷰를 삭제하시겠습니까?")) {
+    var REVIEW_I18N = (window.I18N && window.I18N.review) ? window.I18N.review : {};
+    var deleteConfirm = REVIEW_I18N.deleteConfirm || "이 리뷰를 삭제하시겠습니까?";
+    if(confirm(deleteConfirm)) {
         const form = document.createElement('form');
         form.method = 'POST';
         // APP_CONFIG가 header.jsp에 선언되어 있다고 가정

@@ -2,6 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
 
 <jsp:include page="../common/header.jsp" />
 
@@ -20,12 +21,12 @@
     <div class="review-dashboard-card">
         <div class="review-header-flex">
             <div class="header-left">
-                <span class="badge-wire">REVIEW BOARD</span>
-                <h2 class="store-title">${store.store_name} <small>전체 리뷰</small></h2>
+                <span class="badge-wire"><spring:message code="review.board.label" text="REVIEW BOARD" /></span>
+                <h2 class="store-title">${store.store_name} <small><spring:message code="review.list.all" text="전체 리뷰" /></small></h2>
             </div>
             <div class="header-right">
                 <div class="rating-display">
-                    ⭐ ${store.avg_rating} <span class="total-count">(${pageMaker.total}건)</span>
+                    ⭐ ${store.avg_rating} <span class="total-count"><spring:message code="review.list.total" arguments="${pageMaker.total}" text="({0}건)" /></span>
                 </div>
             </div>
         </div>
@@ -39,7 +40,7 @@
                     <div class="item-card">
 						<div class="item-header">
 							<div class="user-meta">
-								<strong class="user-name">${rev.user_nm} <small>고객님</small></strong>
+								<strong class="user-name"><spring:message code="review.list.customer" arguments="${rev.user_nm}" text="{0} 고객님" /></strong>
 								<span class="stars"> <c:forEach begin="1"
 										end="${rev.rating}">⭐</c:forEach>
 								</span>
@@ -54,7 +55,7 @@
 										<button type="button" class="btn-delete-review"
 											data-review-id="${rev.review_id}"
 											data-store-id="${rev.store_id}"
-											data-return-url="/review/list?store_id=${rev.store_id}">삭제</button>
+											data-return-url="/review/list?store_id=${rev.store_id}"><spring:message code="common.btn.delete" text="삭제" /></button>
 									</c:if>
 								</sec:authorize>
 
@@ -75,7 +76,7 @@
                 </c:forEach>
             </c:when>
             <c:otherwise>
-                <div class="review-empty-status">아직 등록된 리뷰가 없습니다.</div>
+                <div class="review-empty-status"><spring:message code="store.review.empty" text="아직 등록된 리뷰가 없습니다." /></div>
             </c:otherwise>
         </c:choose>
     </div>
@@ -90,7 +91,7 @@
                         <c:param name="pageNum" value="${pageMaker.prePage}" />
                         <c:param name="pageSize" value="${pageMaker.pageSize}" />
                     </c:url>
-                    <a class="page-link" href="${prevUrl}" data-page="${pageMaker.prePage}">PREV</a>
+                    <a class="page-link" href="${prevUrl}" data-page="${pageMaker.prePage}"><spring:message code="store.list.paging.prev" text="PREV" /></a>
                 </li>
             </c:if>
 
@@ -112,7 +113,7 @@
                         <c:param name="pageNum" value="${pageMaker.nextPage}" />
                         <c:param name="pageSize" value="${pageMaker.pageSize}" />
                     </c:url>
-                    <a class="page-link" href="${nextUrl}" data-page="${pageMaker.nextPage}">NEXT</a>
+                    <a class="page-link" href="${nextUrl}" data-page="${pageMaker.nextPage}"><spring:message code="store.list.paging.next" text="NEXT" /></a>
                 </li>
             </c:if>
         </ul>
@@ -120,8 +121,8 @@
 
     <%-- 하단 네비게이션 버튼 --%>
     <div class="review-footer-nav">
-        <button type="button" class="btn-wire-nav" id="btn-go-store">가게 상세로</button>
-        <button type="button" class="btn-wire-nav" id="btn-go-back">이전 페이지로</button>
+        <button type="button" class="btn-wire-nav" id="btn-go-store"><spring:message code="review.list.btn.store" text="가게 상세로" /></button>
+        <button type="button" class="btn-wire-nav" id="btn-go-back"><spring:message code="review.list.btn.back" text="이전 페이지로" /></button>
     </div>
 </div>
 

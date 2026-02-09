@@ -1,16 +1,23 @@
 package com.uhi.gourmet.pay;
 
-import com.siot.IamportRestClient.exception.IamportResponseException;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-import java.util.Map;
+import com.siot.IamportRestClient.exception.IamportResponseException;
 
 /**
  * Handles requests for the application home page.
@@ -54,6 +61,50 @@ public class PayController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);    // 가격이 다를경우
         }
 
+    }
+    
+    	// 모바일의 경우 결제
+    @GetMapping("/api/v2/payment/complete/mobile")
+    public void mobilePaymentComplete(
+            @RequestParam("paymentId") String paymentId,
+            @RequestParam("storeId") int storeId,
+            @RequestParam("book_date") String bookDate,
+            @RequestParam("book_time") String bookTime,
+            @RequestParam("people_cnt") int peopleCnt,
+            HttpServletResponse response,
+            HttpServletRequest request) throws IOException, IamportResponseException {
+        
+        System.out.println("========== 모바일 결제 검증 ==========");
+        System.out.println("paymentId: " + paymentId);
+        System.out.println("storeId: " + storeId);
+        System.out.println("book_date: " + bookDate);
+        System.out.println("book_time: " + bookTime);
+        System.out.println("people_cnt: " + peopleCnt);
+        System.out.println("====================================");
+        
+        String contextPath = request.getContextPath();
+        
+        try {
+            if(service.paymentVal(paymentId)) {
+                int payId = service.getPayIdByImpUid(paymentId);
+                
+                // 검증 성공 후 예약 정보와 함께 상세 페이지로 리다이렉트
+                String redirectUrl = String.format(
+                    "%s/store/detail?storeId=%d&pay_id=%d&book_date=%s&book_time=%s&people_cnt=%d&status=success",
+                    contextPath, storeId, payId, bookDate, bookTime, peopleCnt
+                );
+                
+                System.out.println("리다이렉트 URL: " + redirectUrl);
+                response.sendRedirect(redirectUrl);
+            } else {
+                System.out.println("결제 검증 실패!");
+                response.sendRedirect(contextPath + "/store/detail?storeId=" + storeId + "&status=fail");
+            }
+        } catch (Exception e) {
+            System.err.println("모바일 결제 처리 중 오류: " + e.getMessage());
+            e.printStackTrace();
+            response.sendRedirect(contextPath + "/store/detail?storeId=" + storeId + "&status=fail");
+        }
     }
 
 

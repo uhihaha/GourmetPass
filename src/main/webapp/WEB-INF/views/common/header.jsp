@@ -18,6 +18,11 @@
     <link rel="stylesheet" href="<c:url value='/resources/css/common.css'/>">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="<c:url value='/resources/js/app-config.js'/>"></script>
+    
+    <%-- [Font] Japanese header font (applied via common.css when lang=ja/jp) --%>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script>
         window.I18N = window.I18N || {};
         window.I18N.common = {

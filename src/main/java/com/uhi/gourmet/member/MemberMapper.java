@@ -23,6 +23,9 @@ public interface MemberMapper {
     // 6. 회원 탈퇴 (추가!)
     void deleteMember(String user_id);
 
+    // 6-1. 회원 탈퇴 (연관 데이터 정리)
+    void deleteMemberCascade(String user_id);
+
     // 7. 아이디 찾기
     String findUserIdByNameEmail(@Param("user_nm") String user_nm, @Param("user_email") String user_email);
 

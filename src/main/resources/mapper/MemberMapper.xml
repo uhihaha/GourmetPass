@@ -72,6 +72,38 @@
         WHERE user_id = #{user_id}
     </delete>
 
+    <delete id="deleteMemberCascade">
+        <![CDATA[
+        BEGIN
+            DELETE FROM REVIEW
+            WHERE store_id IN (SELECT store_id FROM STORE WHERE user_id = #{user_id})
+               OR book_id IN (SELECT book_id FROM BOOK WHERE user_id = #{user_id})
+               OR wait_id IN (SELECT wait_id FROM WAIT WHERE user_id = #{user_id});
+
+            DELETE FROM WAIT
+            WHERE user_id = #{user_id}
+               OR store_id IN (SELECT store_id FROM STORE WHERE user_id = #{user_id});
+
+            DELETE FROM BOOK
+            WHERE user_id = #{user_id}
+               OR store_id IN (SELECT store_id FROM STORE WHERE user_id = #{user_id});
+
+            DELETE FROM FAVORITE
+            WHERE user_id = #{user_id}
+               OR store_id IN (SELECT store_id FROM STORE WHERE user_id = #{user_id});
+
+            DELETE FROM MENU
+            WHERE store_id IN (SELECT store_id FROM STORE WHERE user_id = #{user_id});
+
+            DELETE FROM STORE
+            WHERE user_id = #{user_id};
+
+            DELETE FROM MEMBERS
+            WHERE user_id = #{user_id};
+        END;
+        ]]>
+    </delete>
+
     <select id="findUserIdByNameEmail" resultType="String">
         SELECT user_id
         FROM MEMBERS

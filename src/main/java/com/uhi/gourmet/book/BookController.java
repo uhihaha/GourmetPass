@@ -183,7 +183,7 @@ public class BookController {
 	    vo.setPay_id(Integer.parseInt(pay_id));
 	    
 	    book_service.register_book(vo);
-	    messagingTemplate.convertAndSend("/topic/store/" + store_id + "/bookUpdate", "REFRESH");
+	    messaging_template.convertAndSend("/topic/store/" + store_id + "/bookUpdate", "REFRESH");
 	    rttr.addFlashAttribute("msg", "예약이 완료되었습니다.");
 	    return "redirect:/member/mypage";
 	}
@@ -256,7 +256,7 @@ public class BookController {
 
         if (userId != null && !userId.isEmpty()) {
             String msg = "예약 상태가 [" + status + "]로 변경되었습니다.";
-            messagingTemplate.convertAndSend("/topic/wait/" + userId, msg);
+            messaging_template.convertAndSend("/topic/wait/" + userId, msg);
         }
 
 		if (isOwner) {

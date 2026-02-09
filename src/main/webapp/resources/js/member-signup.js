@@ -231,14 +231,20 @@
         if (confirm("정말로 탈퇴하시겠습니까?\n모든 예약 및 웨이팅 데이터가 소멸됩니다.")) {
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = (typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.contextPath : "") + '/member/withdraw';
+            form.action = (typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.contextPath : "") + '/member/delete';
             
             const csrfInput = document.createElement('input');
             csrfInput.type = 'hidden';
             csrfInput.name = APP_CONFIG.csrfName;
             csrfInput.value = APP_CONFIG.csrfToken;
+  
+            const userIdInput = document.createElement('input');
+            userIdInput.type = 'hidden';
+            userIdInput.name = 'user_id';
+            userIdInput.value = userId;
             
             form.appendChild(csrfInput);
+            form.appendChild(userIdInput);
             document.body.appendChild(form);
             form.submit();
         }

@@ -188,20 +188,27 @@ public class MemberController {
             rttr.addFlashAttribute("msg", "이미 사용 중인 아이디입니다.");
             return "redirect:/member/signup/general";
         }
-        memberService.joinMember(vo); 
+        memberService.joinMember(vo);
+        authenticateUser(request, vo.getUser_id());
         if (Boolean.TRUE.equals(socialSignup)) {
-            authenticateUser(request, vo.getUser_id());
             clearSocialSignupSession(session);
-            return "redirect:/";
         }
-        rttr.addFlashAttribute("msg", "회원가입이 완료되었습니다. 로그인해주세요.");
-        return "redirect:/member/login";
+        return "redirect:/";
     }
 
     @GetMapping("/signup/owner1")
     public String signupOwner1Page(@RequestParam(value = "social", required = false) Boolean social,
             HttpSession session, Model model) {
         addKakaoKeyToModel(model);
+        if (Boolean.TRUE.equals(social)) {
+            SocialProfile profile = (SocialProfile) session.getAttribute(SOCIAL_PROFILE_SESSION_KEY);
+            if (profile != null) {
+                MemberVO member = buildSocialMember(profile, session);
+                session.setAttribute("tempMember", member);
+                session.setAttribute(SOCIAL_SIGNUP_FLAG, true);
+                return "redirect:/member/signup/owner2";
+            }
+        }
         populateSocialSignupModel(social, session, model);
         return "member/signup_owner1"; 
     }
@@ -578,6 +585,15 @@ public class MemberController {
         model.addAttribute("socialName", profile.getNickname());
         model.addAttribute("socialEmail", profile.getEmail());
         model.addAttribute("socialPassword", getOrCreateSocialPassword(session));
+    }
+
+    private MemberVO buildSocialMember(SocialProfile profile, HttpSession session) {
+        MemberVO member = new MemberVO();
+        member.setUser_id(profile.getUserId());
+        member.setUser_pw(getOrCreateSocialPassword(session));
+        member.setUser_nm(profile.getNickname());
+        member.setUser_email(profile.getEmail());
+        return member;
     }
 
     private String getOrCreateSocialPassword(HttpSession session) {

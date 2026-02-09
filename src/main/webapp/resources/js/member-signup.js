@@ -13,6 +13,7 @@
 
     $(document).ready(function() {
         const isSocialSignup = $("#joinForm input[name='social_signup']").length > 0;
+        const skipEmailAuth = $("#joinForm input[name='skip_email_auth']").length > 0;
         
         // [A] 로그인/로그아웃 알림 (기존 member.js 이관)
         const authMsgBox = $("#auth-msg");
@@ -36,6 +37,13 @@
             isIdChecked = true;
             isPwMatched = true;
             isEmailChecked = true;
+        }
+        if (skipEmailAuth) {
+            isEmailChecked = true;
+            $("#btnEmailAuth").prop("disabled", true);
+            $("#auth_code").prop("disabled", true);
+            $("#timer").text("");
+            $("#authMsg").text("");
         }
 
         // 1. 아이디 중복 확인 (AJAX)
@@ -211,7 +219,7 @@
                 $("#user_pw").focus();
                 e.preventDefault(); return false; 
             }
-            if(!isEmailChecked) { 
+            if(!skipEmailAuth && !isEmailChecked) { 
                 alert("이메일 인증을 완료해주세요."); 
                 $("#user_email").focus();
                 e.preventDefault(); return false; 

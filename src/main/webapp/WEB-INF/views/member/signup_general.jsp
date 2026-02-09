@@ -19,6 +19,7 @@
         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
         <input type="hidden" name="user_lat" id="user_lat" value="0.0">
         <input type="hidden" name="user_lon" id="user_lon" value="0.0">
+        <input type="hidden" name="skip_email_auth" value="true">
         <c:if test="${socialSignup}">
             <input type="hidden" name="social_signup" value="true">
         </c:if>

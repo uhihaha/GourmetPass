@@ -22,4 +22,13 @@ public interface MemberMapper {
 
     // 6. 회원 탈퇴 (추가!)
     void deleteMember(String user_id);
+
+    // 7. 아이디 찾기
+    String findUserIdByNameEmail(@Param("user_nm") String user_nm, @Param("user_email") String user_email);
+
+    // 8. 비밀번호 재설정 대상 확인
+    int countByIdEmail(@Param("user_id") String user_id, @Param("user_email") String user_email);
+
+    // 9. 비밀번호 재설정
+    void updatePassword(@Param("user_id") String user_id, @Param("user_pw") String user_pw);
 }

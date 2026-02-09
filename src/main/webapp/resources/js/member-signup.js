@@ -8,6 +8,8 @@
     let authCode = "";         
     let timerInterval;
     let initialEmail = ""; 
+    const ID_PATTERN = /^[a-zA-Z0-9_]{4,20}$/;
+    const PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,20}$/;
 
     $(document).ready(function() {
         
@@ -35,9 +37,10 @@
             if($("#user_id").prop("readonly")) return;
 
             const userId = $("#user_id").val();
-            if(!userId || userId.length < 3) { 
-                alert("아이디는 3글자 이상 입력해주세요."); 
-                return; 
+            if(!ID_PATTERN.test(userId)) {
+                $("#idCheckMsg").html("<span class='msg-no'>아이디는 영문/숫자/언더바 4~20자만 가능합니다.</span>");
+                isIdChecked = false;
+                return;
             }
 
             const ajaxData = { user_id: userId };
@@ -53,6 +56,9 @@
                     if(res === "success") { 
                         $("#idCheckMsg").html("<span class='msg-ok'>사용 가능한 아이디입니다.</span>"); 
                         isIdChecked = true; 
+                    } else if (res === "invalid") {
+                        $("#idCheckMsg").html("<span class='msg-no'>아이디 형식이 올바르지 않습니다.</span>");
+                        isIdChecked = false;
                     } else { 
                         $("#idCheckMsg").html("<span class='msg-no'>이미 사용 중인 아이디입니다.</span>");
                         isIdChecked = false; 
@@ -66,7 +72,16 @@
         $("#user_id").on("input", function() {
             if(!$(this).prop("readonly")) {
                 isIdChecked = false; 
-                $("#idCheckMsg").text("");
+                const userId = $(this).val();
+                if (userId.length === 0) {
+                    $("#idCheckMsg").text("");
+                    return;
+                }
+                if (!ID_PATTERN.test(userId)) {
+                    $("#idCheckMsg").html("<span class='msg-no'>아이디는 영문/숫자/언더바 4~20자만 가능합니다.</span>");
+                } else {
+                    $("#idCheckMsg").text("");
+                }
             }
         });
 
@@ -80,6 +95,12 @@
                 $("#pwCheckMsg").text(""); 
                 if($("#user_id").prop("readonly")) isPwMatched = true; 
                 return; 
+            }
+
+            if (!PASSWORD_PATTERN.test(pw)) {
+                $("#pwCheckMsg").html("<span class='msg-no'>영문/숫자/특수문자 포함 8~20자</span>");
+                isPwMatched = false;
+                return;
             }
             
             if(pw === pwConfirm) { 

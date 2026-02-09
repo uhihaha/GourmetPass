@@ -8,6 +8,9 @@
 
 <div class="edit-wrapper">
     <div class="edit-title">⚙️ 회원 정보 수정</div>
+    <c:if test="${not empty msg}">
+        <div class="alert-msg">${msg}</div>
+    </c:if>
 
     <form action="<c:url value='/member/edit'/>" method="post" id="joinForm">
         <%-- CSRF 토큰 및 위치 정보 --%>
@@ -25,7 +28,7 @@
             </tr>
             <tr>
                 <th>새 비밀번호</th>
-                <td><input type="password" name="user_pw" id="user_pw" placeholder="변경 시에만 입력하세요"></td>
+                <td><input type="password" name="user_pw" id="user_pw" placeholder="변경 시 영문/숫자/특수문자 8~20자"></td>
             </tr>
             <tr>
                 <th>비밀번호 확인</th>

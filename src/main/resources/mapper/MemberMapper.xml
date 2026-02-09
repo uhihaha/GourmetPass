@@ -72,4 +72,26 @@
         WHERE user_id = #{user_id}
     </delete>
 
+    <select id="findUserIdByNameEmail" resultType="String">
+        SELECT user_id
+        FROM MEMBERS
+        WHERE user_nm = #{user_nm}
+          AND user_email = #{user_email}
+          AND enabled = 'Y'
+    </select>
+
+    <select id="countByIdEmail" resultType="int">
+        SELECT COUNT(*)
+        FROM MEMBERS
+        WHERE user_id = #{user_id}
+          AND user_email = #{user_email}
+          AND enabled = 'Y'
+    </select>
+
+    <update id="updatePassword">
+        UPDATE MEMBERS
+        SET user_pw = #{user_pw}
+        WHERE user_id = #{user_id}
+    </update>
+
 </mapper>

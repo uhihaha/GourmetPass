@@ -37,7 +37,7 @@ public class BookController {
 	private StoreMapper store_mapper;
 
 	@Autowired
-	private SimpMessagingTemplate messaging_template;
+	private SimpMessagingTemplate messagingTemplate;
 
 	/**
 	 * [1] 점주용 실시간 매장 관리 센터 [404 해결] 리턴 경로를 실제 파일 위치인 "book/manage"로 수정했습니다.
@@ -183,7 +183,7 @@ public class BookController {
 	    vo.setPay_id(Integer.parseInt(pay_id));
 	    
 	    book_service.register_book(vo);
-	    messaging_template.convertAndSend("/topic/store/" + store_id + "/bookUpdate", "REFRESH");
+	    messagingTemplate.convertAndSend("/topic/store/" + store_id + "/bookUpdate", "REFRESH");
 	    rttr.addFlashAttribute("msg", "예약이 완료되었습니다.");
 	    return "redirect:/member/mypage";
 	}
@@ -254,10 +254,10 @@ public class BookController {
 
 		book_service.update_book_status(bookId, status);
 
-//        if (userId != null && !userId.isEmpty()) {
-//            String msg = "예약 상태가 [" + status + "]로 변경되었습니다.";
-//            messagingTemplate.convertAndSend("/topic/wait/" + userId, msg);
-//        }
+        if (userId != null && !userId.isEmpty()) {
+            String msg = "예약 상태가 [" + status + "]로 변경되었습니다.";
+            messagingTemplate.convertAndSend("/topic/wait/" + userId, msg);
+        }
 
 		if (isOwner) {
 			// 점주라면 원래대로 매장 관리 페이지로

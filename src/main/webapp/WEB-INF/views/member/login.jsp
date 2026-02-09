@@ -25,12 +25,20 @@
             <input type="password" name="password" class="login-input" required placeholder="비밀번호를 입력하세요">
         </div>
 
-        <div class="btn-group">
-            <button type="submit" class="btn-login">로그인</button>
-            <a href="<c:url value='/member/signup/select'/>" class="btn-signup">회원가입</a>
-        </div>
+    <div class="btn-group">
+        <button type="submit" class="btn-login">로그인</button>
+        <a href="<c:url value='/member/signup/select'/>" class="btn-signup">회원가입</a>
+    </div>
     </form>
     
+    <div class="social-login">
+        <div class="social-title">간편 로그인</div>
+        <div class="social-buttons">
+            <a class="social-btn kakao" href="<c:url value='/member/oauth/kakao'/>">카카오로 로그인</a>
+            <a class="social-btn google" href="<c:url value='/member/oauth/google'/>">구글로 로그인</a>
+        </div>
+    </div>
+
     <div style="margin-top: 25px; font-size: 13px; color: #999;">
         <a href="<c:url value='/member/find'/>" style="text-decoration: underline;">아이디/비밀번호를 잊으셨나요?</a>
     </div>

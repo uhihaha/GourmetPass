@@ -8,10 +8,13 @@
 <div class="select-wrapper">
     <h2 class="select-header">회원가입 유형을 선택해주세요</h2>
     <p class="select-subtext">어떤 목적으로 Gourmet Pass를 이용하시나요?</p>
+    <c:if test="${socialSignup}">
+        <p class="social-note">소셜 로그인 정보를 기반으로 가입을 이어갑니다.</p>
+    </c:if>
     
     <div class="select-group">
         <%-- 일반 회원 선택 카드 --%>
-        <a href="${pageContext.request.contextPath}/member/signup/general" class="select-card">
+        <a href="${pageContext.request.contextPath}/member/signup/general<c:if test='${socialSignup}'>?social=true</c:if>" class="select-card">
             <span class="select-icon">😊</span>
             <span class="select-title">일반 회원</span>
             <span class="select-desc">
@@ -21,7 +24,7 @@
         </a>
 
         <%-- 점주 회원 선택 카드 --%>
-        <a href="${pageContext.request.contextPath}/member/signup/owner1" class="select-card">
+        <a href="${pageContext.request.contextPath}/member/signup/owner1<c:if test='${socialSignup}'>?social=true</c:if>" class="select-card">
             <span class="select-icon">👨‍🍳</span>
             <span class="select-title">점주 회원</span>
             <span class="select-desc">

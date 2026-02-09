@@ -10,12 +10,18 @@
     <c:if test="${not empty msg}">
         <div class="alert-msg">${msg}</div>
     </c:if>
+    <c:if test="${socialSignup}">
+        <div class="alert-msg">소셜 로그인 정보로 기본 항목이 자동 입력됩니다.</div>
+    </c:if>
 
     <form action="${pageContext.request.contextPath}/member/joinProcess" method="post" id="joinForm">
         <%-- CSRF 보안 및 좌표 저장용 숨김 필드 --%>
         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
         <input type="hidden" name="user_lat" id="user_lat" value="0.0">
         <input type="hidden" name="user_lon" id="user_lon" value="0.0">
+        <c:if test="${socialSignup}">
+            <input type="hidden" name="social_signup" value="true">
+        </c:if>
 
         <table class="edit-table">
             <tr>
@@ -23,26 +29,33 @@
                 <td>
                     <div class="input-row">
                         <%-- 가입 페이지는 readonly가 아니므로 member-signup.js에서 중복확인을 강제함 [cite: 19] --%>
-                        <input type="text" name="user_id" id="user_id" required placeholder="영문/숫자/언더바 4~20자">
-                        <button type="button" id="btnIdCheck" class="btn-wire">중복확인</button>
+                        <input type="text" name="user_id" id="user_id" required placeholder="영문/숫자/언더바 4~20자"
+                               value="${socialUserId}" <c:if test="${socialSignup}">readonly</c:if>>
+                        <c:if test="${not socialSignup}">
+                            <button type="button" id="btnIdCheck" class="btn-wire">중복확인</button>
+                        </c:if>
                     </div>
                     <div id="idCheckMsg" class="msg-box"></div>
                 </td>
             </tr>
             <tr>
                 <th>비밀번호</th>
-                <td><input type="password" name="user_pw" id="user_pw" required placeholder="영문/숫자/특수문자 포함 8~20자"></td>
+                <td>
+                    <input type="password" name="user_pw" id="user_pw" required placeholder="영문/숫자/특수문자 포함 8~20자"
+                           value="${socialPassword}" <c:if test="${socialSignup}">readonly</c:if>>
+                </td>
             </tr>
             <tr>
                 <th>비밀번호 확인</th>
                 <td>
-                    <input type="password" id="user_pw_confirm" required placeholder="비밀번호 재입력">
+                    <input type="password" id="user_pw_confirm" required placeholder="비밀번호 재입력"
+                           value="${socialPassword}" <c:if test="${socialSignup}">readonly</c:if>>
                     <div id="pwCheckMsg" class="msg-box"></div>
                 </td>
             </tr>
             <tr>
                 <th>이름</th>
-                <td><input type="text" name="user_nm" required placeholder="성함을 입력하세요"></td>
+                <td><input type="text" name="user_nm" required placeholder="성함을 입력하세요" value="${socialName}"></td>
             </tr>
             <tr>
                 <th>전화번호</th>
@@ -54,8 +67,10 @@
                 <th>이메일</th>
                 <td>
                     <div class="input-row">
-                        <input type="email" name="user_email" id="user_email" required placeholder="example@mail.com">
-                        <button type="button" id="btnEmailAuth" class="btn-wire">인증코드 발송</button>
+                        <input type="email" name="user_email" id="user_email" required placeholder="example@mail.com"
+                               value="${socialEmail}" <c:if test="${socialSignup and not empty socialEmail}">readonly</c:if>>
+                        <button type="button" id="btnEmailAuth" class="btn-wire"
+                                <c:if test="${socialSignup and not empty socialEmail}">disabled</c:if>>인증코드 발송</button>
                     </div>
                     <div id="emailMsg" class="msg-box"></div>
                 </td>
@@ -64,7 +79,8 @@
                 <th>인증코드</th>
                 <td>
                     <div class="input-row">
-                        <input type="text" id="auth_code" disabled placeholder="인증코드 6자리" maxlength="6">
+                        <input type="text" id="auth_code" disabled placeholder="인증코드 6자리" maxlength="6"
+                               <c:if test="${socialSignup and not empty socialEmail}">value="SOCIAL"</c:if>>
                         <span id="timer" style="color:red; margin-left:10px; font-weight:bold;"></span>
                     </div>
                     <div id="authMsg" class="msg-box"></div>

@@ -7,6 +7,19 @@ $(document).ready(function() {
     APP_CONFIG.role = "ROLE_OWNER";
 	console.log("현재 설정:", APP_CONFIG);
 
+    if (typeof SockJS !== "undefined" && typeof Stomp !== "undefined" && APP_CONFIG.storeId) {
+        var socket = new SockJS(APP_CONFIG.contextPath + "/ws_waiting");
+        var stompClient = Stomp.over(socket);
+        stompClient.connect({}, function () {
+            stompClient.subscribe("/topic/store/" + APP_CONFIG.storeId + "/bookUpdate", function () {
+                location.reload();
+            });
+            stompClient.subscribe("/topic/store/" + APP_CONFIG.storeId + "/waitUpdate", function () {
+                location.reload();
+            });
+        });
+    }
+
 
     // 노쇼 버튼 클릭 시 이벤트
     $(".noshow-btn").on("click", function() {

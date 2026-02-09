@@ -69,10 +69,10 @@ $(document).ready(function() {
                     updateFavoriteButton(btn, !!res.favorite);
                 }).fail(function(xhr) {
                     if (xhr.status === 401) {
-                        var loginRequired = COMMON_I18N.loginRequired || "로그인이 필요합니다";
+                        var loginRequired = COMMON_I18N.loginRequired || "";
                         alert(loginRequired);
                     } else {
-                        var favoriteError = COMMON_I18N.favoriteError || "즐겨찾기 처리 중 오류가 발생했습니다.";
+                        var favoriteError = COMMON_I18N.favoriteError || "";
                         alert(favoriteError);
                     }
                 });

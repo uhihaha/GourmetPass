@@ -1,7 +1,7 @@
 /* /resources/js/review.js */
 function confirmDeleteReview(reviewId, storeId) {
     var REVIEW_I18N = (window.I18N && window.I18N.review) ? window.I18N.review : {};
-    var deleteConfirm = REVIEW_I18N.deleteConfirm || "이 리뷰를 삭제하시겠습니까?";
+    var deleteConfirm = REVIEW_I18N.deleteConfirm || "";
     if(confirm(deleteConfirm)) {
         const form = document.createElement('form');
         form.method = 'POST';

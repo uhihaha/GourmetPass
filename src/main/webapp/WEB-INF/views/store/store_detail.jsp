@@ -62,9 +62,18 @@
             <span class="rating-box">
                 <spring:message code="store.detail.rating.info" arguments="${store.avg_rating},${store.review_cnt}" text="⭐ ${store.avg_rating} (${store.review_cnt}개의 리뷰)" />
             </span>
-            <span class="favorite-count" id="favoriteCount">❤️ 0</span>
-            <span class="viewer-count" id="viewerCount">👥 0명</span>
-            <button type="button" class="favorite-inline" id="favoriteBtn">
+            <span class="favorite-count" id="favoriteCount"
+                  data-count-prefix="<spring:message code='store.detail.favorite.count_prefix' text='❤️' />">
+                <spring:message code="store.detail.favorite.count_prefix" text="❤️" /> 0
+            </span>
+            <span class="viewer-count" id="viewerCount"
+                  data-viewer-prefix="<spring:message code='store.detail.viewer.prefix' text='👥' />"
+                  data-viewer-suffix="<spring:message code='store.detail.viewer.suffix' text='명' />">
+                <spring:message code="store.detail.viewer.prefix" text="👥" /> 0<spring:message code="store.detail.viewer.suffix" text="명" />
+            </span>
+            <button type="button" class="favorite-inline" id="favoriteBtn"
+                    data-favorite-on="<spring:message code='store.detail.favorite.on' text='즐겨찾기 해제' />"
+                    data-favorite-off="<spring:message code='store.detail.favorite.off' text='즐겨찾기' />">
                 <spring:message code="store.detail.btn.favorite" text="🤍 즐겨찾기" />
             </button>
             <button type="button" class="share-inline" id="copyLinkBtn">

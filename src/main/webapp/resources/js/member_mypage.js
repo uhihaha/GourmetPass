@@ -32,7 +32,7 @@ function submitPostForm(url, params) {
  * 메뉴 삭제 (점주용)
  */
 function deleteMenu(menuId) {
-    var menuDeleteConfirm = MYPAGE_I18N.menuDeleteConfirm || "이 메뉴를 삭제하시겠습니까?";
+    var menuDeleteConfirm = MYPAGE_I18N.menuDeleteConfirm || "";
     if (!confirm(menuDeleteConfirm)) return;
     submitPostForm('/store/menu/delete', { 'menu_id': menuId });
 }
@@ -41,7 +41,7 @@ function deleteMenu(menuId) {
  * 웨이팅 취소 (사용자용)
  */
 function cancelWait(waitId) {
-    var waitCancelConfirm = MYPAGE_I18N.waitCancelConfirm || "웨이팅을 취소하시겠습니까?";
+    var waitCancelConfirm = MYPAGE_I18N.waitCancelConfirm || "";
     if (!confirm(waitCancelConfirm)) return;
     submitPostForm('/wait/cancel', { 'wait_id': waitId });
 }
@@ -50,7 +50,7 @@ function cancelWait(waitId) {
  * 리뷰 삭제 (공통)
  */
 function confirmDeleteReview(reviewId, storeId, returnUrl) {  // ← returnUrl 파라미터 추가
-    var reviewDeleteConfirm = MYPAGE_I18N.reviewDeleteConfirm || "이 리뷰를 삭제하시겠습니까?";
+    var reviewDeleteConfirm = MYPAGE_I18N.reviewDeleteConfirm || "";
     if (!confirm(reviewDeleteConfirm)) return;
     
     var params = { 
@@ -70,7 +70,7 @@ function confirmDeleteReview(reviewId, storeId, returnUrl) {  // ← returnUrl �
  * 회원 탈퇴 (Fetch API 사용)
  */
 function dropUser(userId) {
-    var userDropConfirm = MYPAGE_I18N.userDropConfirm || "정말로 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.";
+    var userDropConfirm = MYPAGE_I18N.userDropConfirm || "";
     if (!confirm(userDropConfirm)) return;
 
     fetch(APP_CONFIG.contextPath + '/member/delete', {
@@ -83,7 +83,7 @@ function dropUser(userId) {
     })
     .then(function(response) {
         if (response.redirected) {
-            var userDropSuccess = MYPAGE_I18N.userDropSuccess || "정상적으로 탈퇴되었습니다.";
+            var userDropSuccess = MYPAGE_I18N.userDropSuccess || "";
             alert(userDropSuccess);
             location.href = response.url;
             return;
@@ -106,12 +106,12 @@ function toggleHistory() {
 
     if (area.style.display === 'none' || area.style.display === '') {
         area.style.display = 'block';
-        var historyClose = MYPAGE_I18N.historyClose || "내역 닫기 ▲";
-        var historyCollapse = MYPAGE_I18N.historyCollapse || "이용 내역 접기 ▲";
+        var historyClose = MYPAGE_I18N.historyClose || "";
+        var historyCollapse = MYPAGE_I18N.historyCollapse || "";
         btn.innerText = (btn.id === 'history-toggle-btn') ? historyClose : historyCollapse;
     } else {
         area.style.display = 'none';
-        var historyOpen = MYPAGE_I18N.historyOpen || "전체 이용 내역 보기 ▼";
+        var historyOpen = MYPAGE_I18N.historyOpen || "";
         btn.innerText = historyOpen;
     }
 }
@@ -149,7 +149,7 @@ function initMyPageWebSocket(userId, role, storeId) {
 }
 
 function showNotification(message) {
-    var notificationPrefix = MYPAGE_I18N.notificationPrefix || "🔔 알림:";
+    var notificationPrefix = MYPAGE_I18N.notificationPrefix || "";
     alert(notificationPrefix + " " + message);
     location.reload(); // 상태 변경 즉시 반영을 위해 새로고침
 }

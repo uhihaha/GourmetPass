@@ -19,7 +19,7 @@ $(document).ready(function() {
         const pay_id = $(this).data("payid");
         const form = $(this).closest("form");
 
-        var confirmRefund = WAIT_I18N.bookCancelConfirmRefund || "예약 취소 처리하시겠습니까? 결제된 금액이 환불됩니다.";
+        var confirmRefund = WAIT_I18N.bookCancelConfirmRefund || "";
         if (confirm(confirmRefund)) {
             cancelPay(pay_id, form);
         }
@@ -77,7 +77,7 @@ function cancelPay(pay_id, form) {	// pay_id 를 매개변수로 가져와서
             xhr.setRequestHeader("X-CSRF-TOKEN", APP_CONFIG.csrfToken);
         },
         success: function () {	// response를 괄호에 넣어서 controller에서 값을 가져올 수 있음
-            var refundSuccess = WAIT_I18N.refundSuccess || "환불 성공";
+            var refundSuccess = WAIT_I18N.refundSuccess || "";
             alert(refundSuccess);
             
             // 폼 안에 hidden을 만들어서 값을 넣어줌
@@ -92,7 +92,7 @@ function cancelPay(pay_id, form) {	// pay_id 를 매개변수로 가져와서
         },
 
         error: function (xhr, status, error) {
-            var refundFail = WAIT_I18N.refundFail || "환불 실패";
+            var refundFail = WAIT_I18N.refundFail || "";
             alert(refundFail);
             console.error(xhr.responseText);
         }	
@@ -101,7 +101,7 @@ function cancelPay(pay_id, form) {	// pay_id 를 매개변수로 가져와서
 
     
 function cancelWait(waitId) {
-    var waitConfirm = WAIT_I18N.cancelConfirm || "웨이팅을 취소하시겠습니까?";
+    var waitConfirm = WAIT_I18N.cancelConfirm || "";
     if (!confirm(waitConfirm)) return;
     
     const url = APP_CONFIG.contextPath + "/wait/cancel";
@@ -118,27 +118,27 @@ function cancelWait(waitId) {
     .then(res => {
         var serverError = (window.I18N && window.I18N.common && window.I18N.common.serverError)
             ? window.I18N.common.serverError
-            : "서버 오류";
+            : "";
         if (!res.ok) throw new Error(serverError);
         return res.json();
     })
     .then(data => {
          if (data.success) {
-        var cancelSuccess = WAIT_I18N.cancelSuccess || "웨이팅이 취소되었습니다!";
+        var cancelSuccess = WAIT_I18N.cancelSuccess || "";
         alert(cancelSuccess);
         location.reload();
     } else if (data.error_type === 'SQL_ERROR') {
         // SQL 에러일 때만 경고
-        var cancelFail = WAIT_I18N.cancelFail || "취소 실패";
+        var cancelFail = WAIT_I18N.cancelFail || "";
         alert(cancelFail);
     } else {
         // 일반적인 실패 (이미 취소됨, 권한 없음 등)
-        var failPrefix = WAIT_I18N.failPrefix || "실패:";
+        var failPrefix = WAIT_I18N.failPrefix || "";
         alert(failPrefix + " " + data.message);
     }
 	})
 	.catch(() => {
-        var cancelSuccess = WAIT_I18N.cancelSuccess || "웨이팅이 취소되었습니다!";
+        var cancelSuccess = WAIT_I18N.cancelSuccess || "";
         alert(cancelSuccess);
     }); // 네트워크 에러는 조용히 무시
 }

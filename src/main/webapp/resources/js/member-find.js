@@ -6,7 +6,7 @@
             const userId = $("#pw_user_id").val();
             const email = $("#pw_user_email").val();
             if (!userId || !email) {
-                var authMissing = MEMBER_FIND_I18N.authMissing || "아이디와 이메일을 입력해주세요.";
+                var authMissing = MEMBER_FIND_I18N.authMissing || "";
                 $("#pwAuthMsg").html("<span class='msg-no'>" + authMissing + "</span>");
                 return;
             }
@@ -22,19 +22,19 @@
                 data: ajaxData,
                 success: function(res) {
                     if (res === "success") {
-                        var authSent = MEMBER_FIND_I18N.authSent || "인증코드를 발송했습니다.";
+                        var authSent = MEMBER_FIND_I18N.authSent || "";
                         $("#pwAuthMsg").html("<span class='msg-ok'>" + authSent + "</span>");
                         $("#pw_auth_code").focus();
                     } else if (res === "not_found") {
-                        var authNotFound = MEMBER_FIND_I18N.authNotFound || "일치하는 계정을 찾을 수 없습니다.";
+                        var authNotFound = MEMBER_FIND_I18N.authNotFound || "";
                         $("#pwAuthMsg").html("<span class='msg-no'>" + authNotFound + "</span>");
                     } else {
-                        var authUnavailable = MEMBER_FIND_I18N.authUnavailable || "요청을 처리할 수 없습니다.";
+                        var authUnavailable = MEMBER_FIND_I18N.authUnavailable || "";
                         $("#pwAuthMsg").html("<span class='msg-no'>" + authUnavailable + "</span>");
                     }
                 },
                 error: function() {
-                    var authServerError = MEMBER_FIND_I18N.authServerError || "서버 통신 오류가 발생했습니다.";
+                    var authServerError = MEMBER_FIND_I18N.authServerError || "";
                     $("#pwAuthMsg").html("<span class='msg-no'>" + authServerError + "</span>");
                 }
             });

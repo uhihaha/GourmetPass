@@ -91,7 +91,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void deleteMember(String userId) {
-        memberMapper.deleteMember(userId);
+        memberMapper.deleteMemberCascade(userId);
     }
 
     @Override

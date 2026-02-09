@@ -60,7 +60,10 @@
             </tr>
             <tr>
                 <th>전화번호</th>
-                <td><input type="text" name="user_tel" required placeholder="숫자만 입력" maxlength="13" oninput="autoHyphen(this)"></td>
+                <td>
+                    <input type="text" name="user_tel" <c:if test="${not socialSignup}">required</c:if>
+                           placeholder="숫자만 입력" maxlength="13" oninput="autoHyphen(this)">
+                </td>
             </tr>
             
             <%-- 이메일 인증 섹션 --%>

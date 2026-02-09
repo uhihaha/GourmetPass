@@ -170,8 +170,25 @@ public class MemberController {
 
     @GetMapping("/signup/general")
     public String signupGeneralPage(@RequestParam(value = "social", required = false) Boolean social,
-            HttpSession session, Model model) {
+            HttpSession session, Model model, HttpServletRequest request) {
         addKakaoKeyToModel(model);
+        if (Boolean.TRUE.equals(social)) {
+            SocialProfile profile = (SocialProfile) session.getAttribute(SOCIAL_PROFILE_SESSION_KEY);
+            if (profile != null) {
+                String userId = profile.getUserId();
+                MemberVO existing = memberService.getMember(userId);
+                if (existing != null) {
+                    authenticateUser(request, userId);
+                    clearSocialSignupSession(session);
+                    return redirectByRole(existing.getUser_role());
+                }
+                MemberVO member = buildSocialMember(profile, session);
+                memberService.joinMember(member);
+                authenticateUser(request, member.getUser_id());
+                clearSocialSignupSession(session);
+                return "redirect:/";
+            }
+        }
         populateSocialSignupModel(social, session, model);
         return "member/signup_general"; 
     }
@@ -591,8 +608,13 @@ public class MemberController {
         MemberVO member = new MemberVO();
         member.setUser_id(profile.getUserId());
         member.setUser_pw(getOrCreateSocialPassword(session));
-        member.setUser_nm(profile.getNickname());
+        String nickname = profile.getNickname();
+        if (nickname == null || nickname.trim().isEmpty()) {
+            nickname = profile.getUserId();
+        }
+        member.setUser_nm(nickname);
         member.setUser_email(profile.getEmail());
+        member.setUser_tel("010-0000-0000");
         return member;
     }
 

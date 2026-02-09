@@ -316,7 +316,7 @@ public class MemberController {
     public String findId(@RequestParam("user_nm") String name,
                          @RequestParam("user_email") String email,
                          Model model) {
-        if (name == null || name.isBlank() || email == null || email.isBlank()) {
+        if (name == null || name.trim().isEmpty() || email == null || email.trim().isEmpty()) {
             model.addAttribute("idError", "이름과 이메일을 모두 입력해주세요.");
             return "member/find_account";
         }
@@ -339,7 +339,7 @@ public class MemberController {
             model.addAttribute("pwError", "아이디는 영문/숫자/언더바 4~20자만 가능합니다.");
             return "member/find_account";
         }
-        if (email == null || email.isBlank()) {
+        if (email == null || email.trim().isEmpty()) {
             model.addAttribute("pwError", "이메일을 입력해주세요.");
             return "member/find_account";
         }
@@ -365,7 +365,7 @@ public class MemberController {
     public String passwordEmailAuth(@RequestParam("user_id") String userId,
                                     @RequestParam("user_email") String email,
                                     HttpSession session) {
-        if (!MemberValidation.isValidUserId(userId) || email == null || email.isBlank()) {
+        if (!MemberValidation.isValidUserId(userId) || email == null || email.trim().isEmpty()) {
             return "invalid";
         }
         String trimUserId = userId.trim();
@@ -387,7 +387,7 @@ public class MemberController {
     }
 
     private boolean isPasswordAuthValid(HttpSession session, String authCode, String userId, String email) {
-        if (authCode == null || authCode.isBlank()) {
+        if (authCode == null || authCode.trim().isEmpty()) {
             return false;
         }
         if (session == null) {
@@ -453,7 +453,7 @@ public class MemberController {
             if (!MemberValidation.isValidPassword(vo.getUser_pw())) {
                 return "비밀번호는 영문/숫자/특수문자를 포함한 8~20자여야 합니다.";
             }
-        } else if (vo.getUser_pw() != null && !vo.getUser_pw().isBlank()) {
+        } else if (vo.getUser_pw() != null && !vo.getUser_pw().trim().isEmpty()) {
             if (!MemberValidation.isValidPassword(vo.getUser_pw())) {
                 return "비밀번호는 영문/숫자/특수문자를 포함한 8~20자여야 합니다.";
             }

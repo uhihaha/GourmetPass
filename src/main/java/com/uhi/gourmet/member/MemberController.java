@@ -119,12 +119,13 @@ public class MemberController {
     }
 
     @GetMapping("/oauth/google")
-    public String googleOAuthStart(HttpSession session) {
+    public String googleOAuthStart(HttpSession session, HttpServletRequest request) {
         String state = generateOAuthState(session);
-        return "redirect:" + googleOAuthService.buildAuthorizeUrl(state);
+        String redirectUri = buildRedirectUri(request, "/member/oauth/google/callback");
+        return "redirect:" + googleOAuthService.buildAuthorizeUrl(state, redirectUri);
     }
 
-    @GetMapping("/kakao_callback")
+    @GetMapping({"/kakao_callback", "/oauth/kakao/callback"})
     public String kakaoCallback(@RequestParam("code") String code,
             @RequestParam(value = "state", required = false) String state,
             HttpSession session, RedirectAttributes rttr, HttpServletRequest request) {
@@ -142,7 +143,7 @@ public class MemberController {
         }
     }
 
-    @GetMapping("/google_callback")
+    @GetMapping({"/google_callback", "/oauth/google/callback"})
     public String googleCallback(@RequestParam("code") String code,
             @RequestParam(value = "state", required = false) String state,
             HttpSession session, RedirectAttributes rttr, HttpServletRequest request) {
@@ -151,7 +152,8 @@ public class MemberController {
             return "redirect:/member/login";
         }
         try {
-            SocialProfile profile = googleOAuthService.fetchUserProfile(code);
+            String redirectUri = buildRedirectUri(request, "/member/oauth/google/callback");
+            SocialProfile profile = googleOAuthService.fetchUserProfile(code, redirectUri);
             return handleSocialCallback(profile, session, rttr, request);
         } catch (IllegalStateException ex) {
             log.error("구글 로그인 실패", ex);
@@ -177,7 +179,7 @@ public class MemberController {
     @PostMapping("/joinProcess")
     public String joinGeneralProcess(MemberVO vo, @RequestParam(value = "social_signup", required = false) Boolean socialSignup,
             HttpSession session, RedirectAttributes rttr, HttpServletRequest request) {
-        String validationError = validateUserInput(vo, true);
+        String validationError = validateUserInput(vo, !Boolean.TRUE.equals(socialSignup));
         if (validationError != null) {
             rttr.addFlashAttribute("msg", validationError);
             return "redirect:/member/signup/general";
@@ -207,7 +209,7 @@ public class MemberController {
     @PostMapping("/signup/ownerStep1")
     public String signupOwner1Process(MemberVO member, @RequestParam(value = "social_signup", required = false) Boolean socialSignup,
             HttpSession session, RedirectAttributes rttr) {
-        String validationError = validateUserInput(member, true);
+        String validationError = validateUserInput(member, !Boolean.TRUE.equals(socialSignup));
         if (validationError != null) {
             session.removeAttribute("tempMember");
             rttr.addFlashAttribute("msg", validationError);
@@ -235,8 +237,9 @@ public class MemberController {
     public String joinOwnerProcess(StoreVO store, HttpSession session, RedirectAttributes rttr,
             HttpServletRequest request) {
         MemberVO member = (MemberVO) session.getAttribute("tempMember");
+        boolean socialSignup = Boolean.TRUE.equals(session.getAttribute(SOCIAL_SIGNUP_FLAG));
         if (member != null) {
-            String validationError = validateUserInput(member, true);
+            String validationError = validateUserInput(member, !socialSignup);
             if (validationError != null) {
                 session.removeAttribute("tempMember");
                 rttr.addFlashAttribute("msg", validationError);
@@ -249,7 +252,7 @@ public class MemberController {
             }
             memberService.joinOwner(member, store);
             session.removeAttribute("tempMember");
-            if (Boolean.TRUE.equals(session.getAttribute(SOCIAL_SIGNUP_FLAG))) {
+            if (socialSignup) {
                 authenticateUser(request, member.getUser_id());
                 clearSocialSignupSession(session);
                 return "redirect:/member/mypage";
@@ -518,6 +521,20 @@ public class MemberController {
         return state;
     }
 
+    private String buildRedirectUri(HttpServletRequest request, String callbackPath) {
+        String scheme = request.getScheme();
+        String host = request.getServerName();
+        int port = request.getServerPort();
+        String contextPath = request.getContextPath();
+        StringBuilder redirect = new StringBuilder();
+        redirect.append(scheme).append("://").append(host);
+        if ((scheme.equals("http") && port != 80) || (scheme.equals("https") && port != 443)) {
+            redirect.append(':').append(port);
+        }
+        redirect.append(contextPath).append(callbackPath);
+        return redirect.toString();
+    }
+
     private boolean isValidOAuthState(HttpSession session, String state) {
         Object stored = session.getAttribute("oauthState");
         session.removeAttribute("oauthState");
@@ -547,6 +564,7 @@ public class MemberController {
 
     private void populateSocialSignupModel(Boolean social, HttpSession session, Model model) {
         if (!Boolean.TRUE.equals(social)) {
+            clearSocialSignupSession(session);
             model.addAttribute("socialSignup", false);
             return;
         }

@@ -12,6 +12,7 @@
     const PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,20}$/;
 
     $(document).ready(function() {
+        const isSocialSignup = $("#joinForm input[name='social_signup']").length > 0;
         
         // [A] 로그인/로그아웃 알림 (기존 member.js 이관)
         const authMsgBox = $("#auth-msg");
@@ -30,6 +31,11 @@
             isIdChecked = true;
             isEmailChecked = true; 
             console.log("Mode: Edit Mode Detected (Validation Adjusted)");
+        }
+        if (isSocialSignup) {
+            isIdChecked = true;
+            isPwMatched = true;
+            isEmailChecked = true;
         }
 
         // 1. 아이디 중복 확인 (AJAX)
@@ -192,6 +198,9 @@
                 if($("#user_email").val() === initialEmail) isEmailChecked = true;
             }
 
+            if (isSocialSignup) {
+                return true;
+            }
             if(!isIdChecked) { 
                 alert("아이디 중복확인이 필요합니다."); 
                 $("#user_id").focus();

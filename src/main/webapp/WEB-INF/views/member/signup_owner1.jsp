@@ -63,10 +63,11 @@
                 <th>이메일</th>
                 <td>
                     <div class="input-row">
-                        <input type="email" name="user_email" id="user_email" required placeholder="example@mail.com"
+                        <input type="email" name="user_email" id="user_email"
+                               <c:if test="${not socialSignup}">required</c:if> placeholder="example@mail.com"
                                value="${socialEmail}" <c:if test="${socialSignup and not empty socialEmail}">readonly</c:if>>
                         <button type="button" id="btnEmailAuth" class="btn-wire"
-                                <c:if test="${socialSignup and not empty socialEmail}">disabled</c:if>>인증코드 발송</button>
+                                <c:if test="${socialSignup}">disabled</c:if>>인증코드 발송</button>
                     </div>
                     <div id="emailMsg" class="msg-box"></div>
                 </td>
@@ -76,7 +77,7 @@
                 <td>
                     <div class="input-row">
                         <input type="text" id="auth_code" disabled placeholder="인증코드 6자리" maxlength="6"
-                               <c:if test="${socialSignup and not empty socialEmail}">value="SOCIAL"</c:if>>
+                               <c:if test="${socialSignup}">value="SOCIAL"</c:if>>
                         <span id="timer" style="color:red; margin-left:10px; font-weight:bold;"></span>
                     </div>
                     <div id="authMsg" class="msg-box"></div>

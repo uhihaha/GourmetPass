@@ -37,10 +37,15 @@ public class GoogleOAuthService {
     private String scope;
 
     public String buildAuthorizeUrl(String state) {
+        return buildAuthorizeUrl(state, null);
+    }
+
+    public String buildAuthorizeUrl(String state, String redirectUriOverride) {
+        String resolvedRedirectUri = resolveRedirectUri(redirectUriOverride);
         return UriComponentsBuilder.fromHttpUrl(AUTHORIZE_URL)
             .queryParam("response_type", "code")
             .queryParam("client_id", clientId)
-            .queryParam("redirect_uri", redirectUri)
+            .queryParam("redirect_uri", resolvedRedirectUri)
             .queryParam("scope", scope)
             .queryParam("state", state)
             .queryParam("access_type", "offline")
@@ -49,11 +54,16 @@ public class GoogleOAuthService {
     }
 
     public SocialProfile fetchUserProfile(String code) {
-        String accessToken = getAccessToken(code);
+        return fetchUserProfile(code, null);
+    }
+
+    public SocialProfile fetchUserProfile(String code, String redirectUriOverride) {
+        String accessToken = getAccessToken(code, redirectUriOverride);
         return getUserInfo(accessToken);
     }
 
-    private String getAccessToken(String code) {
+    private String getAccessToken(String code, String redirectUriOverride) {
+        String resolvedRedirectUri = resolveRedirectUri(redirectUriOverride);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -61,7 +71,7 @@ public class GoogleOAuthService {
         params.add("code", code);
         params.add("client_id", clientId);
         params.add("client_secret", clientSecret);
-        params.add("redirect_uri", redirectUri);
+        params.add("redirect_uri", resolvedRedirectUri);
         params.add("grant_type", "authorization_code");
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
@@ -94,5 +104,12 @@ public class GoogleOAuthService {
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to parse Google user info", ex);
         }
+    }
+
+    private String resolveRedirectUri(String redirectUriOverride) {
+        if (redirectUriOverride != null && !redirectUriOverride.trim().isEmpty()) {
+            return redirectUriOverride.trim();
+        }
+        return redirectUri;
     }
 }

@@ -1,4 +1,5 @@
 /* src/main/webapp/resources/js/member_mypage.js [v1.0.6] */
+var MYPAGE_I18N = (window.I18N && window.I18N.mypage) ? window.I18N.mypage : {};
 
 /**
  * [공통 함수] POST 폼 생성 및 전송 (CSRF 자동 포함)
@@ -31,7 +32,8 @@ function submitPostForm(url, params) {
  * 메뉴 삭제 (점주용)
  */
 function deleteMenu(menuId) {
-    if (!confirm("이 메뉴를 삭제하시겠습니까?")) return;
+    var menuDeleteConfirm = MYPAGE_I18N.menuDeleteConfirm || "이 메뉴를 삭제하시겠습니까?";
+    if (!confirm(menuDeleteConfirm)) return;
     submitPostForm('/store/menu/delete', { 'menu_id': menuId });
 }
 
@@ -39,7 +41,8 @@ function deleteMenu(menuId) {
  * 웨이팅 취소 (사용자용)
  */
 function cancelWait(waitId) {
-    if (!confirm("웨이팅을 취소하시겠습니까?")) return;
+    var waitCancelConfirm = MYPAGE_I18N.waitCancelConfirm || "웨이팅을 취소하시겠습니까?";
+    if (!confirm(waitCancelConfirm)) return;
     submitPostForm('/wait/cancel', { 'wait_id': waitId });
 }
 
@@ -47,7 +50,8 @@ function cancelWait(waitId) {
  * 리뷰 삭제 (공통)
  */
 function confirmDeleteReview(reviewId, storeId, returnUrl) {  // ← returnUrl 파라미터 추가
-    if (!confirm("이 리뷰를 삭제하시겠습니까?")) return;
+    var reviewDeleteConfirm = MYPAGE_I18N.reviewDeleteConfirm || "이 리뷰를 삭제하시겠습니까?";
+    if (!confirm(reviewDeleteConfirm)) return;
     
     var params = { 
         'review_id': reviewId, 
@@ -66,7 +70,8 @@ function confirmDeleteReview(reviewId, storeId, returnUrl) {  // ← returnUrl �
  * 회원 탈퇴 (Fetch API 사용)
  */
 function dropUser(userId) {
-    if (!confirm("정말로 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.")) return;
+    var userDropConfirm = MYPAGE_I18N.userDropConfirm || "정말로 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.";
+    if (!confirm(userDropConfirm)) return;
 
     fetch(APP_CONFIG.contextPath + '/member/delete', {
         method: 'POST',
@@ -78,7 +83,8 @@ function dropUser(userId) {
     })
     .then(function(response) {
         if (response.redirected) {
-            alert("정상적으로 탈퇴되었습니다.");
+            var userDropSuccess = MYPAGE_I18N.userDropSuccess || "정상적으로 탈퇴되었습니다.";
+            alert(userDropSuccess);
             location.href = response.url;
             return;
         }
@@ -100,10 +106,13 @@ function toggleHistory() {
 
     if (area.style.display === 'none' || area.style.display === '') {
         area.style.display = 'block';
-        btn.innerText = (btn.id === 'history-toggle-btn') ? '내역 닫기 ▲' : '이용 내역 접기 ▲';
+        var historyClose = MYPAGE_I18N.historyClose || "내역 닫기 ▲";
+        var historyCollapse = MYPAGE_I18N.historyCollapse || "이용 내역 접기 ▲";
+        btn.innerText = (btn.id === 'history-toggle-btn') ? historyClose : historyCollapse;
     } else {
         area.style.display = 'none';
-        btn.innerText = (btn.id === 'history-toggle-btn') ? '전체 이용 내역 보기 ▼' : '전체 이용 내역 보기 ▼';
+        var historyOpen = MYPAGE_I18N.historyOpen || "전체 이용 내역 보기 ▼";
+        btn.innerText = historyOpen;
     }
 }
 
@@ -140,7 +149,8 @@ function initMyPageWebSocket(userId, role, storeId) {
 }
 
 function showNotification(message) {
-    alert("🔔 알림: " + message);
+    var notificationPrefix = MYPAGE_I18N.notificationPrefix || "🔔 알림:";
+    alert(notificationPrefix + " " + message);
     location.reload(); // 상태 변경 즉시 반영을 위해 새로고침
 }
 

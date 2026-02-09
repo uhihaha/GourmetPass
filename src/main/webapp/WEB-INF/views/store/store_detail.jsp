@@ -62,8 +62,10 @@
             <c:choose>
                 <c:when test="${not empty photoList}">
                     <div class="photo-slider" id="photoSlider">
-                        <c:forEach var="photo" items="${photoList}">
-                            <img src="<c:url value='/upload/${photo.file_path}'/>" class="photo-slide" alt="${photo.original_name}">
+                        <c:forEach var="photo" items="${photoList}" varStatus="status">
+                            <img src="<c:url value='/upload/${photo.file_path}'/>"
+                                 class="photo-slide ${status.first ? 'active' : ''}"
+                                 alt="${photo.original_name}">
                         </c:forEach>
                         <div class="photo-dots" id="photoDots"></div>
                     </div>

@@ -27,4 +27,6 @@ public interface PhotoMapper {
     int activatePhoto(@Param("photo_id") int photo_id);
 
     int deletePhoto(@Param("photo_id") int photo_id);
+
+    int getNextPhotoId();
 }

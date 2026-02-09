@@ -58,4 +58,9 @@ public class PhotoServiceImpl implements PhotoService {
     public void deletePhoto(int photo_id) {
         photoMapper.deletePhoto(photo_id);
     }
+
+    @Override
+    public int getNextPhotoId() {
+        return photoMapper.getNextPhotoId();
+    }
 }

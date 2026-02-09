@@ -56,5 +56,7 @@ public interface StoreService {
     // [추가 및 수정 로직]
     List<String> getAvailableTimeSlots(StoreVO store, String bookDate);
     List<String> generateTimeSlots(StoreVO store);
-    String uploadFile(MultipartFile file, String realPath);
+    String uploadFile(MultipartFile file, String realPath, String savedName);
+    int getNextStoreId();
+    int getNextMenuId();
 }

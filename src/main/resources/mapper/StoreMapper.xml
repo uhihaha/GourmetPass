@@ -60,7 +60,7 @@
                            store_category, store_desc, open_time, close_time,
                            res_unit, store_img,
                            store_cnt, max_capacity)
-        VALUES (SEQ_STORE.NEXTVAL,
+        VALUES (#{store_id, jdbcType=NUMERIC},
                 #{user_id, jdbcType=VARCHAR},
                 #{store_name, jdbcType=VARCHAR},
                 #{store_tel, jdbcType=VARCHAR},
@@ -120,7 +120,7 @@
     <insert id="insertMenu" parameterType="com.uhi.gourmet.store.MenuVO">
         INSERT INTO MENU (menu_id, store_id, menu_name,
                           menu_price, menu_img, menu_sign)
-        VALUES (SEQ_MENU.NEXTVAL,
+        VALUES (#{menu_id, jdbcType=NUMERIC},
                 #{store_id, jdbcType=NUMERIC},
                 #{menu_name, jdbcType=VARCHAR}, #{menu_price, jdbcType=NUMERIC},
                 #{menu_img, jdbcType=VARCHAR},
@@ -132,6 +132,14 @@
         FROM MENU
         WHERE store_id = #{store_id}
           AND UPPER(menu_name) = UPPER(#{menu_name})
+    </select>
+
+    <select id="getNextStoreId" resultType="int">
+        SELECT SEQ_STORE.NEXTVAL FROM dual
+    </select>
+
+    <select id="getNextMenuId" resultType="int">
+        SELECT SEQ_MENU.NEXTVAL FROM dual
     </select>
 
     <delete id="deleteMenu" parameterType="int">

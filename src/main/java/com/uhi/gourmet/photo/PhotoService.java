@@ -21,4 +21,6 @@ public interface PhotoService {
     void activatePhoto(int photo_id);
 
     void deletePhoto(int photo_id);
+
+    int getNextPhotoId();
 }

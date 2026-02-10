@@ -114,7 +114,7 @@ mypage.userDropSuccess=Account withdrawal completed.
 mypage.historyClose=Close History
 mypage.historyCollapse=Collapse
 mypage.historyOpen=View Full History
-mypage.notificationPrefix=\uD83D\uDCE2 Notification
+mypage.notificationPrefix=📢 Notification
 
 # ============================================
 # manage.* - Owner Management Center

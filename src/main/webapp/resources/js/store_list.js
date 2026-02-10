@@ -1,9 +1,10 @@
-/* /resources/js/store_list.js */
+/* /resources/js/store_list.js [v2.0.0] */
+/* 수정사항: I18N_UTIL.t() 방식으로 통일 */
 
+// ✅ main.js 방식으로 통일: I18N_UTIL.t 사용
 var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
     ? window.I18N_UTIL.t
     : function(key, fallback) { return fallback || key; };
-
 
 function applyRequiredMessage(inputEl, message) {
     if (!inputEl) return;
@@ -50,7 +51,7 @@ function resetPageAndSubmit() {
 function selectCategory(cat) {
     const hiddenInput = document.getElementById('selectedCategory');
     const pageInput = document.getElementById('pageNum');
-    
+
     if (hiddenInput) {
         // 이미 선택된 카테고리를 다시 누르면 해제(전체보기), 아니면 새로 선택
         if (hiddenInput.value === cat) {
@@ -58,10 +59,10 @@ function selectCategory(cat) {
         } else {
             hiddenInput.value = cat;
         }
-        
+
         // 페이지 번호를 1로 리셋 (카테고리 변경 대응)
         if (pageInput) pageInput.value = 1;
-        
+
         submitFilter();
     }
 }
@@ -75,8 +76,8 @@ function syncAndSubmit() {
     const hiddenKeyword = document.querySelector("#filterForm input[name='keyword']");
 
     if (searchInput && !searchInput.value.trim()) {
-        var requiredMsg = t("store.list.search.required", "검색어를 입력해주세요.");
-        searchInput.setCustomValidity(requiredMsg);
+        searchInput.setCustomValidity(
+            t("storeList.searchRequired", "검색어를 입력해주세요."));
         searchInput.reportValidity();
         return;
     }
@@ -108,7 +109,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const searchInput = document.querySelector(".wire-input");
 
     if (searchInput) {
-        applyRequiredMessage(searchInput, t("store.list.search.required", "검색어를 입력해주세요."));
+        applyRequiredMessage(searchInput, 
+            t("storeList.searchRequired", "검색어를 입력해주세요."));
         searchInput.addEventListener("keypress", function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault(); // 기본 폼 제출 방지

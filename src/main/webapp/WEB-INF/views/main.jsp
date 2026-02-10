@@ -13,17 +13,23 @@
 <div class="main-wrapper">
     <%-- 1. 검색 섹션: Bold Wire 스타일 적용 --%>
     <div class="search-card">
-        <spring:message code="main.search.placeholder" var="phText" />
-        <h1 class="search-title"><spring:message code="main.hero.title" text="🍴 오늘 어떤 맛집을 예약할까요?" /></h1>
+        <%-- Placeholder 다국어 처리 --%>
+        <spring:message code="main.search.placeholder" text="맛집 이름이나 지역을 검색해보세요." var="phText" />
+        <h1 class="search-title">
+            <spring:message code="main.hero.title" text="🍴 오늘 어떤 맛집을 예약할까요?" />
+        </h1>
         <form action="${pageContext.request.contextPath}/store/list" method="get" class="search-form">
-            <input type="text" name="keyword" class="search-input" placeholder="${phText}">
-            <button type="submit" class="btn-search"><spring:message code="main.search.btn" text="맛집 검색" /></button>
+            <input type="text" name="keyword" class="search-input" placeholder="${phText}" required>
+            <button type="submit" class="btn-search">
+                <spring:message code="main.search.btn" text="맛집 검색" />
+            </button>
         </form>
     </div>
 
-    <%-- 2. 카테고리 섹션: store_list와 동일한 Chip 디자인 --%>
+    <%-- 2. 카테고리 섹션: Chips 디자인 및 다국어 키 매핑 --%>
     <div class="category-section">
         <div class="chip-group">
+            <%-- DB 기준 카테고리 목록 --%>
             <c:set var="categories" value="한식,일식,양식,중식,카페" />
             <c:forEach var="cat" items="${fn:split(categories, ',')}">
                 <c:choose>
@@ -34,6 +40,7 @@
                     <c:when test="${cat eq '카페'}"><c:set var="catKey" value="category.Cafe" /></c:when>
                     <c:otherwise><c:set var="catKey" value="category.Etc" /></c:otherwise>
                 </c:choose>
+                <%-- main.js의 .clickable 이벤트 활용 --%>
                 <div class="cat-chip clickable" data-url="${pageContext.request.contextPath}/store/list?category=${cat}">
                     <spring:message code="${catKey}" text="${cat}" />
                 </div>
@@ -48,13 +55,15 @@
 
     <%-- 3. 실시간 인기 맛집 섹션 (TOP 6) --%>
     <div class="popular-section">
-        <h2 class="section-title"><spring:message code="main.section.popular" text="🔥 실시간 인기 맛집" /></h2>
+        <h2 class="section-title">
+            <spring:message code="main.section.popular" text="🔥 실시간 인기 맛집" />
+        </h2>
 
         <div class="store-grid">
             <c:choose>
                 <c:when test="${not empty storeList}">
                     <c:forEach var="store" items="${storeList}">
-                        <%-- 데이터 속성을 활용한 카드 인터랙션 --%>
+                        <%-- main.js의 .clickable 대응 --%>
                         <div class="store-card clickable" data-url="${pageContext.request.contextPath}/store/detail?storeId=${store.store_id}">
                             <div class="store-img-box">
                                 <c:choose>
@@ -65,6 +74,7 @@
                                         <div class="no-img-placeholder">NO IMAGE</div>
                                     </c:otherwise>
                                 </c:choose>
+                                <%-- main.js의 .favorite-toggle 대응 --%>
                                 <button type="button" class="favorite-toggle" data-store-id="${store.store_id}">🤍</button>
                             </div>
                             <div class="store-info">
@@ -81,15 +91,19 @@
                                 </div>
                                 <div class="store-name-row">
                                     <h3 class="store-name">${store.store_name}</h3>
-                                    <%-- 조회수 100회 이상 매장에 HOT 배지 부여 --%>
+                                    <%-- 조회수 기반 HOT 배지 --%>
                                     <c:if test="${store.store_cnt >= 100}">
-                                        <span class="hot-badge"><spring:message code="main.store.hot" text="HOT" /></span>
+                                        <span class="hot-badge">
+                                            <spring:message code="main.store.hot" text="HOT" />
+                                        </span>
                                     </c:if>
                                 </div>
                                 <div class="store-addr-text">${store.store_addr1}</div>
                                 <div class="store-stats">
                                     <span class="stat-rating">⭐ ${store.avg_rating} <small>(${store.review_cnt})</small></span>
-                                    <span class="stat-views">👀 <spring:message code="main.store.views" text="조회수" /> ${store.store_cnt}</span>
+                                    <span class="stat-views">
+                                        👀 <spring:message code="main.store.views" text="조회수" /> ${store.store_cnt}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -107,4 +121,5 @@
 
 <%-- [원칙 2] 공통 인터랙션 스크립트 연결 --%>
 <script src="<c:url value='/resources/js/main.js'/>"></script>
+
 <jsp:include page="common/footer.jsp" />

@@ -1,15 +1,16 @@
 /* src/main/webapp/resources/js/member.js */
-var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
-    ? window.I18N_UTIL.t
-    : function(key, fallback) { return fallback || key; };
-
 $(document).ready(function() {
-    // [1] 기존 로직: 로그인/로그아웃 알림 (사용자님 제공 코드)
+    // i18n 유틸리티 함수 초기화
+    var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+        ? window.I18N_UTIL.t
+        : function(key, fallback) { return fallback || key; };
+
+    // [1] 기존 로직: 로그인/로그아웃 알림
     const error = $("#auth-msg").data("error");
     const logout = $("#auth-msg").data("logout");
 
-    if (error) alert(t("member.loginError", ""));
-    if (logout) alert(t("member.logoutSuccess", ""));
+    if (error) alert(t("member.loginError", "로그인 중 오류가 발생했습니다."));
+    if (logout) alert(t("member.logoutSuccess", "로그아웃되었습니다."));
 
 
     // [2] 새 로직: 회원가입 상태 관리 변수
@@ -20,9 +21,9 @@ $(document).ready(function() {
     // [3] 새 로직: 아이디 중복 확인 (AJAX)
     $("#btnIdCheck").click(function() {
         const userId = $("#user_id").val();
-        
+
         if(userId.length < 3) {
-            alert(t("member.idMinLength", ""));
+            alert(t("member.idMinLength", "아이디는 최소 3자 이상이어야 합니다."));
             return;
         }
 
@@ -35,11 +36,11 @@ $(document).ready(function() {
             },
             success: function(res) {
                 if(res === "success") {
-                    var idAvailable = t("member.idAvailable", "");
+                    var idAvailable = t("member.idAvailable", "사용 가능한 아이디입니다.");
                     $("#idCheckMsg").html("<span class='msg-ok'>" + idAvailable + "</span>");
                     isIdChecked = true;
                 } else {
-                    var idInUse = t("member.idInUse", "");
+                    var idInUse = t("member.idInUse", "이미 사용 중인 아이디입니다.");
                     $("#idCheckMsg").html("<span class='msg-no'>" + idInUse + "</span>");
                     isIdChecked = false;
                 }
@@ -59,11 +60,11 @@ $(document).ready(function() {
         }
 
         if(pw === pwConfirm) {
-            var pwMatch = t("member.pwMatch", "");
+            var pwMatch = t("member.pwMatch", "비밀번호가 일치합니다.");
             $("#pwCheckMsg").html("<span class='msg-ok'>" + pwMatch + "</span>");
             isPwMatched = true;
         } else {
-            var pwMismatch = t("member.pwMismatch", "");
+            var pwMismatch = t("member.pwMismatch", "비밀번호가 일치하지 않습니다.");
             $("#pwCheckMsg").html("<span class='msg-no'>" + pwMismatch + "</span>");
             isPwMatched = false;
         }
@@ -74,32 +75,37 @@ $(document).ready(function() {
     $("#joinForm, #ownerStep2Form").submit(function() {
         // 아이디 중복확인 여부 체크
         if($("#user_id").length > 0 && !isIdChecked) {
-            alert(t("member.idCheckPrompt", ""));
+            alert(t("member.idCheckPrompt", "아이디 중복확인을 해주세요."));
             return false;
         }
-        
+
         // 비밀번호 일치 여부 체크
         if($("#user_pw").length > 0 && !isPwMatched) {
-            alert(t("member.pwMismatchAlert", ""));
+            alert(t("member.pwMismatchAlert", "비밀번호가 일치하지 않습니다."));
             return false;
         }
 
         // 점주 가입 2단계: 위치 정보 체크
         if($("#store_lat").length > 0 && $("#store_lat").val() == "0.0") {
-            alert(t("member.storeLocationRequired", ""));
+            alert(t("member.storeLocationRequired", "주소 검색을 통해 위치 정보를 입력해주세요."));
             return false;
         }
 
         return true;
     });
-    
 });
 
 /**
- * 회원 탈퇴 처리
+ * 회원 탈퇴 처리 (전역 함수)
  */
 function dropUser(userId) {
-    var withdrawConfirm = t("member.withdrawConfirmSimple", "");
+    // i18n 유틸리티 함수
+    var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+        ? window.I18N_UTIL.t
+        : function(key, fallback) { return fallback || key; };
+
+    var withdrawConfirm = t("member.withdrawConfirmSimple", "정말 탈퇴하시겠습니까? 탈퇴 후 모든 예약 및 웨이팅 내역이 삭제됩니다.");
+
     if (confirm(withdrawConfirm)) {
         // 탈퇴 프로세스 호출 (CSRF 토큰 필요)
         const form = document.createElement('form');

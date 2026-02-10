@@ -175,25 +175,6 @@
         return confirm(t.apply(null, [key, fallback].concat(params)));
     }
 
-
-    function consumeFlashMessage() {
-        var flashEl = document.getElementById("flash-message");
-        if (!flashEl) {
-            return;
-        }
-        var message = flashEl.getAttribute("data-message");
-        if (message) {
-            alert(message);
-            flashEl.remove();
-        }
-    }
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", consumeFlashMessage);
-    } else {
-        consumeFlashMessage();
-    }
-
     window.I18N_UTIL = {
         t: t,
         alert: showAlert,

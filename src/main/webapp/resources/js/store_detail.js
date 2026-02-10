@@ -234,7 +234,13 @@ $(document).ready(function () {
 
 
         if (!selectedTime) {
+<<<<<<< Updated upstream
             alert("방문 시간을 선택해 주세요!");
+=======
+            var selectVisitTime = STORE_I18N.selectVisitTime || "";
+            alert('뭐지?');
+            alert(selectVisitTime);
+>>>>>>> Stashed changes
             return;
         }
         // [Step 1] 예약 중복 체크

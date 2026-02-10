@@ -1,4 +1,5 @@
-/* src/main/webapp/resources/js/member-signup.js */
+/* src/main/webapp/resources/js/member-signup.js [v2.5.0] */
+/* 수정사항: 빈 값 전송 방지 로직 강화, 이메일 인증 우회 차단, i18n 완전 동기화 */
 
 (function($) {
     // ✅ i18n 유틸리티 초기화
@@ -14,38 +15,39 @@
     let timerInterval;
     let initialEmail = ""; 
     
-    // 정규표현식 수정 (JavaScript 리터럴 형식에 맞게 \ 하나로 조정)
+    // 정규표현식 정의
     const ID_PATTERN = /^[a-zA-Z0-9_]{4,20}$/;
     const PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,20}$/;
 
     $(document).ready(function() {
-        const isSocialSignup = $("#joinForm input[name='social_signup']").length > 0;
-        const skipEmailAuth = $("#joinForm input[name='skip_email_auth']").length > 0;
+        // [A] 가입 모드 및 소셜 여부 감지 (JSP hidden input의 value를 읽음)
+        const isSocialSignup = $("#joinForm input[name='social_signup']").val() === "true";
+        const skipEmailAuth = $("#joinForm input[name='skip_email_auth']").val() === "true";
 
-        // [A] 로그인/로그아웃 알림 (기존 member.js 통합)
+        // [B] 초기 데이터 세팅 (수정 모드 대응)
+        initialEmail = $("#user_email").val() || ""; 
+
+        // 수정 모드(ID가 readonly) 혹은 소셜 가입일 경우 초기 검증 패스
+        if($("#user_id").prop("readonly") || isSocialSignup) {
+            isIdChecked = true;
+            isPwMatched = true;
+            isEmailChecked = true; 
+        }
+        
+        // skip_email_auth가 명시적으로 true인 경우 인증 생략
+        if (skipEmailAuth) {
+            isEmailChecked = true;
+            $("#btnEmailAuth").prop("disabled", true);
+            $("#auth_code").prop("disabled", true);
+        }
+
+        // [C] 로그인/로그아웃 알림 처리
         const authMsgBox = $("#auth-msg");
         if(authMsgBox.length > 0) {
             const error = authMsgBox.data("error");
             const logout = authMsgBox.data("logout");
             if (error) alert(t("member.loginError", "로그인 중 오류가 발생했습니다."));
             if (logout) alert(t("member.logoutSuccess", "로그아웃되었습니다."));
-        }
-
-        // [B] 초기 데이터 세팅 및 모드 감지
-        initialEmail = $("#user_email").val() || ""; 
-
-        // 수정 모드 혹은 소셜 가입일 경우 초기 검증 패스 설정
-        if($("#user_id").prop("readonly") || isSocialSignup) {
-            isIdChecked = true;
-            isPwMatched = true;
-            isEmailChecked = true; 
-            console.log("Validation: Pre-verified (Edit/Social Mode)");
-        }
-        
-        if (skipEmailAuth) {
-            isEmailChecked = true;
-            $("#btnEmailAuth").prop("disabled", true);
-            $("#auth_code").prop("disabled", true);
         }
 
         // 1. [AJAX] 아이디 중복 확인
@@ -87,7 +89,7 @@
             });
         });
 
-        // 아이디 재입력 시 중복체크 리셋
+        // 아이디 재입력 시 검증 초기화
         $("#user_id").on("input", function() {
             if(!$(this).prop("readonly")) {
                 isIdChecked = false; 
@@ -95,7 +97,7 @@
             }
         });
 
-        // 2. 비밀번호 실시간 확인 (Match & Regex)
+        // 2. 비밀번호 실시간 확인
         $("#user_pw, #user_pw_confirm").on("keyup change input", function() {
             const pw = $("#user_pw").val();
             const pwConfirm = $("#user_pw_confirm").val();
@@ -126,6 +128,16 @@
             }
         });
 
+        // [추가] 이메일 주소 변경 시 재인증 강제
+        $("#user_email").on("input", function() {
+            if (!isSocialSignup && !$("#user_id").prop("readonly")) {
+                isEmailChecked = false;
+                $("#emailMsg").html("<span class='msg-no'>" + 
+                    t("member.emailChangeAuth", "이메일 변경 시 재인증이 필요합니다.") + 
+                    "</span>");
+            }
+        });
+
         // 3. [AJAX] 이메일 인증코드 발송
         $("#btnEmailAuth").click(function() {
             const email = $("#user_email").val();
@@ -153,7 +165,7 @@
             });
         });
 
-        // 4. 인증코드 실시간 확인
+        // 4. 인증코드 실시간 검증
         $("#auth_code").on("keyup", function() {
             const inputCode = $(this).val();
             if(inputCode.length === 6) {
@@ -175,7 +187,7 @@
             }
         });
 
-        // 타이머 엔진
+        // 인증 타이머 함수
         function startTimer() {
             let time = 180;
             clearInterval(timerInterval);
@@ -191,20 +203,29 @@
             }, 1000);
         }
 
-        // 5. [핵심] 최종 폼 전송 검증 로직
+        // 5. [핵심] 최종 폼 전송 검증 (빈 값 제출 및 엔터 차단 로직)
         $("#joinForm").on("submit", function(e) {
+            // HTML5 기본 유효성(required 등) 검사 우선 실행
+            if (!this.checkValidity()) {
+                return true; // 브라우저 에러를 노출하게 둠
+            }
+
+            // 소셜 가입은 추가 검증 생략
             if (isSocialSignup) return true;
 
+            // 중복 확인 여부 체크
             if(!isIdChecked) { 
                 alert(t("member.idCheckPrompt", "아이디 중복확인을 해주세요.")); 
                 $("#user_id").focus();
                 e.preventDefault(); return false; 
             }
+            // 비밀번호 일치 여부 체크
             if(!isPwMatched) { 
                 alert(t("member.pwMismatchAlert", "비밀번호를 확인해주세요.")); 
                 $("#user_pw").focus();
                 e.preventDefault(); return false; 
             }
+            // 이메일 인증 여부 체크 (skip_email_auth가 아닐 때만)
             if(!skipEmailAuth && !isEmailChecked) { 
                 alert(t("member.emailAuthRequired", "이메일 인증이 필요합니다.")); 
                 $("#user_email").focus();
@@ -214,7 +235,7 @@
             return true; 
         });
 
-        // 6. 점주 2단계 위치 검증
+        // 6. 점주 가입 2단계 좌표 검증
         $("#ownerStep2Form").on("submit", function(e) {
             const lat = $("#store_lat").val();
             if(!lat || lat === "0.0" || lat === "0") {
@@ -226,18 +247,22 @@
         });
     });
 
-    // 7. 회원 탈퇴 (전역)
+    // 7. 회원 탈퇴 (전역 노출)
     window.dropUser = function(userId) {
-        if (confirm(t("member.withdrawConfirmSimple"))) {
+        if (confirm(t("member.withdrawConfirmSimple", "정말 탈퇴하시겠습니까?"))) {
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = APP_CONFIG.contextPath + '/member/delete';
             
             const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden'; csrfInput.name = APP_CONFIG.csrfName; csrfInput.value = APP_CONFIG.csrfToken;
+            csrfInput.type = 'hidden'; 
+            csrfInput.name = APP_CONFIG.csrfName; 
+            csrfInput.value = APP_CONFIG.csrfToken;
             
             const userIdInput = document.createElement('input');
-            userIdInput.type = 'hidden'; userIdInput.name = 'user_id'; userIdInput.value = userId;
+            userIdInput.type = 'hidden'; 
+            userIdInput.name = 'user_id'; 
+            userIdInput.value = userId;
 
             form.appendChild(csrfInput);
             form.appendChild(userIdInput);

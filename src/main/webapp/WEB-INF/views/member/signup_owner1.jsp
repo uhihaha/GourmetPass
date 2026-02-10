@@ -20,6 +20,9 @@
         <%-- CSRF 토큰 --%>
         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
         
+        <%-- [교정] 이메일 인증 강제 설정: 일반 가입과 동일하게 false로 설정해야 엔진이 작동합니다 --%>
+        <input type="hidden" name="skip_email_auth" id="skip_email_auth" value="${socialSignup ? 'true' : 'false'}">
+        
         <%-- 소셜 가입 여부 플래그 --%>
         <c:if test="${socialSignup}">
             <input type="hidden" name="social_signup" value="true">
@@ -67,7 +70,7 @@
             <tr>
                 <th><spring:message code="member.user_nm" text="성명" /></th>
                 <td>
-                    <input type="text" name="user_nm" required 
+                    <input type="text" name="user_nm" id="user_nm" required 
                            placeholder="<spring:message code='member.placeholder.owner_name' text='본인의 실명을 입력하세요' />" 
                            value="${socialName}">
                 </td>
@@ -75,12 +78,12 @@
             <tr>
                 <th><spring:message code="member.user_tel" text="전화번호" /></th>
                 <td>
-                    <input type="text" name="user_tel" required oninput="autoHyphen(this)" maxlength="13" 
+                    <input type="text" name="user_tel" id="user_tel" required oninput="autoHyphen(this)" maxlength="13" 
                            placeholder="<spring:message code='member.placeholder.tel' text='숫자만 입력' />">
                 </td>
             </tr>
 
-            <%-- [4] 이메일 인증 섹션 (member-signup.js가 제어) --%>
+            <%-- [4] 이메일 인증 섹션 (member-signup.js v2.5.0 제어) --%>
             <tr>
                 <th><spring:message code="member.user_email" text="이메일" /></th>
                 <td>
@@ -105,13 +108,13 @@
                                placeholder="<spring:message code='member.placeholder.auth_code' text='인증코드 6자리' />" 
                                maxlength="6"
                                <c:if test="${socialSignup}">value="SOCIAL"</c:if>>
-                        <span id="timer" class="timer-display" style="color:red; margin-left:10px; font-weight:bold;"></span>
+                        <span id="timer" class="timer-display"></span>
                     </div>
                     <div id="authMsg" class="msg-box"></div>
                 </td>
             </tr>
 
-            <%-- [5] 거주지 주소 섹션 (address-api.js 연동) --%>
+            <%-- [5] 거주지 주소 섹션 --%>
             <tr>
                 <th><spring:message code="member.user_addr_residence" text="거주지 주소" /></th>
                 <td>
@@ -127,7 +130,7 @@
                     <input type="text" name="user_addr2" id="user_addr2" 
                            placeholder="<spring:message code='member.placeholder.addr2' text='상세주소' />">
                     
-                    <%-- 좌표 저장용 hidden 필드 (address-api.js에서 주입) --%>
+                    <%-- 좌표 저장용 hidden 필드 --%>
                     <input type="hidden" name="user_lat" id="user_lat" value="0.0">
                     <input type="hidden" name="user_lon" id="user_lon" value="0.0">
                     
@@ -139,7 +142,7 @@
         </table>
 
         <div class="btn-group">
-            <button type="submit" class="btn-submit">
+            <button type="submit" class="btn-submit" id="btnSubmit">
                 <spring:message code="member.btn.next_step_store" text="다음 단계로 (가게 정보 입력)" />
             </button>
             <a href="<c:url value='/member/signup/select'/>" class="btn-cancel">
@@ -154,14 +157,10 @@
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
 <%-- 공통/API 스크립트 --%>
-<script src="<c:url value='/resources/js/common.js'/>"></script>
 <script src="<c:url value='/resources/js/address-api.js'/>"></script>
+<script src="<c:url value='/resources/js/common.js'/>"></script>
 
 <script type="text/javascript">
-    /**
-     * [Global Config] 전역 설정 객체
-     * member-signup.js 실행 전에 선언되어야 AJAX의 contextPath 및 CSRF를 정상 인식함
-     */
     var APP_CONFIG = APP_CONFIG || {
         contextPath: "${pageContext.request.contextPath}",
         csrfName: "${_csrf.parameterName}",
@@ -169,7 +168,7 @@
     };
 </script>
 
-<%-- 통합 가입 엔진 로드 (member.js는 중복 호출하지 않음) --%>
+<%-- 통합 가입 엔진 로드 (v2.5.0) --%>
 <script src="<c:url value='/resources/js/member-signup.js'/>"></script>
 
 <jsp:include page="../common/footer.jsp" />

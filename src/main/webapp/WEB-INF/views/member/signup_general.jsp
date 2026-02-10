@@ -17,12 +17,11 @@
     </c:if>
 
     <form action="${pageContext.request.contextPath}/member/joinProcess" method="post" id="joinForm">
-        <%-- CSRF 보안 및 좌표 저장용 숨김 필드 --%>
         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
         <input type="hidden" name="user_lat" id="user_lat" value="0.0">
         <input type="hidden" name="user_lon" id="user_lon" value="0.0">
         
-        <%-- 일반 가입의 경우 이메일 인증을 필수로 하려면 value를 false로, 건너뛰려면 true로 설정 --%>
+        <%-- [교정] value를 "false"로 설정해야 이메일 인증 로직이 가동됩니다 --%>
         <input type="hidden" name="skip_email_auth" id="skip_email_auth" value="false">
         
         <c:if test="${socialSignup}">
@@ -34,7 +33,6 @@
                 <th><spring:message code="member.user_id" text="아이디" /></th>
                 <td>
                     <div class="input-row">
-                        <%-- member-signup.js의 ID_PATTERN(4~20자)과 placeholder 동기화 --%>
                         <input type="text" name="user_id" id="user_id" required 
                                placeholder="<spring:message code='member.placeholder.id_min' text='영문/숫자/언더바 4~20자' />"
                                value="${socialUserId}" <c:if test="${socialSignup}">readonly</c:if>>
@@ -50,7 +48,6 @@
             <tr>
                 <th><spring:message code="member.user_pw" text="비밀번호" /></th>
                 <td>
-                    <%-- member-signup.js의 PASSWORD_PATTERN과 placeholder 동기화 --%>
                     <input type="password" name="user_pw" id="user_pw" required 
                            placeholder="<spring:message code='member.placeholder.pw' text='영문/숫자/특수문자 포함 8~20자' />"
                            value="${socialPassword}" <c:if test="${socialSignup}">readonly</c:if>>
@@ -67,18 +64,17 @@
             </tr>
             <tr>
                 <th><spring:message code="member.user_nm" text="이름" /></th>
-                <td><input type="text" name="user_nm" required placeholder="<spring:message code='member.placeholder.name' text='성함을 입력하세요' />" value="${socialName}"></td>
+                <td><input type="text" name="user_nm" id="user_nm" required placeholder="<spring:message code='member.placeholder.name' text='성함을 입력하세요' />" value="${socialName}"></td>
             </tr>
             <tr>
                 <th><spring:message code="member.user_tel" text="전화번호" /></th>
                 <td>
-                    <input type="text" name="user_tel" <c:if test="${not socialSignup}">required</c:if>
+                    <input type="text" name="user_tel" id="user_tel" <c:if test="${not socialSignup}">required</c:if>
                            placeholder="<spring:message code='member.placeholder.tel' text='숫자만 입력' />" 
                            maxlength="13" oninput="autoHyphen(this)">
                 </td>
             </tr>
             
-            <%-- 이메일 인증 섹션: member-signup.js 통합 엔진이 감지하여 로직 주입 --%>
             <tr>
                 <th><spring:message code="member.user_email" text="이메일" /></th>
                 <td>
@@ -141,16 +137,12 @@
     </form>
 </div>
 
-<%-- 외부 API 및 공통 스크립트 --%>
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoJsKey}&libraries=services"></script>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="<c:url value='/resources/js/address-api.js'/>"></script>
 <script src="<c:url value='/resources/js/common.js'/>"></script>
 
 <script type="text/javascript">
-    /**
-     * [Global Config] member-signup.js가 실행되기 전 필요한 환경 변수 선언
-     */
     var APP_CONFIG = APP_CONFIG || {
         contextPath: "${pageContext.request.contextPath}",
         csrfName: "${_csrf.parameterName}",
@@ -158,10 +150,5 @@
     };
 </script>
 
-<%-- 
-    통합 가입 엔진 로드 
-    이 파일 안에 아이디 중복확인(AJAX), 이메일 인증(AJAX/타이머), 최종 폼 검증 로직이 모두 들어있습니다.
---%>
 <script src="<c:url value='/resources/js/member-signup.js'/>"></script>
-
 <jsp:include page="../common/footer.jsp" />

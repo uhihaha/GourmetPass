@@ -6,7 +6,7 @@ var MYPAGE_I18N = (window.I18N && window.I18N.mypage) ? window.I18N.mypage : {};
  * @param {number} menuId - 삭제할 메뉴의 고유 ID
  */
 function deleteMenu(menuId) {
-    var menuDeleteConfirmStrong = MYPAGE_I18N.menuDeleteConfirmStrong || "정말로 이 메뉴를 삭제하시겠습니까?\n삭제 후에는 복구할 수 없습니다.";
+    var menuDeleteConfirmStrong = MYPAGE_I18N.menuDeleteConfirmStrong || "";
     if(confirm(menuDeleteConfirmStrong)) {
         submitPostRequest('/store/menu/delete', {
             'menu_id': menuId
@@ -20,7 +20,7 @@ function deleteMenu(menuId) {
  * @param {string} storeId - 해당 맛집 ID
  */
 function confirmDeleteReview(reviewId, storeId) {
-    var reviewDeleteConfirm = MYPAGE_I18N.reviewDeleteConfirm || "이 리뷰를 삭제하시겠습니까?";
+    var reviewDeleteConfirm = MYPAGE_I18N.reviewDeleteConfirm || "";
     if(confirm(reviewDeleteConfirm)) {
         submitPostRequest('/review/delete', {
             'review_id': reviewId,

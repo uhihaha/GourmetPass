@@ -184,7 +184,7 @@
             </div>
         </sec:authorize>
         <sec:authorize access="hasRole('ROLE_USER')">
-            <form id="bookForm" action="<c:url value='/book/register'/>" method="post">
+            <form id="bookForm" action="<c:url value='/book/register'/>" method="post" novalidate>
                 <input type="hidden" name="store_id" value="${store.store_id}">
                 <input type="hidden" id="payIdField" name="pay_id" value="">
                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
@@ -215,7 +215,7 @@
                             <div id="timeSlotContainer" class="time-grid">
                                     <%-- JS에 의해 타임 버튼이 동적으로 생성됨 --%>
                             </div>
-                            <input type="hidden" name="book_time" id="selectedTime" required>
+                            <input type="hidden" name="book_time" id="selectedTime">
                         </td>
                     </tr>
                 </table>

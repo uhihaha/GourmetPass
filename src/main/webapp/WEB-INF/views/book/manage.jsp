@@ -19,7 +19,7 @@
 
 	<%-- 1. 실시간 웨이팅 섹션 --%>
 	<div class="dashboard-card">
-		<%-- [로직 교정] 실제 입장 대기 중인(WAITING, CALLED) 팀만 합산 --%>
+		<%-- 실제 입장 대기 중인(WAITING, CALLED) 팀만 합산 --%>
 		<c:set var="realWaitCount" value="0" />
 		<c:forEach var="w" items="${store_wait_list}">
 			<c:if
@@ -107,7 +107,7 @@
 			<span class="badge-wire">총 ${store_book_list.size()}건</span>
 		</div>
 		
-		<%-- 🆕 날짜 선택 필터 --%>
+		<%-- 3. 날짜 선택 필터 --%>
 	    <div class="date-filter">
 	        <h3 style="margin: 0 0 15px 0; font-size: 18px;">📆 날짜별 예약 조회</h3>
 	        <form action="<c:url value='/book/manage'/>" method="get">

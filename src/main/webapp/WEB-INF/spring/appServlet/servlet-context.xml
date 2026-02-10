@@ -14,7 +14,7 @@
 	<annotation-driven />
 
 	<resources mapping="/resources/**" location="/resources/" />
-	<resources mapping="/upload/**" location="${upload.path}" />
+	<resources mapping="/upload/**" location="file:${upload.path}/" />
 
 	<beans:bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
 		<beans:property name="basenames">

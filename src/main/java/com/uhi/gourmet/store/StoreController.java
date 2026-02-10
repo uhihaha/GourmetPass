@@ -19,10 +19,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.github.pagehelper.PageInfo;
 import com.uhi.gourmet.book.BookService;
 import com.uhi.gourmet.member.MemberService;
 import com.uhi.gourmet.member.MemberVO;
+import com.uhi.gourmet.photo.PhotoService;
+import com.uhi.gourmet.photo.PhotoVO;
 import com.uhi.gourmet.review.ReviewService;
 import com.uhi.gourmet.review.ReviewVO;
 import com.uhi.gourmet.wait.WaitService;
@@ -49,135 +53,108 @@ public class StoreController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private PhotoService photoService;
+
     @Value("${kakao.js.key}")
     private String kakaoJsKey;
     
-    @Value("${portone.imp.init}")
-    private String impInit;
-    @Value("${portone.pg}")
-    private String pg;
+    @Value("${portone.store.id}")
+    private String portOneStoreId;
+    @Value("${portone.channel.key}")
+    private String portOneChannelKey;
 
-    /**
-     * [리팩토링] 1. 맛집 목록 조회 (페이징 및 동적 필터링 반영)
-     * @param cri : 같은 패키지 내 Criteria.java 객체를 바인딩합니다.
-     */
     @GetMapping("/list")
-    public String storeList(@ModelAttribute Criteria cri, Model model) {
+    public String storeList(
+            @RequestParam(value = "pageNum", defaultValue = "1") int pageNum,
+            @RequestParam(value = "pageSize", defaultValue = "6") int pageSize,
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "region", required = false) String region,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            Model model) {
         
-        // [로직 1] Criteria 바구니를 사용하여 해당 페이지의 데이터만 가져옵니다.
-        List<StoreVO> storeList = storeService.getStoreList(cri);
-        model.addAttribute("storeList", storeList); 
-        
-        // [로직 2] 검색 조건에 맞는 '전체 데이터 개수'를 가져옵니다.
-        int total = storeService.getTotal(cri);
-        
-        /**
-         * [DTO 활용] PageDTO (페이징 계산 엔진)
-         * 동일 패키지 내의 PageDTO 클래스를 인스턴스화합니다.
-         */
-        PageDTO pageMaker = new PageDTO(cri, total);
+        PageInfo<StoreVO> pageMaker = storeService.getStoreList(pageNum, pageSize, category, region, keyword);
+        for (StoreVO store : pageMaker.getList()) {
+            PhotoVO thumbnail = photoService.getThumbnailByStore(store.getStore_id());
+            if (thumbnail != null) {
+                store.setStore_img(thumbnail.getFile_path());
+            }
+        }
+        model.addAttribute("storeList", pageMaker.getList()); 
         model.addAttribute("pageMaker", pageMaker);
-        
-        // [상태 유지] 필터 선택 정보 전달
-        model.addAttribute("category", cri.getCategory());
-        model.addAttribute("region", cri.getRegion());
-        model.addAttribute("keyword", cri.getKeyword());
+        model.addAttribute("category", category);
+        model.addAttribute("region", region);
+        model.addAttribute("keyword", keyword);
         
         return "store/store_list";
     }
 
-    // 2. 맛집 상세 정보 조회 (최근 리뷰 3개 요약 포함)
     @GetMapping("/detail")
     public String storeDetail(@RequestParam("storeId") int storeId, Model model, Principal principal) {
-        
         if (principal != null) {
-            MemberVO loginUser = memberService.getMember(principal.getName()); 
-            model.addAttribute("loginUser", loginUser);
+            model.addAttribute("loginUser", memberService.getMember(principal.getName()));
         }
         
         storeService.plusViewCount(storeId);
-        
         StoreVO store = storeService.getStoreDetail(storeId);
-        List<MenuVO> menuList = storeService.getMenuList(storeId);
-        
-        int currentWaitCount = waitService.get_current_wait_count(storeId);
-        model.addAttribute("currentWaitCount", currentWaitCount);
+        if (store != null && store.getMax_capacity() < 1) {
+            store.setMax_capacity(1);
+        }
+        model.addAttribute("currentWaitCount", waitService.get_current_wait_count(storeId));
 
         Map<String, Object> stats = reviewService.getReviewStats(storeId);
         if (store != null && stats != null) {
-            Object cntVal = stats.get("review_cnt");
-            Object rateVal = stats.get("avg_rating");
-
-            store.setReview_cnt(cntVal != null ? Integer.parseInt(String.valueOf(cntVal)) : 0);
-            store.setAvg_rating(rateVal != null ? Double.parseDouble(String.valueOf(rateVal)) : 0.0);
+            store.setReview_cnt(stats.get("review_cnt") != null ? Integer.parseInt(String.valueOf(stats.get("review_cnt"))) : 0);
+            store.setAvg_rating(stats.get("avg_rating") != null ? Double.parseDouble(String.valueOf(stats.get("avg_rating"))) : 0.0);
         }
 
-        List<ReviewVO> reviewList = reviewService.getStoreReviews(storeId);
-        if (reviewList != null && reviewList.size() > 3) {
-            reviewList = reviewList.subList(0, 3);
-        }
+        // [수정] PageInfo에서 첫 페이지 2개만 추출 (pageSize를 3에서 2로 변경)
+        List<ReviewVO> reviewList = reviewService.getStoreReviews(storeId, 1, 2).getList();
+        List<PhotoVO> photoList = photoService.getPhotosByStore(storeId);
         
         model.addAttribute("store", store);
-        model.addAttribute("menuList", menuList);
+        model.addAttribute("menuList", storeService.getMenuList(storeId));
         model.addAttribute("reviewList", reviewList);
+        model.addAttribute("photoList", photoList);
         model.addAttribute("kakaoJsKey", kakaoJsKey);
-        model.addAttribute("impInit", impInit);
-        model.addAttribute("pg", pg);
-
-        boolean canWriteReview = (principal != null) && reviewService.checkReviewEligibility(principal.getName(), storeId);
-        model.addAttribute("canWriteReview", canWriteReview);
+        model.addAttribute("portOneStoreId", portOneStoreId);
+        model.addAttribute("portOneChannelKey", portOneChannelKey);
+        model.addAttribute("canWriteReview", (principal != null) && reviewService.checkReviewEligibility(principal.getName(), storeId));
         
         return "store/store_detail";
     }
     
-    // 3. 전체 리뷰 게시판 조회
     @GetMapping("/reviews")
     public String allReviews(@RequestParam("store_id") int storeId, Model model) {
-        StoreVO store = storeService.getStoreDetail(storeId);
-        List<ReviewVO> allReviews = reviewService.getStoreReviews(storeId);
-        
-        model.addAttribute("store", store);
-        model.addAttribute("allReviews", allReviews);
-        
+        model.addAttribute("store", storeService.getStoreDetail(storeId));
+        model.addAttribute("allReviews", reviewService.getStoreReviews(storeId, 1, 10).getList());
         return "store/store_reviews";
     }
     
-    // 4. API: 예약 가능 시간 슬롯 동적 조회
     @GetMapping(value = "/api/timeSlots", produces = "application/json; charset=UTF-8")
     @ResponseBody 
-    public List<String> getTimeSlots(@RequestParam("store_id") int storeId, 
-                                   @RequestParam("book_date") String bookDate) {
-        StoreVO store = storeService.getStoreDetail(storeId);
-        return storeService.getAvailableTimeSlots(store, bookDate);
+    public List<String> getTimeSlots(@RequestParam("store_id") int storeId, @RequestParam("book_date") String bookDate) {
+        return storeService.getAvailableTimeSlots(storeService.getStoreDetail(storeId), bookDate);
     }
 
-    // ================= [실시간 매장 관리: 점주 전용] =================
-
     @PostMapping("/wait/updateStatus")
-    public String updateWaitStatus(@RequestParam("wait_id") int waitId, 
-                                   @RequestParam("status") String status,
-                                   @RequestParam("user_id") String userId) {
-
+    public String updateWaitStatus(@RequestParam("wait_id") int waitId, @RequestParam("status") String status, @RequestParam("user_id") String userId) {
         waitService.update_wait_status(waitId, status);
         messagingTemplate.convertAndSend("/topic/wait/" + userId, status);
-        
         return "redirect:/book/manage"; 
     }
 
-    // ================= [가게 및 메뉴 정보 관리] =================
-
     @GetMapping("/register")
-    public String registerStorePage() {
-        return "store/store_register";
-    }
+    public String registerStorePage() { return "store/store_register"; }
 
     @PostMapping("/register")
-    public String registerStoreProcess(@ModelAttribute StoreVO vo, 
-                                     @RequestParam(value="file", required=false) MultipartFile file,
-                                     HttpServletRequest request, Principal principal) {
+    public String registerStoreProcess(@ModelAttribute StoreVO vo, @RequestParam(value="file", required=false) MultipartFile file, HttpServletRequest request, Principal principal) {
+        if (vo.getStore_id() <= 0) {
+            vo.setStore_id(storeService.getNextStoreId());
+        }
         if (file != null && !file.isEmpty()) {
-            String realPath = request.getSession().getServletContext().getRealPath("/resources/upload");
-            vo.setStore_img(storeService.uploadFile(file, realPath));
+            String savedName = buildStoredFileName(principal, "store_img", vo.getStore_id(), file);
+            vo.setStore_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload"), savedName));
         }
         storeService.registerStore(vo, principal.getName());
         return "redirect:/member/mypage";
@@ -192,34 +169,53 @@ public class StoreController {
     }
 
     @PostMapping("/update")
-    public String updateStoreProcess(@ModelAttribute StoreVO vo, 
-                                     @RequestParam(value="file", required=false) MultipartFile file, 
-                                     HttpServletRequest request, Principal principal) {
+    public String updateStoreProcess(@ModelAttribute StoreVO vo,
+                                     @RequestParam(value="file", required=false) MultipartFile file,
+                                     HttpServletRequest request,
+                                     Principal principal,
+                                     RedirectAttributes rttr) {
         if (file != null && !file.isEmpty()) {
-            String realPath = request.getSession().getServletContext().getRealPath("/resources/upload");
-            vo.setStore_img(storeService.uploadFile(file, realPath));
+            String savedName = buildStoredFileName(principal, "store_img", vo.getStore_id(), file);
+            vo.setStore_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload"), savedName));
         }
-        storeService.modifyStore(vo, principal.getName());
+        try {
+            storeService.modifyStore(vo, principal.getName());
+        } catch (RuntimeException e) {
+            rttr.addFlashAttribute("msg", e.getMessage());
+            return "redirect:/store/update?store_id=" + vo.getStore_id();
+        }
         return "redirect:/member/mypage";
     }
 
     @GetMapping("/menu/register")
     public String menuRegisterPage(@RequestParam("store_id") int storeId, Model model, Principal principal) {
-        StoreVO store = storeService.getMyStore(storeId, principal.getName());
-        if (store == null) return "redirect:/member/mypage";
+        if (storeService.getMyStore(storeId, principal.getName()) == null) return "redirect:/member/mypage";
         model.addAttribute("store_id", storeId);
         return "store/menu_register";
     }
 
     @PostMapping("/menu/register")
-    public String menuRegisterProcess(@ModelAttribute MenuVO menuVO, 
+    public String menuRegisterProcess(@ModelAttribute MenuVO menuVO,
                                       @RequestParam(value="file", required=false) MultipartFile file,
-                                      HttpServletRequest request, Principal principal) {
-        if (file != null && !file.isEmpty()) {
-            String realPath = request.getSession().getServletContext().getRealPath("/resources/upload");
-            menuVO.setMenu_img(storeService.uploadFile(file, realPath));
+                                      HttpServletRequest request,
+                                      Principal principal,
+                                      RedirectAttributes rttr) {
+        if (principal == null) {
+            return "redirect:/member/login";
         }
-        storeService.addMenu(menuVO, principal.getName());
+        if (menuVO.getMenu_id() <= 0) {
+            menuVO.setMenu_id(storeService.getNextMenuId());
+        }
+        if (file != null && !file.isEmpty()) {
+            String savedName = buildStoredFileName(principal, "menu_img", menuVO.getMenu_id(), file);
+            menuVO.setMenu_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload"), savedName));
+        }
+        try {
+            storeService.addMenu(menuVO, principal.getName());
+        } catch (RuntimeException e) {
+            rttr.addFlashAttribute("msg", e.getMessage());
+            return "redirect:/store/menu/register?store_id=" + menuVO.getStore_id();
+        }
         return "redirect:/member/mypage"; 
     }
 
@@ -238,14 +234,30 @@ public class StoreController {
     }
     
     @PostMapping("/menu/update")
-    public String menuUpdateProcess(@ModelAttribute MenuVO vo, 
-                                    @RequestParam(value="file", required=false) MultipartFile file,
-                                    HttpServletRequest request, Principal principal) {
+    public String menuUpdateProcess(@ModelAttribute MenuVO vo, @RequestParam(value="file", required=false) MultipartFile file, HttpServletRequest request, Principal principal) {
         if (file != null && !file.isEmpty()) {
-            String realPath = request.getSession().getServletContext().getRealPath("/resources/upload");
-            vo.setMenu_img(storeService.uploadFile(file, realPath));
+            String savedName = buildStoredFileName(principal, "menu_img", vo.getMenu_id(), file);
+            vo.setMenu_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload"), savedName));
         }
         storeService.modifyMenu(vo, principal.getName());
         return "redirect:/member/mypage";
+    }
+
+    private String buildStoredFileName(Principal principal, String type, int id, MultipartFile file) {
+        String userId = (principal != null && principal.getName() != null) ? principal.getName() : "user";
+        String extension = extractFileExtension(file.getOriginalFilename());
+        String folder = type != null && type.contains("menu") ? "menu" : "store";
+        return folder + "/" + userId + "_" + type + "_" + id + extension;
+    }
+
+    private String extractFileExtension(String fileName) {
+        if (fileName == null) {
+            return "";
+        }
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
+            return "";
+        }
+        return fileName.substring(dotIndex);
     }
 }

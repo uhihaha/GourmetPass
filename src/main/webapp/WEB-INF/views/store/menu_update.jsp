@@ -70,4 +70,56 @@
     </form>
 </div>
 
+<script>
+    (function () {
+        var input = document.querySelector("input[type='file'][name='file']");
+        if (!input) return;
+
+        function resizeImageFile(file, maxWidth, maxHeight, quality) {
+            return new Promise(function (resolve) {
+                if (!file.type || !file.type.startsWith("image/")) {
+                    resolve(file);
+                    return;
+                }
+                var img = new Image();
+                var url = URL.createObjectURL(file);
+                img.onload = function () {
+                    var width = img.width;
+                    var height = img.height;
+                    var ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+                    var canvas = document.createElement("canvas");
+                    canvas.width = Math.round(width * ratio);
+                    canvas.height = Math.round(height * ratio);
+                    var ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    URL.revokeObjectURL(url);
+                    canvas.toBlob(function (blob) {
+                        if (!blob) {
+                            resolve(file);
+                            return;
+                        }
+                        var resized = new File([blob], file.name, {type: blob.type, lastModified: Date.now()});
+                        resolve(resized);
+                    }, file.type === "image/png" ? "image/png" : "image/jpeg", quality);
+                };
+                img.onerror = function () {
+                    URL.revokeObjectURL(url);
+                    resolve(file);
+                };
+                img.src = url;
+            });
+        }
+
+        input.addEventListener("change", function () {
+            if (!input.files || input.files.length === 0) return;
+            var file = input.files[0];
+            resizeImageFile(file, 400, 400, 0.7).then(function (resized) {
+                var dataTransfer = new DataTransfer();
+                dataTransfer.items.add(resized);
+                input.files = dataTransfer.files;
+            });
+        });
+    })();
+</script>
+
 <jsp:include page="../common/footer.jsp" />

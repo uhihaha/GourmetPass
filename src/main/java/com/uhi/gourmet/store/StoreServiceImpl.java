@@ -13,56 +13,63 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.uhi.gourmet.common.ImageProcessingService;
+
 @Service
 public class StoreServiceImpl implements StoreService {
 
     @Autowired
     private StoreMapper storeMapper;
+    
+    @Autowired
+    private ImageProcessingService imageProcessingService;
 
-    // 1. 맛집 목록 조회 (페이징 반영)
+    // 1. 맛집 목록 조회 (PageHelper 반영)
     @Override
-    public List<StoreVO> getStoreList(Criteria cri) {
-        return storeMapper.getListStore(cri);
+    public PageInfo<StoreVO> getStoreList(int pageNum, int pageSize, String category, String region, String keyword) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<StoreVO> list = storeMapper.getListStore(category, region, keyword);
+        return new PageInfo<>(list);
     }
 
-    // 1-1. 전체 데이터 개수 조회
     @Override
-    public int getTotal(Criteria cri) {
-        return storeMapper.getTotalCount(cri);
+    public int getTotal(String category, String region, String keyword) {
+        return storeMapper.getTotalCount(category, region, keyword);
     }
 
-    /**
-     * [추가] 메인 페이지용 인기 맛집 조회 로직
-     * Mapper에서 정의된 상위 6개 매장 조회 SQL을 실행합니다.
-     */
     @Override
     public List<StoreVO> getPopularStores() {
         return storeMapper.selectPopularStore();
     }
 
-    // 2. 맛집 상세 조회
     @Override
     @Transactional
     public StoreVO getStoreDetail(int storeId) {
         return storeMapper.getStoreDetail(storeId);
     }
 
-    // 3. 메뉴 목록 조회
     @Override
     public List<MenuVO> getMenuList(int storeId) {
         return storeMapper.getMenuList(storeId);
     }
 
-    // 4. 조회수 증가
     @Override
     public void plusViewCount(int storeId) {
         storeMapper.updateViewCount(storeId);
     }
 
-    // 5. 가게 등록 (점주 전용)
+    // 5. 가게 등록
     @Override
     @Transactional
     public void registerStore(StoreVO vo, String userId) {
+        if (vo.getMax_capacity() < 1) {
+            throw new RuntimeException("최소인원은 1 이상이어야 합니다.");
+        }
+        if (vo.getStore_id() <= 0) {
+            vo.setStore_id(storeMapper.getNextStoreId());
+        }
         vo.setUser_id(userId);
         storeMapper.insertStore(vo);
     }
@@ -71,14 +78,23 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional
     public void modifyStore(StoreVO vo, String userId) {
+        // [수정 포인트] ID가 0이면 수정 대상이 아니므로 예외를 던져 롤백하거나 중단합니다.
+        if (vo.getStore_id() <= 0) {
+            throw new RuntimeException("유효하지 않은 가게 ID입니다. (ID: 0)");
+        }
+        if (vo.getMax_capacity() < 1) {
+            throw new RuntimeException("최소인원은 1 이상이어야 합니다.");
+        }
+
         StoreVO check = storeMapper.getStoreDetail(vo.getStore_id());
         if (check != null && check.getUser_id().equals(userId)) {
             vo.setUser_id(userId);
             storeMapper.updateStore(vo);
+        } else {
+            throw new RuntimeException("가게 수정 권한이 없거나 해당 가게가 존재하지 않습니다.");
         }
     }
 
-    // 7. 내 가게 정보 조회
     @Override
     public StoreVO getMyStore(int storeId, String userId) {
         StoreVO store = storeMapper.getStoreDetail(storeId);
@@ -88,7 +104,6 @@ public class StoreServiceImpl implements StoreService {
         return null;
     }
 
-    // 8. 점주 ID로 가게 조회
     @Override
     public StoreVO get_store_by_user_id(String userId) {
         return storeMapper.getStoreByUserId(userId);
@@ -98,10 +113,35 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional
     public void addMenu(MenuVO vo, String userId) {
+        // [수정 포인트] store_id가 0으로 넘어올 경우 FK 제약조건 위반을 방지합니다.
+        if (vo.getStore_id() <= 0) {
+            throw new RuntimeException("가게 정보(ID)가 누락되었습니다.");
+        }
+
+        if (vo.getMenu_price() < 0) {
+            throw new RuntimeException("메뉴 가격은 0원 이상이어야 합니다.");
+        }
+
+        if (vo.getMenu_name() == null || vo.getMenu_name().trim().isEmpty()) {
+            throw new RuntimeException("메뉴 이름이 필요합니다.");
+        }
+
+        if (vo.getMenu_id() <= 0) {
+            vo.setMenu_id(storeMapper.getNextMenuId());
+        }
         StoreVO store = storeMapper.getStoreDetail(vo.getStore_id());
         if (store != null && store.getUser_id().equals(userId)) {
-            if (vo.getMenu_sign() == null) vo.setMenu_sign("N");
+            int dupCount = storeMapper.countMenuName(vo.getStore_id(), vo.getMenu_name().trim());
+            if (dupCount > 0) {
+                throw new RuntimeException("이미 등록된 메뉴 이름입니다.");
+            }
+            // [추가] 빈 문자열("")이 들어올 경우 DB 제약조건 위반 방지를 위해 'N'으로 세팅
+            if (vo.getMenu_sign() == null || vo.getMenu_sign().trim().isEmpty()) {
+                vo.setMenu_sign("N");
+            }
             storeMapper.insertMenu(vo);
+        } else {
+            throw new RuntimeException("메뉴 등록 권한이 없습니다.");
         }
     }
 
@@ -118,7 +158,6 @@ public class StoreServiceImpl implements StoreService {
         }
     }
 
-    // 11. 메뉴 상세 조회
     @Override
     public MenuVO getMenuDetail(int menuId, String userId) {
         MenuVO menu = storeMapper.getMenuDetail(menuId);
@@ -135,17 +174,24 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional
     public void modifyMenu(MenuVO vo, String userId) {
+        // [수정 포인트] 0번 메뉴 수정 방지
+        if (vo.getMenu_id() <= 0) {
+            throw new RuntimeException("유효하지 않은 메뉴 ID입니다.");
+        }
+
         MenuVO menu = storeMapper.getMenuDetail(vo.getMenu_id());
         if (menu != null) {
             StoreVO store = storeMapper.getStoreDetail(menu.getStore_id());
             if (store != null && store.getUser_id().equals(userId)) {
-                if (vo.getMenu_sign() == null) vo.setMenu_sign("N");
+                if (vo.getMenu_sign() == null || vo.getMenu_sign().trim().isEmpty()) {
+                    vo.setMenu_sign("N");
+                }
                 storeMapper.updateMenu(vo);
             }
         }
     }
 
-    // 13. 실시간 예약 가능 시간 슬롯 동적 생성
+    // 13. 예약 가능 시간 슬롯 동적 생성
     @Override
     public List<String> getAvailableTimeSlots(StoreVO store, String bookDate) {
         List<String> allSlots = generateTimeSlots(store);
@@ -156,7 +202,7 @@ public class StoreServiceImpl implements StoreService {
         return allSlots;
     }
 
-    // 14. 기초 시간 슬롯 생성 로직 (영업시간 및 단위 기반)
+    // 14. 기초 시간 슬롯 생성 로직
     @Override
     public List<String> generateTimeSlots(StoreVO store) {
         List<String> slots = new ArrayList<>();
@@ -185,19 +231,64 @@ public class StoreServiceImpl implements StoreService {
 
     // 15. 파일 업로드 처리
     @Override
-    public String uploadFile(MultipartFile file, String realPath) {
+    public String uploadFile(MultipartFile file, String realPath, String savedName) {
         File dir = new File(realPath);
         if (!dir.exists()) dir.mkdirs();
 
         String originalName = file.getOriginalFilename();
-        String savedName = System.currentTimeMillis() + "_" + originalName;
+        if (savedName == null || savedName.trim().isEmpty()) {
+            savedName = System.currentTimeMillis() + "_" + originalName;
+        }
 
         try {
-            file.transferTo(new File(realPath, savedName));
+            File target = new File(realPath, savedName);
+            File parent = target.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs();
+            }
+
+            file.transferTo(target);
+
+            if (isImageFile(file)) {
+                ResizeSpec spec = getResizeSpec(savedName);
+                imageProcessingService.processImage(target, spec.width, spec.height, 0.75f);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
         return savedName;
+    }
+
+    @Override
+    public int getNextStoreId() {
+        return storeMapper.getNextStoreId();
+    }
+
+    @Override
+    public int getNextMenuId() {
+        return storeMapper.getNextMenuId();
+    }
+
+    private boolean isImageFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        return contentType != null && contentType.toLowerCase().startsWith("image/");
+    }
+
+    private ResizeSpec getResizeSpec(String savedName) {
+        if (savedName != null && savedName.contains("menu")) {
+            return new ResizeSpec(400, 400);
+        }
+        return new ResizeSpec(800, 600);
+    }
+
+    private static class ResizeSpec {
+        private final int width;
+        private final int height;
+
+        private ResizeSpec(int width, int height) {
+            this.width = width;
+            this.height = height;
+        }
     }
 }

@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
+﻿<%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
@@ -8,7 +8,7 @@
 
 <jsp:include page="../common/header.jsp" />
 
-<%-- 기존 스타일 시트 재사용 --%>
+<%-- 湲곗〈 ?ㅽ????쒗듃 ?ъ궗??--%>
 <link rel="stylesheet" href="<c:url value='/resources/css/member.css'/>">
 <link rel="stylesheet" href="<c:url value='/resources/css/mypage.css'/>">
 <link rel="stylesheet"
@@ -16,23 +16,23 @@
 <link rel="stylesheet"
 	href="<c:url value='/resources/css/review_list.css'/>">
 
-<%-- 컨테이너: JS가 이동 경로를 파악할 수 있도록 데이터 주입 --%>
+<%-- 而⑦뀒?대꼫: JS媛 ?대룞 寃쎈줈瑜??뚯븙?????덈룄濡??곗씠??二쇱엯 --%>
 <div class="review-mine-wrapper"
 	data-context-path="${pageContext.request.contextPath}">
 
-	<%-- 상단 요약 헤더: 나의 활동 중심 --%>
+	<%-- ?곷떒 ?붿빟 ?ㅻ뜑: ?섏쓽 ?쒕룞 以묒떖 --%>
 	<div class="review-dashboard-card">
 		<div class="review-header-flex">
 			<div class="header-left">
 				<span class="badge-wire"><spring:message code="review.mine.badge" text="MY ACTIVITY" /></span>
 				<h2 class="store-title">
-					<spring:message code="review.mine.title" text="나의 리뷰 이력" /> <small><spring:message code="review.mine.total" arguments="${pageMaker.total}" text="총 {0}건" /></small>
+					<spring:message code="review.mine.title" text="?섏쓽 由щ럭 ?대젰" /> <small><spring:message code="review.mine.total" arguments="${pageMaker.total}" text="珥?{0}嫄? /></small>
 				</h2>
 			</div>
 		</div>
 	</div>
 
-	<%-- 리뷰 목록 섹션 --%>
+	<%-- 由щ럭 紐⑸줉 ?뱀뀡 --%>
 	<div class="review-container">
 		<c:choose>
 			<c:when test="${not empty allReviews}">
@@ -40,24 +40,24 @@
 					<div class="item-card">
 						<div class="item-header">
 							<div class="user-meta">
-								<%-- 가게 상세페이지로 바로가는 링크 추가 --%>
+								<%-- 媛寃??곸꽭?섏씠吏濡?諛붾줈媛??留곹겕 異붽? --%>
 								<a href="<c:url value='/store/detail?storeId=${rev.store_id}'/>"
 									class="user-name"
-									style="text-decoration: none; color: inherit;"> 🏨
-									${rev.store_name} <small style="color: #999;">❯</small>
+									style="text-decoration: none; color: inherit;"> ?룳
+									${rev.store_name} <small style="color: #999;">??/small>
 								</a> <span class="stars"> <c:forEach begin="1"
-										end="${rev.rating}">⭐</c:forEach>
+										end="${rev.rating}">狩?/c:forEach>
 								</span>
 							</div>
 							<div class="action-meta">
 								<span class="date"> <fmt:formatDate
 										value="${rev.review_date}" pattern="yyyy.MM.dd" />
 								</span>
-								<%-- 삭제 로직 유지 --%>
+								<%-- ??젣 濡쒖쭅 ?좎? --%>
 								<button type="button" class="btn-delete-review"
 									data-review-id="${rev.review_id}"
 									data-store-id="${rev.store_id}"
-									data-return-url="/member/review/mine"><spring:message code="common.btn.delete" text="삭제" /></button>
+									data-return-url="/member/review/mine"><spring:message code="common.btn.delete" text="??젣" /></button>
 							</div>
 						</div>
 
@@ -75,12 +75,12 @@
 				</c:forEach>
 			</c:when>
 			<c:otherwise>
-				<div class="review-empty-status"><spring:message code="review.mine.empty" text="아직 작성하신 리뷰가 없습니다." /></div>
+				<div class="review-empty-status"><spring:message code="review.mine.empty" text="?꾩쭅 ?묒꽦?섏떊 由щ럭媛 ?놁뒿?덈떎." /></div>
 			</c:otherwise>
 		</c:choose>
 	</div>
 
-	<%-- 하단 페이징 섹션 --%>
+	<%-- ?섎떒 ?섏씠吏??뱀뀡 --%>
 	<div class="pagination-box">
 		<ul class="pagination">
 			<c:if test="${pageMaker.hasPreviousPage}">
@@ -105,14 +105,29 @@
 		</ul>
 	</div>
 
-	<%-- 하단 네비게이션 버튼 --%>
+	<%-- ?섎떒 ?ㅻ퉬寃뚯씠??踰꾪듉 --%>
 	<div class="review-footer-nav">
 		<button type="button" class="btn-wire-nav"
-			onclick="location.href='<c:url value='/member/mypage'/>'"><spring:message code="review.mine.btn.mypage" text="마이페이지로" /></button>
+			onclick="location.href='<c:url value='/member/mypage'/>'"><spring:message code="review.mine.btn.mypage" text="留덉씠?섏씠吏濡? /></button>
 	</div>
 </div>
 
-<%-- 스크립트 분리 --%>
+<%-- ?ㅽ겕由쏀듃 遺꾨━ --%>
+<script>
+    window.I18N = window.I18N || {};
+    window.I18N.mypage = {
+        menuDeleteConfirm: "<spring:message code='mypage.menu.delete.confirm' text='Delete this menu?' javaScriptEscape='true' />",
+        menuDeleteConfirmStrong: "<spring:message code='mypage.menu.delete.confirm_strong' text='Delete this menu? This cannot be undone.' javaScriptEscape='true' />",
+        waitCancelConfirm: "<spring:message code='mypage.wait.cancel.confirm' text='Cancel waiting?' javaScriptEscape='true' />",
+        reviewDeleteConfirm: "<spring:message code='mypage.review.delete.confirm' text='Delete this review?' javaScriptEscape='true' />",
+        userDropConfirm: "<spring:message code='mypage.user.drop.confirm' text='Delete your account? All data will be removed.' javaScriptEscape='true' />",
+        userDropSuccess: "<spring:message code='mypage.user.drop.success' text='Account deleted.' javaScriptEscape='true' />",
+        historyClose: "<spring:message code='mypage.history.close' text='Hide history' javaScriptEscape='true' />",
+        historyCollapse: "<spring:message code='mypage.history.collapse' text='Collapse history' javaScriptEscape='true' />",
+        historyOpen: "<spring:message code='mypage.history.open' text='Show all history' javaScriptEscape='true' />",
+        notificationPrefix: "<spring:message code='mypage.notification.prefix' text='Notice:' javaScriptEscape='true' />"
+    };
+</script>
 <script src="<c:url value='/resources/js/member_mypage.js'/>"></script>
 <script src="<c:url value='/resources/js/review_mine.js'/>"></script>
 

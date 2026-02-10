@@ -78,7 +78,7 @@
                                     <img src="${pageContext.request.contextPath}/upload/${store.store_img}" class="store-thumb">
                                 </c:when>
                                 <c:otherwise>
-                                    <div class="no-img-placeholder">NO IMAGE</div>
+                                    <div class="no-img-placeholder"><spring:message code="common.msg.no_image" text="NO IMAGE" /></div>
                                  </c:otherwise>
                             </c:choose>
                             <button type="button" class="favorite-toggle" data-store-id="${store.store_id}">🤍</button>

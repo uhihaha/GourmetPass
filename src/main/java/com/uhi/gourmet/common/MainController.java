@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.uhi.gourmet.photo.PhotoService;
 import com.uhi.gourmet.photo.PhotoVO;
-import com.uhi.gourmet.store.StoreService; 
+import com.uhi.gourmet.store.StoreService;
 import com.uhi.gourmet.store.StoreVO;
 
 /**
@@ -30,23 +30,30 @@ public class MainController {
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String mainPage(Model model) {
-        
-        // [1] 인기 맛집 조회 
-        // 서비스 계층에 새로 추가한 getPopularStores 메서드를 호출합니다.
-        // 이는 StoreMapper.xml의 selectPopularStore SQL을 실행하여 상위 6개를 가져옵니다.
         List<StoreVO> storeList = storeService.getPopularStores();
 
         for (StoreVO store : storeList) {
             PhotoVO thumbnail = photoService.getThumbnailByStore(store.getStore_id());
             if (thumbnail != null) {
-                store.setStore_img(thumbnail.getFile_path());
+                store.setStore_img(normalizeImagePath(thumbnail.getFile_path()));
+            } else {
+                store.setStore_img(normalizeImagePath(store.getStore_img()));
             }
         }
-        
-        // [2] 화면(main.jsp)으로 데이터 전달
+
         model.addAttribute("storeList", storeList);
-        
-        // [3] views/main.jsp 파일을 호출합니다.
-        return "main"; 
+        return "main";
+    }
+
+    private String normalizeImagePath(String filePath) {
+        if (filePath == null || filePath.trim().isEmpty()) {
+            return filePath;
+        }
+        String normalized = filePath.replace('\\', '/').trim();
+        int lastSlash = normalized.lastIndexOf('/');
+        if (lastSlash >= 0 && lastSlash < normalized.length() - 1) {
+            return normalized.substring(lastSlash + 1);
+        }
+        return normalized;
     }
 }

@@ -80,7 +80,9 @@ public class StoreController {
         for (StoreVO store : pageMaker.getList()) {
             PhotoVO thumbnail = photoService.getThumbnailByStore(store.getStore_id());
             if (thumbnail != null) {
-                store.setStore_img(thumbnail.getFile_path());
+                store.setStore_img(normalizeImagePath(thumbnail.getFile_path()));
+            } else {
+                store.setStore_img(normalizeImagePath(store.getStore_img()));
             }
         }
         model.addAttribute("storeList", pageMaker.getList()); 
@@ -261,6 +263,18 @@ public class StoreController {
             return "";
         }
         return fileName.substring(dotIndex);
+    }
+
+    private String normalizeImagePath(String filePath) {
+        if (filePath == null || filePath.trim().isEmpty()) {
+            return filePath;
+        }
+        String normalized = filePath.replace('\\', '/').trim();
+        int lastSlash = normalized.lastIndexOf('/');
+        if (lastSlash >= 0 && lastSlash < normalized.length() - 1) {
+            return normalized.substring(lastSlash + 1);
+        }
+        return normalized;
     }
 
     private String resolveUploadPath() {

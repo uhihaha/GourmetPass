@@ -6,6 +6,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class StoreVO {
+    
     private int store_id;
     private String user_id;
     private String store_name;
@@ -27,4 +28,8 @@ public class StoreVO {
     // [통계용 추가 필드] 명칭 통일 규칙 적용
     private double avg_rating;      // 평균 별점
     private int review_cnt;         // _cnt로 변경 (기존 review_count 제거)
+
+    public String getStoreImgThumb() {
+        return store_img;
+    }
 }

@@ -12,4 +12,8 @@ public class MenuVO {
     private int menu_price; //메뉴 가격
     private String menu_img; //메뉴 이미지
     private String menu_sign; // 대표 메뉴 여부 (Y/N)
+
+    public String getMenuImgThumb() {
+        return menu_img;
+    }
 }

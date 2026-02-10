@@ -1,6 +1,8 @@
 /* src/main/webapp/resources/js/main.js */
 $(document).ready(function() {
-    var COMMON_I18N = (window.I18N && window.I18N.common) ? window.I18N.common : {};
+    var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+        ? window.I18N_UTIL.t
+        : function(key, fallback) { return fallback || key; };
     /**
      * [교정] 공통 클릭 이벤트 핸들러
      * - clickable 클래스를 가진 요소의 data-url 속성을 읽어 페이지를 이동시킵니다.
@@ -69,11 +71,9 @@ $(document).ready(function() {
                     updateFavoriteButton(btn, !!res.favorite);
                 }).fail(function(xhr) {
                     if (xhr.status === 401) {
-                        var loginRequired = COMMON_I18N.loginRequired || "";
-                        alert(loginRequired);
+                        alert(t("common.loginRequired", "로그인이 필요합니다"));
                     } else {
-                        var favoriteError = COMMON_I18N.favoriteError || "";
-                        alert(favoriteError);
+                        alert(t("common.favoriteError", "즐겨찾기 처리 중 오류가 발생했습니다."));
                     }
                 });
             });

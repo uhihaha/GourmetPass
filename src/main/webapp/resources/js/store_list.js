@@ -1,5 +1,22 @@
 /* /resources/js/store_list.js */
 
+var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+    ? window.I18N_UTIL.t
+    : function(key, fallback) { return fallback || key; };
+
+
+function applyRequiredMessage(inputEl, message) {
+    if (!inputEl) return;
+
+    inputEl.addEventListener("input", function() {
+        inputEl.setCustomValidity("");
+    });
+
+    inputEl.addEventListener("invalid", function() {
+        inputEl.setCustomValidity(message);
+    });
+}
+
 /**
  * [기능] 페이지 이동 함수
  * @param {number} pageNum - 이동할 페이지 번호
@@ -56,8 +73,16 @@ function selectCategory(cat) {
 function syncAndSubmit() {
     const searchInput = document.querySelector(".wire-input");
     const hiddenKeyword = document.querySelector("#filterForm input[name='keyword']");
-    
+
+    if (searchInput && !searchInput.value.trim()) {
+        var requiredMsg = t("store.list.search.required", "검색어를 입력해주세요.");
+        searchInput.setCustomValidity(requiredMsg);
+        searchInput.reportValidity();
+        return;
+    }
+
     if (hiddenKeyword && searchInput) {
+        searchInput.setCustomValidity("");
         hiddenKeyword.value = searchInput.value;
     }
     resetPageAndSubmit();
@@ -79,11 +104,11 @@ function submitFilter() {
  * [이벤트] 페이지 로드 시 검색창 엔터키 및 초기화 설정
  */
 document.addEventListener("DOMContentLoaded", function() {
-    var COMMON_I18N = (window.I18N && window.I18N.common) ? window.I18N.common : {};
     // .wire-input 클래스를 가진 검색창에서 엔터키 입력 시 검색 실행
     const searchInput = document.querySelector(".wire-input");
-    
+
     if (searchInput) {
+        applyRequiredMessage(searchInput, t("store.list.search.required", "검색어를 입력해주세요."));
         searchInput.addEventListener("keypress", function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault(); // 기본 폼 제출 방지
@@ -141,11 +166,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 updateFavoriteButton(btn, !!res.favorite);
             }).fail(function(xhr) {
                 if (xhr.status === 401) {
-                    var loginRequired = COMMON_I18N.loginRequired || "";
-                    alert(loginRequired);
+                    alert(t("common.loginRequired", "로그인이 필요합니다"));
                 } else {
-                    var favoriteError = COMMON_I18N.favoriteError || "";
-                    alert(favoriteError);
+                    alert(t("common.favoriteError", "즐겨찾기 처리 중 오류가 발생했습니다."));
                 }
             });
         });

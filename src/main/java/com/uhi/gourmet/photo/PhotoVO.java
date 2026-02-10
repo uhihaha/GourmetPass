@@ -19,4 +19,8 @@ public class PhotoVO {
     private Date created_at;
     private Date updated_at;
 
+    public String getFilePathThumb() {
+        return file_path;
+    }
+
 }

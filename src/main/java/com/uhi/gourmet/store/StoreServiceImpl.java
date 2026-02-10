@@ -15,12 +15,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.uhi.gourmet.common.ImageProcessingService;
 
 @Service
 public class StoreServiceImpl implements StoreService {
 
     @Autowired
     private StoreMapper storeMapper;
+    
+    @Autowired
+    private ImageProcessingService imageProcessingService;
 
     // 1. 맛집 목록 조회 (PageHelper 반영)
     @Override
@@ -237,7 +241,18 @@ public class StoreServiceImpl implements StoreService {
         }
 
         try {
-            file.transferTo(new File(realPath, savedName));
+            File target = new File(realPath, savedName);
+            File parent = target.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs();
+            }
+
+            file.transferTo(target);
+
+            if (isImageFile(file)) {
+                ResizeSpec spec = getResizeSpec(savedName);
+                imageProcessingService.processImage(target, spec.width, spec.height, 0.75f);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -253,5 +268,27 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public int getNextMenuId() {
         return storeMapper.getNextMenuId();
+    }
+
+    private boolean isImageFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        return contentType != null && contentType.toLowerCase().startsWith("image/");
+    }
+
+    private ResizeSpec getResizeSpec(String savedName) {
+        if (savedName != null && savedName.contains("menu")) {
+            return new ResizeSpec(400, 400);
+        }
+        return new ResizeSpec(800, 600);
+    }
+
+    private static class ResizeSpec {
+        private final int width;
+        private final int height;
+
+        private ResizeSpec(int width, int height) {
+            this.width = width;
+            this.height = height;
+        }
     }
 }

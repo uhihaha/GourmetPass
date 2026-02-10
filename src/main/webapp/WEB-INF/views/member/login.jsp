@@ -18,12 +18,12 @@
 
         <div class="form-group">
             <label><spring:message code="member.login.id" text="아이디" /></label>
-            <input type="text" name="username" class="login-input" required placeholder="<spring:message code='member.login.id.ph' text='아이디를 입력하세요' />">
+            <input type="text" name="username" id="loginUsername" class="login-input" required placeholder="<spring:message code='member.login.id.ph' text='아이디를 입력하세요' />">
         </div>
 
         <div class="form-group">
             <label><spring:message code="member.login.pw" text="비밀번호" /></label>
-            <input type="password" name="password" class="login-input" required placeholder="<spring:message code='member.login.pw.ph' text='비밀번호를 입력하세요' />">
+            <input type="password" name="password" id="loginPassword" class="login-input" required placeholder="<spring:message code='member.login.pw.ph' text='비밀번호를 입력하세요' />">
         </div>
 
     <div class="btn-group">

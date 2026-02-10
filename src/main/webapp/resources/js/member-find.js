@@ -1,12 +1,14 @@
 /* Find account email auth for password reset */
 (function($) {
     $(document).ready(function() {
-        var MEMBER_FIND_I18N = (window.I18N && window.I18N.memberFind) ? window.I18N.memberFind : {};
+        var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+            ? window.I18N_UTIL.t
+            : function(key, fallback) { return fallback || key; };
         $("#btnPwAuth").on("click", function() {
             const userId = $("#pw_user_id").val();
             const email = $("#pw_user_email").val();
             if (!userId || !email) {
-                var authMissing = MEMBER_FIND_I18N.authMissing || "";
+                var authMissing = t("memberFind.authMissing", "아이디와 이메일을 입력해 주세요.");
                 $("#pwAuthMsg").html("<span class='msg-no'>" + authMissing + "</span>");
                 return;
             }
@@ -22,19 +24,19 @@
                 data: ajaxData,
                 success: function(res) {
                     if (res === "success") {
-                        var authSent = MEMBER_FIND_I18N.authSent || "";
+                        var authSent = t("memberFind.authSent", "인증코드를 발송했습니다.");
                         $("#pwAuthMsg").html("<span class='msg-ok'>" + authSent + "</span>");
                         $("#pw_auth_code").focus();
                     } else if (res === "not_found") {
-                        var authNotFound = MEMBER_FIND_I18N.authNotFound || "";
+                        var authNotFound = t("memberFind.authNotFound", "일치하는 회원 정보를 찾을 수 없습니다.");
                         $("#pwAuthMsg").html("<span class='msg-no'>" + authNotFound + "</span>");
                     } else {
-                        var authUnavailable = MEMBER_FIND_I18N.authUnavailable || "";
+                        var authUnavailable = t("memberFind.authUnavailable", "인증 요청을 처리할 수 없습니다.");
                         $("#pwAuthMsg").html("<span class='msg-no'>" + authUnavailable + "</span>");
                     }
                 },
                 error: function() {
-                    var authServerError = MEMBER_FIND_I18N.authServerError || "";
+                    var authServerError = t("memberFind.authServerError", "서버 오류가 발생했습니다.");
                     $("#pwAuthMsg").html("<span class='msg-no'>" + authServerError + "</span>");
                 }
             });

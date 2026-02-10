@@ -17,7 +17,7 @@
         </h1>
         <div class="search-form">
             <input type="text" id="visibleKeyword" class="wire-input" 
-                   placeholder="${phText}" value="${keyword}" required>
+                   placeholder="${phText}" value="${keyword}">
             <button type="button" class="btn-search" onclick="syncAndSubmit()">
                 <spring:message code="main.search.btn" text="맛집 검색" />
             </button>

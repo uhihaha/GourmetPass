@@ -1,7 +1,9 @@
 /**
  * 멤버 이용 현황 및 히스토리 공통 라이브러리
  */
-var WAIT_I18N = (window.I18N && window.I18N.wait) ? window.I18N.wait : {};
+var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+    ? window.I18N_UTIL.t
+    : function(key, fallback) { return fallback || key; };
 $(document).ready(function() {
     
     // 1. 예약 취소(환불 포함) 버튼 이벤트
@@ -11,12 +13,12 @@ $(document).ready(function() {
         const $form = $(this).closest("form");
 
         if (!pay_id) {
-            var payMissing = WAIT_I18N.payMissing || "";
+            var payMissing = t("wait.payMissing", "결제 정보가 확인되지 않아 환불이 불가능합니다. 고객센터에 문의해주세요.");
             alert(payMissing);
             return;
         }
 
-        var bookCancelConfirm = WAIT_I18N.bookCancelConfirm || "";
+        var bookCancelConfirm = t("wait.bookCancelConfirm", "예약을 취소하시겠습니까? 결제된 금액이 전액 환불됩니다.");
         if (confirm(bookCancelConfirm)) {
             cancelPay(pay_id, $form);
         }
@@ -61,7 +63,7 @@ function cancelPay(pay_id, $form) {
             xhr.setRequestHeader("X-CSRF-TOKEN", APP_CONFIG.csrfToken);
         },
         success: function() {
-            var refundDone = WAIT_I18N.refundDone || "";
+            var refundDone = t("wait.refundDone", "환불 처리가 완료되었습니다.");
             alert(refundDone);
             // 상태값을 CANCELED로 변경하여 폼 제출
             if ($form.find('input[name="status"]').length === 0) {
@@ -74,8 +76,8 @@ function cancelPay(pay_id, $form) {
             $form.submit();
         },
         error: function(xhr) {
-            var refundFailPrefix = WAIT_I18N.refundFailPrefix || "";
-            var refundFailFallback = WAIT_I18N.refundFailFallback || "";
+            var refundFailPrefix = t("wait.refundFailPrefix", "환불 실패:");
+            var refundFailFallback = t("wait.refundFailFallback", "환불 중 오류가 발생했습니다.");
             alert(refundFailPrefix + " " + (xhr.responseText || refundFailFallback));
             console.error(xhr.responseText);
         }
@@ -87,7 +89,7 @@ function cancelPay(pay_id, $form) {
  * @param {number} waitId - 웨이팅 번호
  */
 function cancelWait(waitId) {
-    var waitConfirm = WAIT_I18N.cancelConfirm || "";
+    var waitConfirm = t("wait.cancelConfirm", "웨이팅을 취소하시겠습니까?");
     if (!confirm(waitConfirm)) return;
 
     const url = APP_CONFIG.contextPath + "/wait/cancel";
@@ -103,11 +105,11 @@ function cancelWait(waitId) {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            var cancelSuccess = WAIT_I18N.cancelSuccess || "";
+            var cancelSuccess = t("wait.cancelSuccess", "취소되었습니다.");
             alert(cancelSuccess);
             location.reload();
         } else {
-            var failPrefix = WAIT_I18N.failPrefix || "";
+            var failPrefix = t("wait.failPrefix", "실패:");
             alert(failPrefix + " " + data.message);
         }
     })

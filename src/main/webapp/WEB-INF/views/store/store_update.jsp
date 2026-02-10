@@ -4,13 +4,6 @@
 
 <jsp:include page="../common/header.jsp"/>
 <link rel="stylesheet" href="<c:url value='/resources/css/member.css'/>">
-<script type="text/javascript">
-    var msg = "${msg}";
-    if (msg && msg !== "null" && msg !== "") {
-        alert(msg);
-    }
-</script>
-
 <div class="edit-wrapper">
     <div class="edit-title"><spring:message code="store.update.title" text="🛠️ 가게 정보 수정" /></div>
 

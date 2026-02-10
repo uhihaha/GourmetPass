@@ -1,6 +1,20 @@
 /* src/main/webapp/resources/js/main.js */
 $(document).ready(function() {
-    var COMMON_I18N = (window.I18N && window.I18N.common) ? window.I18N.common : {};
+    var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+        ? window.I18N_UTIL.t
+        : function(key, fallback) { return fallback || key; };
+    function applyRequiredMessage(inputEl, message) {
+        if (!inputEl) return;
+
+        inputEl.addEventListener("input", function() {
+            inputEl.setCustomValidity("");
+        });
+
+        inputEl.addEventListener("invalid", function() {
+            inputEl.setCustomValidity(message);
+        });
+    }
+
     /**
      * [교정] 공통 클릭 이벤트 핸들러
      * - clickable 클래스를 가진 요소의 data-url 속성을 읽어 페이지를 이동시킵니다.
@@ -14,12 +28,24 @@ $(document).ready(function() {
         }
     });
 
-    // 검색창 엔터키 입력 시 폼 제출 보조 (선택 사항)
-    $(".search-input").on("keypress", function(e) {
-        if (e.which == 13) {
-            $(this).closest("form").submit();
-        }
-    });
+    // 검색창 입력 검증/제출 보조
+    var mainSearchForm = document.querySelector(".search-form");
+    var mainSearchInput = document.querySelector(".search-input");
+    if (mainSearchInput) {
+        var requiredMsg = t("store.list.search.required", "검색어를 입력해주세요.");
+        applyRequiredMessage(mainSearchInput, requiredMsg);
+    }
+    if (mainSearchForm && mainSearchInput) {
+        mainSearchForm.addEventListener("submit", function(e) {
+            if (!mainSearchInput.value.trim()) {
+                mainSearchInput.setCustomValidity(t("store.list.search.required", "검색어를 입력해주세요."));
+                mainSearchInput.reportValidity();
+                e.preventDefault();
+                return;
+            }
+            mainSearchInput.setCustomValidity("");
+        });
+    }
 
     var favoriteButtons = document.querySelectorAll(".favorite-toggle");
     if (favoriteButtons.length) {
@@ -69,11 +95,9 @@ $(document).ready(function() {
                     updateFavoriteButton(btn, !!res.favorite);
                 }).fail(function(xhr) {
                     if (xhr.status === 401) {
-                        var loginRequired = COMMON_I18N.loginRequired || "";
-                        alert(loginRequired);
+                        alert(t("common.loginRequired", "로그인이 필요합니다"));
                     } else {
-                        var favoriteError = COMMON_I18N.favoriteError || "";
-                        alert(favoriteError);
+                        alert(t("common.favoriteError", "즐겨찾기 처리 중 오류가 발생했습니다."));
                     }
                 });
             });

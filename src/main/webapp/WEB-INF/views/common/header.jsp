@@ -146,6 +146,9 @@
     </script>
 </head>
 <body>
+    <c:if test="${not empty msg}">
+        <div id="flash-message" data-message="${msg}" style="display:none;"></div>
+    </c:if>
     <nav class="wire-nav">
         <div class="nav-inner">
             <h2 class="logo-text">

@@ -144,6 +144,10 @@
 
 <script src="<c:url value='/resources/js/member_mypage.js'/>"></script>
 <script>
+	const t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+		? window.I18N_UTIL.t
+		: function(key, fallback) { return fallback || key; };
+
 	// 리뷰 삭제 버튼 이벤트 처리
 	document.addEventListener('click', function(e) {
 		if (e.target.classList.contains('btn-delete-review')) {
@@ -180,7 +184,7 @@
 					card.remove();
 				}
 			}).catch(function() {
-				alert('즐겨찾기 해제 중 오류가 발생했습니다.');
+				alert(t("common.favoriteError", "즐겨찾기 처리 중 오류가 발생했습니다."));
 			});
 		}
 	});

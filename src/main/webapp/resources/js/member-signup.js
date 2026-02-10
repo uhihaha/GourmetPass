@@ -1,7 +1,19 @@
 /* GourmetPass 통합 회원 관리 스크립트 (가입/수정/탈퇴/알림/가게정보) */
 
 (function($) {
-    const MEMBER_I18N = (window.I18N && window.I18N.member) ? window.I18N.member : {};
+    const t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+        ? window.I18N_UTIL.t
+        : function(key, fallback) { return fallback || key; };
+
+    function applyRequiredMessage(inputEl, message) {
+        if (!inputEl) return;
+        inputEl.addEventListener("input", function() {
+            inputEl.setCustomValidity("");
+        });
+        inputEl.addEventListener("invalid", function() {
+            inputEl.setCustomValidity(message);
+        });
+    }
     // 1. 전역 상태 변수 설정
     let isIdChecked = false; 
     let isPwMatched = false;
@@ -21,8 +33,36 @@
         if(authMsgBox.length > 0) {
             const error = authMsgBox.data("error");
             const logout = authMsgBox.data("logout");
-            if (error) alert(MEMBER_I18N.loginError || "");
-            if (logout) alert(MEMBER_I18N.logoutSuccess || "");
+            if (error) alert(t("member.loginError", ""));
+            if (logout) alert(t("member.logoutSuccess", ""));
+        }
+
+        const loginForm = document.querySelector("form[action$='/login']");
+        const loginIdInput = document.getElementById("loginUsername");
+        const loginPwInput = document.getElementById("loginPassword");
+        if (loginIdInput) {
+            applyRequiredMessage(loginIdInput, t("member.login.id.ph", "아이디를 입력하세요"));
+        }
+        if (loginPwInput) {
+            applyRequiredMessage(loginPwInput, t("member.login.pw.ph", "비밀번호를 입력하세요"));
+        }
+        if (loginForm && loginIdInput && loginPwInput) {
+            loginForm.addEventListener("submit", function(e) {
+                if (!loginIdInput.value.trim()) {
+                    loginIdInput.setCustomValidity(t("member.login.id.ph", "아이디를 입력하세요"));
+                    loginIdInput.reportValidity();
+                    e.preventDefault();
+                    return;
+                }
+                if (!loginPwInput.value.trim()) {
+                    loginPwInput.setCustomValidity(t("member.login.pw.ph", "비밀번호를 입력하세요"));
+                    loginPwInput.reportValidity();
+                    e.preventDefault();
+                    return;
+                }
+                loginIdInput.setCustomValidity("");
+                loginPwInput.setCustomValidity("");
+            });
         }
 
         // [B] 초기 데이터 세팅 및 수정 모드 감지
@@ -53,7 +93,7 @@
 
             const userId = $("#user_id").val();
             if(!ID_PATTERN.test(userId)) {
-                var idRule = MEMBER_I18N.idRule || "";
+                var idRule = t("member.idRule", "");
                 $("#idCheckMsg").html("<span class='msg-no'>" + idRule + "</span>");
                 isIdChecked = false;
                 return;
@@ -70,20 +110,20 @@
                 data: ajaxData,
                 success: function(res) {
                     if(res === "success") { 
-                        var idAvailable = MEMBER_I18N.idAvailable || "";
+                        var idAvailable = t("member.idAvailable", "");
                         $("#idCheckMsg").html("<span class='msg-ok'>" + idAvailable + "</span>"); 
                         isIdChecked = true; 
                     } else if (res === "invalid") {
-                        var idInvalid = MEMBER_I18N.idInvalid || "";
+                        var idInvalid = t("member.idInvalid", "");
                         $("#idCheckMsg").html("<span class='msg-no'>" + idInvalid + "</span>");
                         isIdChecked = false;
                     } else { 
-                        var idInUse = MEMBER_I18N.idInUse || "";
+                        var idInUse = t("member.idInUse", "");
                         $("#idCheckMsg").html("<span class='msg-no'>" + idInUse + "</span>");
                         isIdChecked = false; 
                     }
                 },
-                error: function() { alert(MEMBER_I18N.serverError || ""); }
+                error: function() { alert(t("member.serverError", "")); }
             });
         });
 
@@ -97,7 +137,7 @@
                     return;
                 }
                 if (!ID_PATTERN.test(userId)) {
-                    var idRule = MEMBER_I18N.idRule || "";
+                    var idRule = t("member.idRule", "");
                     $("#idCheckMsg").html("<span class='msg-no'>" + idRule + "</span>");
                 } else {
                     $("#idCheckMsg").text("");
@@ -118,18 +158,18 @@
             }
 
             if (!PASSWORD_PATTERN.test(pw)) {
-                var pwRule = MEMBER_I18N.pwRule || "";
+                var pwRule = t("member.pwRule", "");
                 $("#pwCheckMsg").html("<span class='msg-no'>" + pwRule + "</span>");
                 isPwMatched = false;
                 return;
             }
             
             if(pw === pwConfirm) { 
-                var pwMatch = MEMBER_I18N.pwMatch || "";
+                var pwMatch = t("member.pwMatch", "");
                 $("#pwCheckMsg").html("<span class='msg-ok'>" + pwMatch + "</span>"); 
                 isPwMatched = true; 
             } else { 
-                var pwMismatch = MEMBER_I18N.pwMismatch || "";
+                var pwMismatch = t("member.pwMismatch", "");
                 $("#pwCheckMsg").html("<span class='msg-no'>" + pwMismatch + "</span>"); 
                 isPwMatched = false; 
             }
@@ -142,7 +182,7 @@
                 $("#emailMsg").text("");
                 isEmailChecked = true; 
             } else {
-                var emailChangeAuth = MEMBER_I18N.emailChangeAuth || "";
+                var emailChangeAuth = t("member.emailChangeAuth", "");
                 $("#emailMsg").html("<span class='msg-no'>" + emailChangeAuth + "</span>");
                 isEmailChecked = false;
             }
@@ -151,7 +191,7 @@
         // 4. 이메일 인증코드 발송
         $("#btnEmailAuth").click(function() {
             const email = $("#user_email").val();
-            if(!email) { alert(MEMBER_I18N.emailRequired || ""); return; }
+            if(!email) { alert(t("member.emailRequired", "")); return; }
 
             const ajaxData = { email: email };
             if (typeof APP_CONFIG !== 'undefined') {
@@ -163,12 +203,12 @@
                 type: "POST",
                 data: ajaxData,
                 success: function(res) {
-                    alert(MEMBER_I18N.emailAuthSent || "");
+                    alert(t("member.emailAuthSent", ""));
                     authCode = res; 
                     $("#auth_code").prop("disabled", false).val("").focus();
                     startTimer();
                 },
-                error: function() { alert(MEMBER_I18N.emailSendFail || ""); }
+                error: function() { alert(t("member.emailSendFail", "")); }
             });
         });
 
@@ -177,7 +217,7 @@
             const inputCode = $(this).val();
             if(inputCode.length === 6) {
                 if(Number(inputCode) === authCode) { 
-                    var authSuccess = MEMBER_I18N.authSuccess || "";
+                    var authSuccess = t("member.authSuccess", "");
                     $("#authMsg").html("<span class='msg-ok'>" + authSuccess + "</span>");
                     clearInterval(timerInterval);
                     $("#timer").text("");
@@ -186,7 +226,7 @@
                     isEmailChecked = true;
                     initialEmail = $("#user_email").val(); // 인증된 이메일을 기준값으로 갱신
                 } else {
-                    var authMismatch = MEMBER_I18N.authMismatch || "";
+                    var authMismatch = t("member.authMismatch", "");
                     $("#authMsg").html("<span class='msg-no'>" + authMismatch + "</span>");
                     isEmailChecked = false;
                 }
@@ -203,7 +243,7 @@
                 $("#timer").text((min < 10 ? "0" + min : min) + ":" + (sec < 10 ? "0" + sec : sec));
                 if (time-- <= 0) {
                     clearInterval(timerInterval);
-                    $("#timer").text(MEMBER_I18N.timerExpired || "");
+                    $("#timer").text(t("member.timerExpired", ""));
                     $("#auth_code").prop("disabled", true);
                 }
             }, 1000);
@@ -222,17 +262,17 @@
                 return true;
             }
             if(!isIdChecked) { 
-                alert(MEMBER_I18N.idCheckRequired || ""); 
+                alert(t("member.idCheckRequired", "")); 
                 $("#user_id").focus();
                 e.preventDefault(); return false; 
             }
             if(!isPwMatched) { 
-                alert(MEMBER_I18N.pwCheckRequired || ""); 
+                alert(t("member.pwCheckRequired", "")); 
                 $("#user_pw").focus();
                 e.preventDefault(); return false; 
             }
             if(!skipEmailAuth && !isEmailChecked) { 
-                alert(MEMBER_I18N.emailAuthRequired || ""); 
+                alert(t("member.emailAuthRequired", "")); 
                 $("#user_email").focus();
                 e.preventDefault(); return false; 
             }
@@ -247,7 +287,7 @@
 
             // 주소 검색을 통한 좌표 설정 여부 확인
             if(!lat || lat === "0.0" || !lon || lon === "0.0") {
-                alert(MEMBER_I18N.storeCoordRequired || "");
+                alert(t("member.storeCoordRequired", ""));
                 e.preventDefault();
                 return false;
             }
@@ -257,7 +297,7 @@
 
     // [C] 회원 탈퇴 함수 (전역 노출 - JSP onclick 대응)
     window.dropUser = function(userId) {
-        var withdrawConfirm = MEMBER_I18N.withdrawConfirm || "";
+        var withdrawConfirm = t("member.withdrawConfirm", "");
         if (confirm(withdrawConfirm)) {
             const form = document.createElement('form');
             form.method = 'POST';

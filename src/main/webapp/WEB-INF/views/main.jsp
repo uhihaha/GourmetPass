@@ -16,7 +16,7 @@
         <spring:message code="main.search.placeholder" var="phText" />
         <h1 class="search-title"><spring:message code="main.hero.title" text="🍴 오늘 어떤 맛집을 예약할까요?" /></h1>
         <form action="${pageContext.request.contextPath}/store/list" method="get" class="search-form">
-            <input type="text" name="keyword" class="search-input" placeholder="${phText}" required>
+            <input type="text" name="keyword" class="search-input" placeholder="${phText}">
             <button type="submit" class="btn-search"><spring:message code="main.search.btn" text="맛집 검색" /></button>
         </form>
     </div>

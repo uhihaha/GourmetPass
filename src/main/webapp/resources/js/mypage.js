@@ -1,12 +1,14 @@
 /* src/main/webapp/resources/js/mypage.js */
-var MYPAGE_I18N = (window.I18N && window.I18N.mypage) ? window.I18N.mypage : {};
+var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+    ? window.I18N_UTIL.t
+    : function(key, fallback) { return fallback || key; };
 
 /**
  * 1. 메뉴 삭제 처리 (점주 전용)
  * @param {number} menuId - 삭제할 메뉴의 고유 ID
  */
 function deleteMenu(menuId) {
-    var menuDeleteConfirmStrong = MYPAGE_I18N.menuDeleteConfirmStrong || "";
+    var menuDeleteConfirmStrong = t("mypage.menuDeleteConfirmStrong", "");
     if(confirm(menuDeleteConfirmStrong)) {
         submitPostRequest('/store/menu/delete', {
             'menu_id': menuId
@@ -20,7 +22,7 @@ function deleteMenu(menuId) {
  * @param {string} storeId - 해당 맛집 ID
  */
 function confirmDeleteReview(reviewId, storeId) {
-    var reviewDeleteConfirm = MYPAGE_I18N.reviewDeleteConfirm || "";
+    var reviewDeleteConfirm = t("mypage.reviewDeleteConfirm", "");
     if(confirm(reviewDeleteConfirm)) {
         submitPostRequest('/review/delete', {
             'review_id': reviewId,

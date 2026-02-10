@@ -9,11 +9,6 @@
 <link rel="stylesheet" href="<c:url value='/resources/css/member.css'/>">
 
 <script type="text/javascript">
-    // 서버에서 전달된 메시지(예: 중복 예약 알림) 처리
-    var msg = "${msg}";
-    if (msg && msg !== "null" && msg !== "") {
-        alert(msg);
-    }
 
     // 결제 모듈(Iamport) 연동에 필요한 사용자 정보 바인딩
     window.loginUserInfo = {
@@ -184,7 +179,7 @@
             </div>
         </sec:authorize>
         <sec:authorize access="hasRole('ROLE_USER')">
-            <form id="bookForm" action="<c:url value='/book/register'/>" method="post">
+            <form id="bookForm" action="<c:url value='/book/register'/>" method="post" novalidate>
                 <input type="hidden" name="store_id" value="${store.store_id}">
                 <input type="hidden" id="payIdField" name="pay_id" value="">
                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
@@ -215,7 +210,7 @@
                             <div id="timeSlotContainer" class="time-grid">
                                     <%-- JS에 의해 타임 버튼이 동적으로 생성됨 --%>
                             </div>
-                            <input type="hidden" name="book_time" id="selectedTime" required>
+                            <input type="hidden" name="book_time" id="selectedTime">
                         </td>
                     </tr>
                 </table>

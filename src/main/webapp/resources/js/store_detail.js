@@ -6,8 +6,10 @@
 // ================================================================
 // [A] 전역 함수 영역
 // ================================================================
-var STORE_I18N = (window.I18N && window.I18N.storeDetail) ? window.I18N.storeDetail : {};
-var COMMON_I18N = (window.I18N && window.I18N.common) ? window.I18N.common : {};
+var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+    ? window.I18N_UTIL.t
+    : function(key, fallback) { return fallback || key; };
+
 
 window.loadAvailableSlots = function () {
     const app = document.getElementById('storeDetailApp');
@@ -29,7 +31,7 @@ window.loadAvailableSlots = function () {
     const bufferTime = new Date(now.getTime() + 10 * 60000);
     const currentTimeStr = String(bufferTime.getHours()).padStart(2, '0') + ":" + String(bufferTime.getMinutes()).padStart(2, '0');
 
-    var loadingMsg = STORE_I18N.loading || "";
+    var loadingMsg = t("storeDetail.loading", "불러오는 중...");
     container.html("<p class='status-text'>" + loadingMsg + "</p>");
     $("#selectedTime").val("");
 
@@ -48,18 +50,18 @@ window.loadAvailableSlots = function () {
 
                 if (isBooked || isPast) {
                     const reason = isPast
-                        ? (STORE_I18N.reasonClosed || "")
-                        : (STORE_I18N.reasonBooked || "");
+                        ? t("storeDetail.reasonClosed", "마감")
+                        : t("storeDetail.reasonBooked", "예약 불가");
                     html += `<button type="button" class="time-btn disabled" disabled title="${reason}">${time}</button>`;
                 } else {
                     html += `<button type="button" class="time-btn" data-time="${time}">${time}</button>`;
                 }
             });
-            var noHoursMsg = STORE_I18N.noHours || "";
+            var noHoursMsg = t("storeDetail.noHours", "예약 가능한 시간이 없습니다.");
             container.html(html || "<p>" + noHoursMsg + "</p>");
         },
         error: function () {
-            var loadFail = STORE_I18N.loadFail || "";
+            var loadFail = t("storeDetail.loadFail", "예약 가능 시간 조회에 실패했습니다.");
             container.html("<p class='error-text'>" + loadFail + "</p>");
         }
     });
@@ -101,18 +103,15 @@ window.checkAccount = function () {
     const ownerId = app.dataset.ownerId || "";
 
     if (!loginUserInfo || !loginUserInfo.loginUserId) {
-        var loginRequired = COMMON_I18N.loginRequired || "";
-        alert(loginRequired);
+        alert(t("common.loginRequired", "로그인이 필요합니다"));
         return false;
     }
     if (loginUserInfo.isOwner) {
-        var ownerBlock = STORE_I18N.ownerBlock || "";
-        alert(ownerBlock);
+        alert(t("storeDetail.ownerBlock", "점주 계정은 예약/웨이팅을 할 수 없습니다."));
         return false;
     }
     if (loginUserInfo.loginUserId === ownerId) {
-        var selfBlock = STORE_I18N.selfBlock || "";
-        alert(selfBlock);
+        alert(t("storeDetail.selfBlock", "본인 매장은 예약/웨이팅을 할 수 없습니다."));
         return false;
     }
     return true;
@@ -121,8 +120,8 @@ window.checkAccount = function () {
 window.updateFavoriteButton = function (isFavorite) {
     const btn = $("#favoriteBtn");
     if (!btn.length) return;
-    const favoriteOnText = btn.data("favoriteOn") || STORE_I18N.favoriteOn || "";
-    const favoriteOffText = btn.data("favoriteOff") || STORE_I18N.favoriteOff || "";
+    const favoriteOnText = btn.data("favoriteOn") || t("storeDetail.favoriteOn", "즐겨찾기 취소");
+    const favoriteOffText = btn.data("favoriteOff") || t("storeDetail.favoriteOff", "즐겨찾기");
     if (isFavorite) {
         btn.addClass("active").text("❤️ " + favoriteOnText);
     } else {
@@ -134,7 +133,7 @@ window.updateFavoriteCount = function (count) {
     const countEl = $("#favoriteCount");
     if (!countEl.length) return;
     const safeCount = typeof count === "number" ? count : parseInt(count, 10) || 0;
-    const countPrefix = countEl.data("countPrefix") || STORE_I18N.favoriteCountPrefix || "";
+    const countPrefix = countEl.data("countPrefix") || t("storeDetail.favoriteCountPrefix", "즐겨찾기");
     countEl.text(countPrefix + " " + safeCount);
 };
 
@@ -183,6 +182,9 @@ $(document).ready(function () {
     const now = new Date();
     const today = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0') + "-" + String(now.getDate()).padStart(2, '0');
     $("#bookDate").val(today).attr("min", today);
+    $("#bookDate").on("input change", function () {
+        this.setCustomValidity("");
+    });
 
     // 2. 지도 초기화
     if (app.dataset.lat && app.dataset.lng && typeof kakao !== 'undefined') {
@@ -215,13 +217,11 @@ $(document).ready(function () {
         $("#bookDate").val(bDate);
         $("#selectedTime").val(bTime);
         $("#people_cnt").val(pCnt || '1');
-        var paySuccessBooking = STORE_I18N.paySuccessBooking || "";
-		alert(paySuccessBooking);
+        alert(t("storeDetail.paySuccessBooking", "결제가 완료되었습니다! 예약을 진행합니다."));
         $("#bookForm").submit();
         
     } else if (paymentStatus === 'fail') {
-        var payFail = STORE_I18N.payFail || "";
-        alert(payFail);
+        alert(t("storeDetail.payFail", "결제가 실패했습니다."));
         window.history.replaceState({}, document.title, window.location.pathname + '?storeId=' + app.dataset.storeId);
     }
 
@@ -236,6 +236,18 @@ $(document).ready(function () {
 		const peopleCnt = $("select[name='people_cnt']").val() || 1;        
 		const storeId = $("input[name='store_id']").val();
         const contextPath = app.dataset.context;
+        var bookDateInput = document.getElementById("bookDate");
+
+        if (!bookDate) {
+            if (bookDateInput) {
+                bookDateInput.setCustomValidity(t("storeDetail.bookDateRequired", "예약 날짜를 선택해 주세요."));
+                bookDateInput.reportValidity();
+            }
+            return;
+        }
+        if (bookDateInput) {
+            bookDateInput.setCustomValidity("");
+        }
 
         if ($("#payIdField").val().trim() !== "") {
             form.submit();
@@ -243,8 +255,7 @@ $(document).ready(function () {
         }
 
         if (!selectedTime) {
-            var selectVisitTime = STORE_I18N.selectVisitTime || "";
-            alert(selectVisitTime);
+            alert(t("storeDetail.selectVisitTime", "방문 시간을 선택해 주세요!"));
             return;
         }
 
@@ -254,7 +265,7 @@ $(document).ready(function () {
             data: {store_id: storeId, book_date: bookDate, book_time: selectedTime},
             success: async function (result) {
                 if (result === "AVAILABLE") {
-                    var confirmSuffix = STORE_I18N.confirmPaymentSuffix || "";
+                    var confirmSuffix = t("storeDetail.confirmPaymentSuffix", "예약을 위해 결제를 진행하시겠습니까?");
                     if (!confirm(bookDate + " " + selectedTime + " " + confirmSuffix)) return;
                     try {
                         const paymentId = "pay-" + new Date().getTime();
@@ -262,7 +273,7 @@ $(document).ready(function () {
                             storeId: loginUserInfo.portOneStoreId,
                             channelKey: loginUserInfo.portOneChannelKey,
                             paymentId: paymentId,
-                            orderName: (STORE_I18N.orderName || ""),
+                            orderName: t("storeDetail.orderName", "예약 보증금"),
                             totalAmount: 1000,
                             currency: "CURRENCY_KRW",
                             payMethod: "CARD",
@@ -281,24 +292,21 @@ $(document).ready(function () {
                                 }
                             }).done(function (pId) {
                                 $("#payIdField").val(pId);
-                                var paySuccess = STORE_I18N.paySuccess || "";
-                                alert(paySuccess);
+                                alert(t("storeDetail.paySuccess", "결제가 완료되었습니다!"));
                                 form.submit();
                             }).fail(() => {
-                                var payVerifyFail = STORE_I18N.payVerifyFail || "";
-                                alert(payVerifyFail);
+                                alert(t("storeDetail.payVerifyFail", "결제 검증에 실패했습니다."));
                             });
                         } else {
-                            var payCancelledPrefix = STORE_I18N.payCancelledPrefix || "";
+                            var payCancelledPrefix = t("storeDetail.payCancelledPrefix", "결제가 취소되었습니다:");
                             alert(payCancelledPrefix + " " + response.message);
                         }
                     } catch (err) {
-                        var payPopupError = STORE_I18N.payPopupError || "";
-                        alert(payPopupError);
+                        alert(t("storeDetail.payPopupError", "결제창 호출 중 오류가 발생했습니다."));
                     }
                 } else {
-                    var unavailablePrefix = STORE_I18N.bookUnavailablePrefix || "";
-                    var unavailableSuffix = STORE_I18N.bookUnavailableSuffix || "";
+                    var unavailablePrefix = t("storeDetail.bookUnavailablePrefix", "예약이 불가능합니다. (사유:");
+                    var unavailableSuffix = t("storeDetail.bookUnavailableSuffix", ")");
                     alert(unavailablePrefix + " " + result + unavailableSuffix);
                 }
             }
@@ -308,8 +316,7 @@ $(document).ready(function () {
     // 6. 즐겨찾기 버튼
     $("#favoriteBtn").on("click", function () {
         if (!loginUserInfo || !loginUserInfo.loginUserId) {
-            var loginRequired = COMMON_I18N.loginRequired || "";
-            alert(loginRequired);
+            alert(t("common.loginRequired", "로그인이 필요합니다"));
             return;
         }
         const storeId = app.dataset.storeId;
@@ -339,8 +346,8 @@ $(document).ready(function () {
         stomp.connect({}, function () {
             stomp.subscribe("/topic/store/" + app.dataset.storeId + "/viewers", (msg) => {
                 const viewerCountEl = $("#viewerCount");
-                const viewerPrefix = viewerCountEl.data("viewerPrefix") || STORE_I18N.viewerPrefix || "";
-                const viewerSuffix = viewerCountEl.data("viewerSuffix") || STORE_I18N.viewerSuffix || "";
+                const viewerPrefix = viewerCountEl.data("viewerPrefix") || t("storeDetail.viewerPrefix", "현재");
+                const viewerSuffix = viewerCountEl.data("viewerSuffix") || t("storeDetail.viewerSuffix", "명 확인 중");
                 viewerCountEl.text(viewerPrefix + " " + msg.body + viewerSuffix);
             });
         });

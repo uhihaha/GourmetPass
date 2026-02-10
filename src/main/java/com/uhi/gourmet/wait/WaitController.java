@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.uhi.gourmet.member.MemberService;
 
@@ -47,16 +48,15 @@ public class WaitController {
 
    // 2. 웨이팅 등록
     @PostMapping("/register")
-    public String register_wait(WaitVO vo, Principal principal, Model model, HttpServletRequest request) {
+    public String register_wait(WaitVO vo, Principal principal, HttpServletRequest request, RedirectAttributes rttr) {
         if (principal == null) {
             return "redirect:/member/login";
         }
         
         // 점주는 웨이팅 불가능
         if (request.isUserInRole("ROLE_OWNER")) {
-            model.addAttribute("msg", "점주 계정은 웨이팅을 할 수 없습니다.");
-            model.addAttribute("url", "/store/detail?storeId=" + vo.getStore_id());
-            return "common/alert";
+            rttr.addFlashAttribute("msg", "점주 계정은 웨이팅을 할 수 없습니다.");
+            return "redirect:/store/detail?storeId=" + vo.getStore_id();
         }
         
         String user_id = principal.getName();
@@ -65,9 +65,8 @@ public class WaitController {
         try {
             wait_service.register_wait(vo);
         } catch (IllegalStateException e) {
-            model.addAttribute("msg", e.getMessage());
-            model.addAttribute("url", "/wait/status");
-            return "common/alert";
+            rttr.addFlashAttribute("msg", e.getMessage());
+            return "redirect:/wait/status";
         }
         
         // 점주에게 실시간으로 알림

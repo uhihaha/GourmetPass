@@ -58,7 +58,7 @@ public class PhotoController {
             }
             int photoId = photoService.getNextPhotoId();
             String savedName = buildFileName(userId, "store_img", photoId, file.getOriginalFilename());
-            String savedPath = storeService.uploadFile(file, realPath, savedName);
+            String savedPath = storeService.uploadFile(file, realPath, savedName, "photo");
             if (savedPath == null) {
                 continue;
             }
@@ -154,6 +154,20 @@ public class PhotoController {
         if (uploadPath == null || uploadPath.trim().isEmpty()) {
             throw new IllegalStateException("upload.path 설정이 필요합니다.");
         }
-        return uploadPath.trim();
+        return normalizeUploadPath(uploadPath.trim());
+    }
+
+    private String normalizeUploadPath(String path) {
+        String normalized = path;
+        if (normalized.startsWith("file:")) {
+            normalized = normalized.substring("file:".length());
+        }
+        if (normalized.startsWith("//")) {
+            normalized = normalized.substring(2);
+        }
+        if (normalized.startsWith("/") && normalized.length() > 2 && normalized.charAt(2) == ':') {
+            normalized = normalized.substring(1);
+        }
+        return normalized;
     }
 }

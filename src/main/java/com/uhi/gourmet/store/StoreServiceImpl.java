@@ -227,8 +227,10 @@ public class StoreServiceImpl implements StoreService {
 
     // 15. 파일 업로드 처리
     @Override
-    public String uploadFile(MultipartFile file, String realPath, String savedName) {
-        File dir = new File(realPath);
+    public String uploadFile(MultipartFile file, String realPath, String savedName, String subDir) {
+        File dir = (subDir == null || subDir.trim().isEmpty())
+                ? new File(realPath)
+                : new File(realPath, subDir);
         if (!dir.exists()) dir.mkdirs();
 
         String originalName = file.getOriginalFilename();
@@ -237,7 +239,7 @@ public class StoreServiceImpl implements StoreService {
         }
 
         try {
-            file.transferTo(new File(realPath, savedName));
+            file.transferTo(new File(dir, savedName));
         } catch (IOException e) {
             e.printStackTrace();
             return null;

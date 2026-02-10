@@ -66,7 +66,7 @@
             </span>
 
             <span class="viewer-count" id="viewerCount">
-                <spring:message code="storeDetail.viewerPrefix" text="현재 조회 중:" /> 0<spring:message code="storeDetail.viewerSuffix" text="명" />
+                <spring:message code="store.detail.viewer.prefix" text="현재 조회 중:" /> 0<spring:message code="store.detail.viewer.suffix" text="명" />
             </span>
             
             <button type="button" class="favorite-inline" id="favoriteBtn">
@@ -144,9 +144,16 @@
     <%-- 4. 예약 신청 영역 --%>
     <div id="booking-area" class="interaction-card" style="display:none;">
         <h3 class="section-title"><spring:message code="store.form.book.title" text="📅 당일 예약 신청" /></h3>
+        <sec:authorize access="isAnonymous()">
+            <div class="auth-guide-box">
+                <spring:message code="store.form.auth.prefix.book" text="예약은" />
+                <spring:message code="store.form.auth.login" text="로그인" />
+                <spring:message code="store.form.auth.suffix" text="후 이용 가능합니다." />
+            </div>
+        </sec:authorize>
         <sec:authorize access="hasRole('ROLE_OWNER')">
             <div class="auth-guide-box">
-                <spring:message code="storeDetail.ownerBlock" text="점주 계정은 예약/웨이팅을 이용할 수 없습니다." />
+                <spring:message code="store.detail.owner.block" text="점주 계정은 예약/웨이팅을 이용할 수 없습니다." />
             </div>
         </sec:authorize>
         <sec:authorize access="hasRole('ROLE_USER')">
@@ -180,9 +187,16 @@
     <%-- 5. 웨이팅 신청 영역 --%>
     <div id="waiting-area" class="interaction-card" style="display:none;">
         <h3 class="section-title"><spring:message code="store.form.wait.title" text="🚶 실시간 웨이팅 신청" /></h3>
+        <sec:authorize access="isAnonymous()">
+            <div class="auth-guide-box">
+                <spring:message code="store.form.auth.prefix.wait" text="웨이팅은" />
+                <spring:message code="store.form.auth.login" text="로그인" />
+                <spring:message code="store.form.auth.suffix" text="후 이용 가능합니다." />
+            </div>
+        </sec:authorize>
         <sec:authorize access="hasRole('ROLE_OWNER')">
             <div class="auth-guide-box">
-                <spring:message code="storeDetail.ownerBlock" text="점주 계정은 예약/웨이팅을 이용할 수 없습니다." />
+                <spring:message code="store.detail.owner.block" text="점주 계정은 예약/웨이팅을 이용할 수 없습니다." />
             </div>
         </sec:authorize>
         <sec:authorize access="hasRole('ROLE_USER')">

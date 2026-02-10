@@ -2,6 +2,7 @@
 
 // Geocoder 객체 전역 생성 (카카오 맵 API 로드 필수)
 const geocoder = new kakao.maps.services.Geocoder();
+const ADDRESS_I18N = (window.I18N && window.I18N.address) ? window.I18N.address : {};
 
 /**
  * 주소 검색 및 좌표 추출 공통 함수
@@ -32,9 +33,11 @@ function execDaumPostcode(prefix = 'user') {
                     if (lonField) lonField.value = result.x; // 경도
                     
                     // 성공 메시지 (jQuery 활용) [cite: 11, 34]
-                    $("#coordStatus").html("<span class='msg-ok'>📍 좌표 추출 완료!</span>");
+                    var successMsg = ADDRESS_I18N.coordSuccess || "";
+                    $("#coordStatus").html("<span class='msg-ok'>📍 " + successMsg + "</span>");
                 } else {
-                    $("#coordStatus").html("<span class='msg-no'>❌ 좌표 추출 실패</span>");
+                    var failMsg = ADDRESS_I18N.coordFail || "";
+                    $("#coordStatus").html("<span class='msg-no'>❌ " + failMsg + "</span>");
                 }
             });
             

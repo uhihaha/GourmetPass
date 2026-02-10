@@ -63,6 +63,9 @@ public class StoreServiceImpl implements StoreService {
         if (vo.getMax_capacity() < 1) {
             throw new RuntimeException("최소인원은 1 이상이어야 합니다.");
         }
+        if (vo.getStore_id() <= 0) {
+            vo.setStore_id(storeMapper.getNextStoreId());
+        }
         vo.setUser_id(userId);
         storeMapper.insertStore(vo);
     }
@@ -119,6 +122,9 @@ public class StoreServiceImpl implements StoreService {
             throw new RuntimeException("메뉴 이름이 필요합니다.");
         }
 
+        if (vo.getMenu_id() <= 0) {
+            vo.setMenu_id(storeMapper.getNextMenuId());
+        }
         StoreVO store = storeMapper.getStoreDetail(vo.getStore_id());
         if (store != null && store.getUser_id().equals(userId)) {
             int dupCount = storeMapper.countMenuName(vo.getStore_id(), vo.getMenu_name().trim());
@@ -221,12 +227,14 @@ public class StoreServiceImpl implements StoreService {
 
     // 15. 파일 업로드 처리
     @Override
-    public String uploadFile(MultipartFile file, String realPath) {
+    public String uploadFile(MultipartFile file, String realPath, String savedName) {
         File dir = new File(realPath);
         if (!dir.exists()) dir.mkdirs();
 
         String originalName = file.getOriginalFilename();
-        String savedName = System.currentTimeMillis() + "_" + originalName;
+        if (savedName == null || savedName.trim().isEmpty()) {
+            savedName = System.currentTimeMillis() + "_" + originalName;
+        }
 
         try {
             file.transferTo(new File(realPath, savedName));
@@ -235,5 +243,15 @@ public class StoreServiceImpl implements StoreService {
             return null;
         }
         return savedName;
+    }
+
+    @Override
+    public int getNextStoreId() {
+        return storeMapper.getNextStoreId();
+    }
+
+    @Override
+    public int getNextMenuId() {
+        return storeMapper.getNextMenuId();
     }
 }

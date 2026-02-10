@@ -91,7 +91,7 @@
 		<security:intercept-url
 			pattern="/wait/updateStatus**" access="hasRole('ROLE_OWNER')" />
 		<security:intercept-url
-			pattern="/wait/register**" access="hasRole('ROLE_USER')" />
+			pattern="/wait/register**" access="hasAnyRole('ROLE_USER', 'ROLE_OWNER')" />
 		<security:intercept-url
 			pattern="/wait/myStatus**" access="hasRole('ROLE_USER')" />
 		<!-- wait fetch to fail 오류 -->

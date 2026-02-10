@@ -18,6 +18,12 @@ public interface MemberService {
     void deleteMember(String userId);
 
     int checkIdDuplicate(String userId);
+
+    String findUserIdByNameEmail(String name, String email);
+
+    String resetPasswordByIdEmail(String userId, String email);
+
+    boolean hasMemberByIdEmail(String userId, String email);
     
     Map<String, Object> getMyStatusSummary(String userId);
 }

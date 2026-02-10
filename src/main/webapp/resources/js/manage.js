@@ -1,11 +1,25 @@
 
 
 
+var MANAGE_I18N = (window.I18N && window.I18N.manage) ? window.I18N.manage : {};
 $(document).ready(function() {
 
 	APP_CONFIG.userId = "<sec:authentication property='principal.username'/>";
     APP_CONFIG.role = "ROLE_OWNER";
 	console.log("현재 설정:", APP_CONFIG);
+
+    if (typeof SockJS !== "undefined" && typeof Stomp !== "undefined" && APP_CONFIG.storeId) {
+        var socket = new SockJS(APP_CONFIG.contextPath + "/ws_waiting");
+        var stompClient = Stomp.over(socket);
+        stompClient.connect({}, function () {
+            stompClient.subscribe("/topic/store/" + APP_CONFIG.storeId + "/bookUpdate", function () {
+                location.reload();
+            });
+            stompClient.subscribe("/topic/store/" + APP_CONFIG.storeId + "/waitUpdate", function () {
+                location.reload();
+            });
+        });
+    }
 
 
     // 노쇼 버튼 클릭 시 이벤트
@@ -13,7 +27,8 @@ $(document).ready(function() {
         const pay_id = $(this).data("payid");   // 버튼에 심어둔 pay_id 가져오기
         const form = $(this).closest("form");   // 부모 폼 요소
 
-        if (confirm("노쇼 처리하시겠습니까? 결제된 금액이 환불됩니다.")) {
+        var confirmNoShow = MANAGE_I18N.confirmNoShow || "";
+        if (confirm(confirmNoShow)) {
             // 1. 환불 함수 호출
             cancelPay(pay_id, form);
             // 취소 누르면 그냥 끝
@@ -26,7 +41,8 @@ $(document).ready(function() {
         const pay_id = $(this).data("payid");   // 버튼에 심어둔 pay_id 가져오기
         const form = $(this).closest("form");   // 부모 폼 요소
 
-        if (confirm("식사완료 처리하시겠습니까? 결제된 금액이 환불됩니다.")) {
+        var confirmFinish = MANAGE_I18N.confirmFinish || "";
+        if (confirm(confirmFinish)) {
             // 1. 환불 함수 호출
             cancelPay(pay_id, form);
             // 취소 누르면 그냥 끝
@@ -57,7 +73,8 @@ function cancelPay(pay_id, form) {	// pay_id 를 매개변수로 가져와서
             xhr.setRequestHeader("X-CSRF-TOKEN", APP_CONFIG.csrfToken);
         },
         success: function () {	// response를 괄호에 넣어서 controller에서 값을 가져올 수 있음
-            alert("환불 성공");
+            var refundSuccess = (MANAGE_I18N.refundSuccess || "");
+            alert(refundSuccess);
             
             // 폼 안에 hidden을 만들어서 값을 넣어줌
 		    $('<input>').attr({
@@ -71,7 +88,8 @@ function cancelPay(pay_id, form) {	// pay_id 를 매개변수로 가져와서
         },
 
         error: function (xhr, status, error) {
-            alert("환불 실패");
+            var refundFail = (MANAGE_I18N.refundFail || "");
+            alert(refundFail);
             console.log(APP_CONFIG.csrfToken);
             console.error(xhr.responseText);
         }	

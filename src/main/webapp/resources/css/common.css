@@ -49,6 +49,28 @@ body {
 }
 .btn-logout-text:hover { text-decoration: underline; }
 
+/* 2-1. Japanese font tuning (apply globally when lang=ja/jp) */
+html[lang='ja'],
+html[lang='jp'] {
+    font-family: 'Noto Sans JP', 'Pretendard', sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+}
+html[lang='ja'] *,
+html[lang='jp'] * {
+    font-family: 'Noto Sans JP', 'Pretendard', sans-serif !important;
+}
+html[lang='ja'] body,
+html[lang='jp'] body {
+    line-height: 1.4;
+}
+html[lang='ja'] .wire-nav,
+html[lang='jp'] .wire-nav,
+html[lang='ja'] .wire-footer,
+html[lang='jp'] .wire-footer {
+    line-height: 1.2;
+}
+
 /* 3. 하단 고정 푸터 */
 .wire-footer { 
     position: fixed; bottom: 0; left: 0; width: 100%; 

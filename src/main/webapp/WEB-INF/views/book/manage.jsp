@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="<c:url value='/resources/css/member.css'/>">
 <link rel="stylesheet" href="<c:url value='/resources/css/mypage.css'/>">
 <link rel="stylesheet" href="<c:url value='/resources/css/manage.css'/>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
 <div class="edit-wrapper" style="max-width: 1100px; margin: 40px auto;">
 	<div class="edit-title">⚙️ 실시간 매장 관리 센터</div>
@@ -184,6 +186,11 @@
 </div>
 
 <%-- 스크립트 및 WebSocket 설정 --%>
+<script>
+    if (typeof APP_CONFIG !== "undefined") {
+        APP_CONFIG.storeId = "${store.store_id}";
+    }
+</script>
 <script src="<c:url value='/resources/js/member_mypage.js'/>"></script>
 <script src="<c:url value='/resources/js/manage.js'/>"></script>
 

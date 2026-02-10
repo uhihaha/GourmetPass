@@ -1,6 +1,7 @@
 /**
  * 멤버 이용 현황 및 히스토리 공통 라이브러리
  */
+var WAIT_I18N = (window.I18N && window.I18N.wait) ? window.I18N.wait : {};
 $(document).ready(function() {
     
     // 1. 예약 취소(환불 포함) 버튼 이벤트
@@ -10,11 +11,13 @@ $(document).ready(function() {
         const $form = $(this).closest("form");
 
         if (!pay_id) {
-            alert("결제 정보가 확인되지 않아 환불이 불가능합니다. 고객센터에 문의해주세요.");
+            var payMissing = WAIT_I18N.payMissing || "";
+            alert(payMissing);
             return;
         }
 
-        if (confirm("예약을 취소하시겠습니까? 결제된 금액이 전액 환불됩니다.")) {
+        var bookCancelConfirm = WAIT_I18N.bookCancelConfirm || "";
+        if (confirm(bookCancelConfirm)) {
             cancelPay(pay_id, $form);
         }
     });
@@ -58,7 +61,8 @@ function cancelPay(pay_id, $form) {
             xhr.setRequestHeader("X-CSRF-TOKEN", APP_CONFIG.csrfToken);
         },
         success: function() {
-            alert("환불 처리가 완료되었습니다.");
+            var refundDone = WAIT_I18N.refundDone || "";
+            alert(refundDone);
             // 상태값을 CANCELED로 변경하여 폼 제출
             if ($form.find('input[name="status"]').length === 0) {
                 $('<input>').attr({
@@ -70,7 +74,9 @@ function cancelPay(pay_id, $form) {
             $form.submit();
         },
         error: function(xhr) {
-            alert("환불 실패: " + (xhr.responseText || "관리자에게 문의하세요."));
+            var refundFailPrefix = WAIT_I18N.refundFailPrefix || "";
+            var refundFailFallback = WAIT_I18N.refundFailFallback || "";
+            alert(refundFailPrefix + " " + (xhr.responseText || refundFailFallback));
             console.error(xhr.responseText);
         }
     });
@@ -81,7 +87,8 @@ function cancelPay(pay_id, $form) {
  * @param {number} waitId - 웨이팅 번호
  */
 function cancelWait(waitId) {
-    if (!confirm("웨이팅을 취소하시겠습니까?")) return;
+    var waitConfirm = WAIT_I18N.cancelConfirm || "";
+    if (!confirm(waitConfirm)) return;
 
     const url = APP_CONFIG.contextPath + "/wait/cancel";
     
@@ -96,10 +103,12 @@ function cancelWait(waitId) {
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            alert("웨이팅이 취소되었습니다.");
+            var cancelSuccess = WAIT_I18N.cancelSuccess || "";
+            alert(cancelSuccess);
             location.reload();
         } else {
-            alert("실패: " + data.message);
+            var failPrefix = WAIT_I18N.failPrefix || "";
+            alert(failPrefix + " " + data.message);
         }
     })
     .catch(err => {

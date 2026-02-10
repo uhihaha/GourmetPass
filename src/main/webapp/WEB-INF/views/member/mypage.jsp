@@ -5,6 +5,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
 <%@ taglib uri="http://www.springframework.org/security/tags"
 	prefix="sec"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
 
 <jsp:include page="../common/header.jsp" />
 
@@ -17,22 +18,21 @@
 <div class="mypage-wrapper">
 	<div class="profile-card">
 		<div class="profile-info">
-			<span class="profile-label">MEMBER PROFILE</span>
+			<span class="profile-label"><spring:message code="mypage.user.profile.label" text="MEMBER PROFILE" /></span>
 			<h2 class="user-name">${member.user_nm}
-				<small>님</small>
+				<small><spring:message code="common.user.suffix" text="님" /></small>
 			</h2>
-			<p class="user-meta">ID: ${member.user_id} | TEL:
-				${member.user_tel}</p>
+			<p class="user-meta"><spring:message code="mypage.user.meta" arguments="${member.user_id},${member.user_tel}" text="ID: {0} | TEL: {1}" /></p>
 		</div>
 		<div class="btn-group" style="margin: 0; width: auto;">
 			<a href="<c:url value='/member/edit'/>" class="btn-wire"
-				style="height: 45px; padding: 0 20px; font-size: 14px;">정보 수정</a>
+				style="height: 45px; padding: 0 20px; font-size: 14px;"><spring:message code="common.btn.edit" text="정보 수정" /></a>
 			<form action="<c:url value='/logout'/>" method="post"
 				style="display: inline;">
 				<input type="hidden" name="${_csrf.parameterName}"
 					value="${_csrf.token}" />
 				<button type="submit" class="btn-wire btn-logout"
-					style="height: 45px; padding: 0 20px; font-size: 14px; margin-left: 10px;">로그아웃</button>
+					style="height: 45px; padding: 0 20px; font-size: 14px; margin-left: 10px;"><spring:message code="common.nav.logout" text="로그아웃" /></button>
 			</form>
 		</div>
 	</div>
@@ -40,15 +40,15 @@
 	<%-- mypage.jsp 내부 핵심 버튼 링크 수정 --%>
 	<div class="menu-container">
 		<a href="<c:url value='/member/wait_status'/>" class="status-btn-full">
-			📅 나 의 이 용 현 황 (예약 / 웨이팅) </a>
+			<spring:message code="mypage.user.status.title" text="📅 나의 이용현황 (예약 / 웨이팅)" /> </a>
 	</div>
 	<hr class="section-divider">
 
 	<div class="dashboard-card">
 		<div class="card-header"
 			style="display: flex; justify-content: space-between; align-items: center;">
-			<h3 class="card-title">❤️ 내 즐겨찾기</h3>
-			<span class="favorite-count">총 ${fn:length(favorite_list)}개</span>
+			<h3 class="card-title"><spring:message code="mypage.user.favorite.title" text="❤️ 내 즐겨찾기" /></h3>
+			<span class="favorite-count"><spring:message code="mypage.user.favorite.count" arguments="${fn:length(favorite_list)}" text="총 {0}개" /></span>
 		</div>
 		<div class="favorite-grid">
 			<c:choose>
@@ -56,7 +56,7 @@
 					<c:forEach var="fav" items="${favorite_list}">
 						<div class="favorite-card" data-store-id="${fav.store_id}">
 							<button type="button" class="favorite-remove"
-								data-store-id="${fav.store_id}">삭제</button>
+								data-store-id="${fav.store_id}"><spring:message code="common.btn.delete" text="삭제" /></button>
 							<a class="favorite-link"
 								href="<c:url value='/store/detail?storeId=${fav.store_id}'/>">
 								<div class="favorite-thumb">
@@ -81,7 +81,7 @@
 				<c:otherwise>
 					<div class="empty-status-box"
 						style="grid-column: 1/-1; text-align: center; padding: 40px 0; color: #ccc; font-weight: 900;">
-						즐겨찾기에 등록된 매장이 없습니다.</div>
+						<spring:message code="mypage.user.favorite.empty" text="즐겨찾기에 등록된 매장이 없습니다." /></div>
 				</c:otherwise>
 			</c:choose>
 		</div>
@@ -91,11 +91,11 @@
 		<div class="card-header"
 			style="display: flex; justify-content: space-between; align-items: center;">
 			<%-- [수정] 컨트롤러에서 전달받은 전체 개수(total_review_cnt) 표시 --%>
-			<h3 class="card-title">💬 최근 리뷰&nbsp;&nbsp;</h3>
+			<h3 class="card-title"><spring:message code="mypage.user.review.recent" text="💬 최근 리뷰" />&nbsp;&nbsp;</h3>
 
 			<%-- [추가] 전체보기 링크: 신규 생성할 전체 이력 페이지(/member/review/mine)로 연결 --%>
 			<a href="<c:url value='/member/review/mine'/>" class="btn-wire"
-				style="height: 32px; line-height: 30px; padding: 0 12px; font-size: 12px; text-decoration: none; color: #333;">전체보기
+				style="height: 32px; line-height: 30px; padding: 0 12px; font-size: 12px; text-decoration: none; color: #333;"><spring:message code="store.review.viewall" text="전체보기" />
 				❯</a>
 		</div>
 
@@ -121,7 +121,7 @@
 								<button type="button" class="btn-delete-review"
 									data-review-id="${review.review_id}"
 									data-store-id="${review.store_id}"
-									data-return-url="/member/mypage">삭제</button>	
+									data-return-url="/member/mypage"><spring:message code="common.btn.delete" text="삭제" /></button>	
 							</div>
 							<p
 								style="line-height: 1.6; font-size: 15px; color: #444; margin-bottom: 15px;">${review.content}</p>
@@ -135,7 +135,7 @@
 				<c:otherwise>
 					<div
 						style="text-align: center; padding: 60px 0; color: #ccc; font-weight: 900;">
-						아직 작성된 리뷰 기록이 없습니다.</div>
+						<spring:message code="mypage.user.review.empty" text="아직 작성된 리뷰 기록이 없습니다." /></div>
 				</c:otherwise>
 			</c:choose>
 		</div>

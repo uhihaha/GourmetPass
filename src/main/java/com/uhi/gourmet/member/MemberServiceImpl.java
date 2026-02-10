@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.security.SecureRandom;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,12 @@ public class MemberServiceImpl implements MemberService {
         memberMapper.join(member);
         
         // 2. 가게 정보 생성 (생성된 회원 ID 연동)
+        if (store == null) {
+            throw new IllegalArgumentException("점주 가입을 위한 가게 정보가 필요합니다.");
+        }
+        if (store.getStore_id() <= 0) {
+            store.setStore_id(storeMapper.getNextStoreId());
+        }
         store.setUser_id(member.getUser_id());
         storeMapper.insertStore(store);
     }
@@ -90,13 +97,37 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void deleteMember(String userId) {
-        memberMapper.deleteMember(userId);
+        memberMapper.deleteMemberCascade(userId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public int checkIdDuplicate(String userId) {
         return memberMapper.idCheck(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String findUserIdByNameEmail(String name, String email) {
+        return memberMapper.findUserIdByNameEmail(name, email);
+    }
+
+    @Override
+    @Transactional
+    public String resetPasswordByIdEmail(String userId, String email) {
+        int matched = memberMapper.countByIdEmail(userId, email);
+        if (matched == 0) {
+            return null;
+        }
+        String tempPassword = generateTempPassword();
+        memberMapper.updatePassword(userId, pwEncoder.encode(tempPassword));
+        return tempPassword;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean hasMemberByIdEmail(String userId, String email) {
+        return memberMapper.countByIdEmail(userId, email) > 0;
     }
 
     /**
@@ -214,5 +245,32 @@ public class MemberServiceImpl implements MemberService {
         summary.put("my_wait_list", my_wait_list);
         
         return summary;
+    }
+
+    private String generateTempPassword() {
+        SecureRandom random = new SecureRandom();
+        String upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+        String lower = "abcdefghijkmnopqrstuvwxyz";
+        String digits = "23456789";
+        String special = "!@#$%^&*";
+        String all = upper + lower + digits + special;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(upper.charAt(random.nextInt(upper.length())));
+        sb.append(lower.charAt(random.nextInt(lower.length())));
+        sb.append(digits.charAt(random.nextInt(digits.length())));
+        sb.append(special.charAt(random.nextInt(special.length())));
+        for (int i = 0; i < 6; i++) {
+            sb.append(all.charAt(random.nextInt(all.length())));
+        }
+
+        char[] chars = sb.toString().toCharArray();
+        for (int i = chars.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            char tmp = chars[i];
+            chars[i] = chars[j];
+            chars[j] = tmp;
+        }
+        return new String(chars);
     }
 }

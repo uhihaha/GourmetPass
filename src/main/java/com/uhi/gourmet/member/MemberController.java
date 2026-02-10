@@ -2,8 +2,10 @@
 package com.uhi.gourmet.member;
 
 import java.security.Principal;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
@@ -13,7 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -68,8 +73,21 @@ public class MemberController {
     @Autowired
     private JavaMailSenderImpl mailSender;
 
+    @Autowired
+    private KakaoOAuthService kakaoOAuthService;
+
+    @Autowired
+    private GoogleOAuthService googleOAuthService;
+
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
+
     @Value("${kakao.js.key}")
     private String kakaoJsKey;
+
+    private static final String SOCIAL_PROFILE_SESSION_KEY = "socialProfile";
+    private static final String SOCIAL_PASSWORD_SESSION_KEY = "socialPassword";
+    private static final String SOCIAL_SIGNUP_FLAG = "socialSignup";
 
     private void addKakaoKeyToModel(Model model) {
         model.addAttribute("kakaoJsKey", kakaoJsKey);
@@ -79,27 +97,12 @@ public class MemberController {
     @ResponseBody
     public int emailAuth(@RequestParam("email") String email) {
         log.info("이메일 인증 요청 수신: " + email);
-        Random random = new Random();
-        int checkNum = random.nextInt(888888) + 111111;
-
-        String setFrom = "boardexample114@gmail.com";
-        String toMail = email;
+        int checkNum = generateAuthCode();
         String title = "Gourmet 회원가입 인증 이메일입니다.";
         String content = "GourmetPass를 이용해주셔서 감사합니다.<br><br>" +
                          "인증 코드는 <b>" + checkNum + "</b> 입니다.<br>" +
                          "해당 인증 코드를 인증 코드 확인란에 기입하여 주세요.";
-
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "utf-8");
-            helper.setFrom(setFrom);
-            helper.setTo(toMail);
-            helper.setSubject(title);
-            helper.setText(content, true);
-            mailSender.send(message);
-        } catch (Exception e) {
-            log.error("메일 전송 실패: " + e.getMessage());
-        }
+        sendEmail(email, title, content);
         return checkNum;
     }
 
@@ -109,31 +112,142 @@ public class MemberController {
         return "member/login";
     }
 
+    @GetMapping("/oauth/kakao")
+    public String kakaoOAuthStart(HttpSession session) {
+        String state = generateOAuthState(session);
+        return "redirect:" + kakaoOAuthService.buildAuthorizeUrl(state);
+    }
+
+    @GetMapping("/oauth/google")
+    public String googleOAuthStart(HttpSession session, HttpServletRequest request) {
+        String state = generateOAuthState(session);
+        String redirectUri = buildRedirectUri(request, "/member/oauth/google/callback");
+        return "redirect:" + googleOAuthService.buildAuthorizeUrl(state, redirectUri);
+    }
+
+    @GetMapping({"/kakao_callback", "/oauth/kakao/callback"})
+    public String kakaoCallback(@RequestParam("code") String code,
+            @RequestParam(value = "state", required = false) String state,
+            HttpSession session, RedirectAttributes rttr, HttpServletRequest request) {
+        if (!isValidOAuthState(session, state)) {
+            rttr.addFlashAttribute("msg", "소셜 로그인 인증이 만료되었습니다. 다시 시도해주세요.");
+            return "redirect:/member/login";
+        }
+        try {
+            SocialProfile profile = kakaoOAuthService.fetchUserProfile(code);
+            return handleSocialCallback(profile, session, rttr, request);
+        } catch (IllegalStateException ex) {
+            log.error("카카오 로그인 실패", ex);
+            rttr.addFlashAttribute("msg", "카카오 로그인에 실패했습니다.");
+            return "redirect:/member/login";
+        }
+    }
+
+    @GetMapping({"/google_callback", "/oauth/google/callback"})
+    public String googleCallback(@RequestParam("code") String code,
+            @RequestParam(value = "state", required = false) String state,
+            HttpSession session, RedirectAttributes rttr, HttpServletRequest request) {
+        if (!isValidOAuthState(session, state)) {
+            rttr.addFlashAttribute("msg", "소셜 로그인 인증이 만료되었습니다. 다시 시도해주세요.");
+            return "redirect:/member/login";
+        }
+        try {
+            String redirectUri = buildRedirectUri(request, "/member/oauth/google/callback");
+            SocialProfile profile = googleOAuthService.fetchUserProfile(code, redirectUri);
+            return handleSocialCallback(profile, session, rttr, request);
+        } catch (IllegalStateException ex) {
+            log.error("구글 로그인 실패", ex);
+            rttr.addFlashAttribute("msg", "구글 로그인에 실패했습니다.");
+            return "redirect:/member/login";
+        }
+    }
+
     @GetMapping("/signup/select")
-    public String signupSelectPage() { return "member/signup_select"; }
+    public String signupSelectPage(HttpSession session, Model model) {
+        model.addAttribute("socialSignup", session.getAttribute(SOCIAL_PROFILE_SESSION_KEY) != null);
+        return "member/signup_select";
+    }
 
     @GetMapping("/signup/general")
-    public String signupGeneralPage(Model model) {
+    public String signupGeneralPage(@RequestParam(value = "social", required = false) Boolean social,
+            HttpSession session, Model model, HttpServletRequest request) {
         addKakaoKeyToModel(model);
+        if (Boolean.TRUE.equals(social)) {
+            SocialProfile profile = (SocialProfile) session.getAttribute(SOCIAL_PROFILE_SESSION_KEY);
+            if (profile != null) {
+                String userId = profile.getUserId();
+                MemberVO existing = memberService.getMember(userId);
+                if (existing != null) {
+                    authenticateUser(request, userId);
+                    clearSocialSignupSession(session);
+                    return redirectByRole(existing.getUser_role());
+                }
+                MemberVO member = buildSocialMember(profile, session);
+                memberService.joinMember(member);
+                authenticateUser(request, member.getUser_id());
+                clearSocialSignupSession(session);
+                return "redirect:/";
+            }
+        }
+        populateSocialSignupModel(social, session, model);
         return "member/signup_general"; 
     }
 
     @PostMapping("/joinProcess")
-    public String joinGeneralProcess(MemberVO vo, RedirectAttributes rttr) {
-        memberService.joinMember(vo); 
-        rttr.addFlashAttribute("msg", "회원가입이 완료되었습니다. 로그인해주세요.");
-        return "redirect:/member/login";
+    public String joinGeneralProcess(MemberVO vo, @RequestParam(value = "social_signup", required = false) Boolean socialSignup,
+            HttpSession session, RedirectAttributes rttr, HttpServletRequest request) {
+        String validationError = validateUserInput(vo, !Boolean.TRUE.equals(socialSignup));
+        if (validationError != null) {
+            rttr.addFlashAttribute("msg", validationError);
+            return "redirect:/member/signup/general";
+        }
+        if (memberService.checkIdDuplicate(vo.getUser_id()) > 0) {
+            rttr.addFlashAttribute("msg", "이미 사용 중인 아이디입니다.");
+            return "redirect:/member/signup/general";
+        }
+        memberService.joinMember(vo);
+        authenticateUser(request, vo.getUser_id());
+        if (Boolean.TRUE.equals(socialSignup)) {
+            clearSocialSignupSession(session);
+        }
+        return "redirect:/";
     }
 
     @GetMapping("/signup/owner1")
-    public String signupOwner1Page(Model model) {
+    public String signupOwner1Page(@RequestParam(value = "social", required = false) Boolean social,
+            HttpSession session, Model model) {
         addKakaoKeyToModel(model);
+        if (Boolean.TRUE.equals(social)) {
+            SocialProfile profile = (SocialProfile) session.getAttribute(SOCIAL_PROFILE_SESSION_KEY);
+            if (profile != null) {
+                MemberVO member = buildSocialMember(profile, session);
+                session.setAttribute("tempMember", member);
+                session.setAttribute(SOCIAL_SIGNUP_FLAG, true);
+                return "redirect:/member/signup/owner2";
+            }
+        }
+        populateSocialSignupModel(social, session, model);
         return "member/signup_owner1"; 
     }
     
     @PostMapping("/signup/ownerStep1")
-    public String signupOwner1Process(MemberVO member, HttpSession session) {
+    public String signupOwner1Process(MemberVO member, @RequestParam(value = "social_signup", required = false) Boolean socialSignup,
+            HttpSession session, RedirectAttributes rttr) {
+        String validationError = validateUserInput(member, !Boolean.TRUE.equals(socialSignup));
+        if (validationError != null) {
+            session.removeAttribute("tempMember");
+            rttr.addFlashAttribute("msg", validationError);
+            return "redirect:/member/signup/owner1";
+        }
+        if (memberService.checkIdDuplicate(member.getUser_id()) > 0) {
+            session.removeAttribute("tempMember");
+            rttr.addFlashAttribute("msg", "이미 사용 중인 아이디입니다.");
+            return "redirect:/member/signup/owner1";
+        }
         session.setAttribute("tempMember", member);
+        if (Boolean.TRUE.equals(socialSignup)) {
+            session.setAttribute(SOCIAL_SIGNUP_FLAG, true);
+        }
         return "redirect:/member/signup/owner2";
     }
 
@@ -144,11 +258,29 @@ public class MemberController {
     }
 
     @PostMapping("/signup/ownerFinal") 
-    public String joinOwnerProcess(StoreVO store, HttpSession session, RedirectAttributes rttr) {
+    public String joinOwnerProcess(StoreVO store, HttpSession session, RedirectAttributes rttr,
+            HttpServletRequest request) {
         MemberVO member = (MemberVO) session.getAttribute("tempMember");
+        boolean socialSignup = Boolean.TRUE.equals(session.getAttribute(SOCIAL_SIGNUP_FLAG));
         if (member != null) {
+            String validationError = validateUserInput(member, !socialSignup);
+            if (validationError != null) {
+                session.removeAttribute("tempMember");
+                rttr.addFlashAttribute("msg", validationError);
+                return "redirect:/member/signup/owner1";
+            }
+            if (memberService.checkIdDuplicate(member.getUser_id()) > 0) {
+                session.removeAttribute("tempMember");
+                rttr.addFlashAttribute("msg", "이미 사용 중인 아이디입니다.");
+                return "redirect:/member/signup/owner1";
+            }
             memberService.joinOwner(member, store);
             session.removeAttribute("tempMember");
+            if (socialSignup) {
+                authenticateUser(request, member.getUser_id());
+                clearSocialSignupSession(session);
+                return "redirect:/member/mypage";
+            }
             rttr.addFlashAttribute("msg", "점주 가입 신청이 완료되었습니다.");
         }
         return "redirect:/member/login";
@@ -263,6 +395,11 @@ public class MemberController {
     
     @PostMapping("/edit")
     public String updateProcess(MemberVO vo, RedirectAttributes rttr) {
+        String validationError = validateUserInput(vo, false);
+        if (validationError != null) {
+            rttr.addFlashAttribute("msg", validationError);
+            return "redirect:/member/edit";
+        }
         memberService.updateMember(vo);
         rttr.addFlashAttribute("msg", "회원 정보가 수정되었습니다.");
         return "redirect:/member/mypage";
@@ -280,6 +417,308 @@ public class MemberController {
     @PostMapping("/idCheck")
     @ResponseBody
     public String idCheck(@RequestParam("user_id") String user_id) {
+        if (!MemberValidation.isValidUserId(user_id)) {
+            return "invalid";
+        }
         return (memberService.checkIdDuplicate(user_id) > 0) ? "fail" : "success";
+    }
+
+    @GetMapping("/find")
+    public String findAccountPage() {
+        return "member/find_account";
+    }
+
+    @PostMapping("/find/id")
+    public String findId(@RequestParam("user_nm") String name,
+                         @RequestParam("user_email") String email,
+                         Model model) {
+        if (name == null || name.trim().isEmpty() || email == null || email.trim().isEmpty()) {
+            model.addAttribute("idError", "이름과 이메일을 모두 입력해주세요.");
+            return "member/find_account";
+        }
+        String userId = memberService.findUserIdByNameEmail(name.trim(), email.trim());
+        if (userId == null) {
+            model.addAttribute("idError", "일치하는 아이디가 없습니다.");
+            return "member/find_account";
+        }
+        model.addAttribute("idResult", userId);
+        return "member/find_account";
+    }
+
+    @PostMapping("/find/password")
+    public String resetPassword(@RequestParam("user_id") String userId,
+                                @RequestParam("user_email") String email,
+                                @RequestParam(value = "auth_code", required = false) String authCode,
+                                HttpSession session,
+                                Model model) {
+        if (!MemberValidation.isValidUserId(userId)) {
+            model.addAttribute("pwError", "아이디는 영문/숫자/언더바 4~20자만 가능합니다.");
+            return "member/find_account";
+        }
+        if (email == null || email.trim().isEmpty()) {
+            model.addAttribute("pwError", "이메일을 입력해주세요.");
+            return "member/find_account";
+        }
+        String trimUserId = userId.trim();
+        String trimEmail = email.trim();
+        if (!isPasswordAuthValid(session, authCode, trimUserId, trimEmail)) {
+            model.addAttribute("pwError", "이메일 인증이 완료되지 않았습니다.");
+            return "member/find_account";
+        }
+        String tempPassword = memberService.resetPasswordByIdEmail(trimUserId, trimEmail);
+        if (tempPassword == null) {
+            model.addAttribute("pwError", "입력하신 정보와 일치하는 계정을 찾을 수 없습니다.");
+            return "member/find_account";
+        }
+        sendTempPasswordEmail(trimEmail, tempPassword);
+        clearPasswordAuthSession(session);
+        model.addAttribute("pwResult", "임시 비밀번호를 이메일로 발송했습니다.");
+        return "member/find_account";
+    }
+
+    @PostMapping("/password/emailAuth")
+    @ResponseBody
+    public String passwordEmailAuth(@RequestParam("user_id") String userId,
+                                    @RequestParam("user_email") String email,
+                                    HttpSession session) {
+        if (!MemberValidation.isValidUserId(userId) || email == null || email.trim().isEmpty()) {
+            return "invalid";
+        }
+        String trimUserId = userId.trim();
+        String trimEmail = email.trim();
+        if (!memberService.hasMemberByIdEmail(trimUserId, trimEmail)) {
+            return "not_found";
+        }
+        int checkNum = generateAuthCode();
+        String title = "Gourmet 비밀번호 재설정 인증 코드입니다.";
+        String content = "비밀번호 재설정을 요청하셨습니다.<br><br>" +
+                         "인증 코드는 <b>" + checkNum + "</b> 입니다.<br>" +
+                         "인증 코드를 입력한 뒤 임시 비밀번호 발급을 진행해주세요.";
+        sendEmail(trimEmail, title, content);
+        session.setAttribute("pwAuthCode", String.valueOf(checkNum));
+        session.setAttribute("pwAuthUserId", trimUserId);
+        session.setAttribute("pwAuthEmail", trimEmail);
+        session.setAttribute("pwAuthIssuedAt", System.currentTimeMillis());
+        return "success";
+    }
+
+    private boolean isPasswordAuthValid(HttpSession session, String authCode, String userId, String email) {
+        if (authCode == null || authCode.trim().isEmpty()) {
+            return false;
+        }
+        if (session == null) {
+            return false;
+        }
+        Object storedCode = session.getAttribute("pwAuthCode");
+        Object storedUserId = session.getAttribute("pwAuthUserId");
+        Object storedEmail = session.getAttribute("pwAuthEmail");
+        Object issuedAt = session.getAttribute("pwAuthIssuedAt");
+        if (storedCode == null || storedUserId == null || storedEmail == null || issuedAt == null) {
+            return false;
+        }
+        long issuedTime = (Long) issuedAt;
+        if (System.currentTimeMillis() - issuedTime > 180_000) {
+            return false;
+        }
+        return authCode.trim().equals(storedCode)
+            && userId.equals(storedUserId)
+            && email.equals(storedEmail);
+    }
+
+    private void clearPasswordAuthSession(HttpSession session) {
+        if (session != null) {
+            session.removeAttribute("pwAuthCode");
+            session.removeAttribute("pwAuthUserId");
+            session.removeAttribute("pwAuthEmail");
+            session.removeAttribute("pwAuthIssuedAt");
+        }
+    }
+
+    private int generateAuthCode() {
+        Random random = new Random();
+        return random.nextInt(888888) + 111111;
+    }
+
+    private String generateOAuthState(HttpSession session) {
+        String state = UUID.randomUUID().toString();
+        session.setAttribute("oauthState", state);
+        return state;
+    }
+
+    private String buildRedirectUri(HttpServletRequest request, String callbackPath) {
+        String scheme = request.getScheme();
+        String host = request.getServerName();
+        int port = request.getServerPort();
+        String contextPath = request.getContextPath();
+        StringBuilder redirect = new StringBuilder();
+        redirect.append(scheme).append("://").append(host);
+        if ((scheme.equals("http") && port != 80) || (scheme.equals("https") && port != 443)) {
+            redirect.append(':').append(port);
+        }
+        redirect.append(contextPath).append(callbackPath);
+        return redirect.toString();
+    }
+
+    private boolean isValidOAuthState(HttpSession session, String state) {
+        Object stored = session.getAttribute("oauthState");
+        session.removeAttribute("oauthState");
+        return stored != null && stored.equals(state);
+    }
+
+    private String handleSocialCallback(SocialProfile profile, HttpSession session, RedirectAttributes rttr,
+            HttpServletRequest request) {
+        if (profile == null) {
+            rttr.addFlashAttribute("msg", "소셜 로그인에 실패했습니다. 다시 시도해주세요.");
+            return "redirect:/member/login";
+        }
+        String userId = createSocialUserId(profile.getProvider(), profile.getProviderId());
+        profile.setUserId(userId);
+
+        MemberVO existing = memberService.getMember(userId);
+        if (existing != null) {
+            authenticateUser(request, userId);
+            clearSocialSignupSession(session);
+            return redirectByRole(existing.getUser_role());
+        }
+
+        session.setAttribute(SOCIAL_PROFILE_SESSION_KEY, profile);
+        session.setAttribute(SOCIAL_SIGNUP_FLAG, true);
+        return "redirect:/member/signup/select?social=true";
+    }
+
+    private void populateSocialSignupModel(Boolean social, HttpSession session, Model model) {
+        if (!Boolean.TRUE.equals(social)) {
+            clearSocialSignupSession(session);
+            model.addAttribute("socialSignup", false);
+            return;
+        }
+        SocialProfile profile = (SocialProfile) session.getAttribute(SOCIAL_PROFILE_SESSION_KEY);
+        if (profile == null) {
+            model.addAttribute("socialSignup", false);
+            return;
+        }
+        model.addAttribute("socialSignup", true);
+        model.addAttribute("socialUserId", profile.getUserId());
+        model.addAttribute("socialName", profile.getNickname());
+        model.addAttribute("socialEmail", profile.getEmail());
+        model.addAttribute("socialPassword", getOrCreateSocialPassword(session));
+    }
+
+    private MemberVO buildSocialMember(SocialProfile profile, HttpSession session) {
+        MemberVO member = new MemberVO();
+        member.setUser_id(profile.getUserId());
+        member.setUser_pw(getOrCreateSocialPassword(session));
+        String nickname = profile.getNickname();
+        if (nickname == null || nickname.trim().isEmpty()) {
+            nickname = profile.getUserId();
+        }
+        member.setUser_nm(nickname);
+        member.setUser_email(profile.getEmail());
+        member.setUser_tel("010-0000-0000");
+        return member;
+    }
+
+    private String getOrCreateSocialPassword(HttpSession session) {
+        Object stored = session.getAttribute(SOCIAL_PASSWORD_SESSION_KEY);
+        if (stored instanceof String) {
+            return (String) stored;
+        }
+        String password = generateSocialPassword();
+        session.setAttribute(SOCIAL_PASSWORD_SESSION_KEY, password);
+        return password;
+    }
+
+    private void clearSocialSignupSession(HttpSession session) {
+        session.removeAttribute(SOCIAL_PROFILE_SESSION_KEY);
+        session.removeAttribute(SOCIAL_PASSWORD_SESSION_KEY);
+        session.removeAttribute(SOCIAL_SIGNUP_FLAG);
+    }
+
+    private String generateSocialPassword() {
+        SecureRandom random = new SecureRandom();
+        String upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+        String lower = "abcdefghijkmnopqrstuvwxyz";
+        String digits = "23456789";
+        String special = "!@#$%^&*";
+        String all = upper + lower + digits + special;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(upper.charAt(random.nextInt(upper.length())));
+        sb.append(lower.charAt(random.nextInt(lower.length())));
+        sb.append(digits.charAt(random.nextInt(digits.length())));
+        sb.append(special.charAt(random.nextInt(special.length())));
+        for (int i = 0; i < 8; i++) {
+            sb.append(all.charAt(random.nextInt(all.length())));
+        }
+        return sb.toString();
+    }
+
+    private String createSocialUserId(String provider, String providerId) {
+        String prefix = "KAKAO_";
+        if ("GOOGLE".equalsIgnoreCase(provider)) {
+            prefix = "GOOGLE_";
+        }
+        String raw = prefix + providerId;
+        if (raw.length() <= 20) {
+            return raw;
+        }
+        String digest = SocialUserIdHasher.hash(providerId);
+        return prefix + digest.substring(0, Math.max(0, 20 - prefix.length()));
+    }
+
+    private void authenticateUser(HttpServletRequest request, String userId) {
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(userId);
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        request.getSession().setAttribute(
+            HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
+            SecurityContextHolder.getContext()
+        );
+    }
+
+    private String redirectByRole(String role) {
+        if ("ROLE_OWNER".equals(role)) {
+            return "redirect:/member/mypage";
+        }
+        return "redirect:/";
+    }
+
+    private void sendTempPasswordEmail(String email, String tempPassword) {
+        String title = "Gourmet 임시 비밀번호 안내입니다.";
+        String content = "임시 비밀번호는 <b>" + tempPassword + "</b> 입니다.<br>" +
+                         "로그인 후 반드시 비밀번호를 변경해주세요.";
+        sendEmail(email, title, content);
+    }
+
+    private void sendEmail(String email, String title, String content) {
+        String setFrom = "boardexample114@gmail.com";
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "utf-8");
+            helper.setFrom(setFrom);
+            helper.setTo(email);
+            helper.setSubject(title);
+            helper.setText(content, true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            log.error("메일 전송 실패: " + e.getMessage());
+        }
+    }
+
+    private String validateUserInput(MemberVO vo, boolean requirePassword) {
+        if (!MemberValidation.isValidUserId(vo.getUser_id())) {
+            return "아이디는 영문/숫자/언더바 4~20자만 가능합니다.";
+        }
+        if (requirePassword) {
+            if (!MemberValidation.isValidPassword(vo.getUser_pw())) {
+                return "비밀번호는 영문/숫자/특수문자를 포함한 8~20자여야 합니다.";
+            }
+        } else if (vo.getUser_pw() != null && !vo.getUser_pw().trim().isEmpty()) {
+            if (!MemberValidation.isValidPassword(vo.getUser_pw())) {
+                return "비밀번호는 영문/숫자/특수문자를 포함한 8~20자여야 합니다.";
+            }
+        }
+        return null;
     }
 }

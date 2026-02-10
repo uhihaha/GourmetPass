@@ -63,7 +63,17 @@
                             </c:choose>
                         </div>
                         <h4 style="font-size: 22px; font-weight: 900; margin-bottom: 8px;">${store.store_name}</h4>
-                        <span class="badge-wire">${store.store_category}</span>
+                        <span class="badge-wire">
+                            <c:choose>
+                                <c:when test="${store.store_category eq '한식'}"><c:set var="catKey" value="category.Korean" /></c:when>
+                                <c:when test="${store.store_category eq '일식'}"><c:set var="catKey" value="category.Japanese" /></c:when>
+                                <c:when test="${store.store_category eq '중식'}"><c:set var="catKey" value="category.Chinese" /></c:when>
+                                <c:when test="${store.store_category eq '양식'}"><c:set var="catKey" value="category.Western" /></c:when>
+                                <c:when test="${store.store_category eq '카페'}"><c:set var="catKey" value="category.Cafe" /></c:when>
+                                <c:otherwise><c:set var="catKey" value="category.Etc" /></c:otherwise>
+                            </c:choose>
+                            <spring:message code="${catKey}" text="${store.store_category}" />
+                        </span>
                     </div>
                     <table class="edit-table" style="font-size: 14px;">
                         <tr>
@@ -72,7 +82,17 @@
                         </tr>
                         <tr>
                             <th><spring:message code="store.label.category" text="카테고리" /></th>
-                            <td>${store.store_category}</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${store.store_category eq '한식'}"><c:set var="catKey" value="category.Korean" /></c:when>
+                                    <c:when test="${store.store_category eq '일식'}"><c:set var="catKey" value="category.Japanese" /></c:when>
+                                    <c:when test="${store.store_category eq '중식'}"><c:set var="catKey" value="category.Chinese" /></c:when>
+                                    <c:when test="${store.store_category eq '양식'}"><c:set var="catKey" value="category.Western" /></c:when>
+                                    <c:when test="${store.store_category eq '카페'}"><c:set var="catKey" value="category.Cafe" /></c:when>
+                                    <c:otherwise><c:set var="catKey" value="category.Etc" /></c:otherwise>
+                                </c:choose>
+                                <spring:message code="${catKey}" text="${store.store_category}" />
+                            </td>
                         </tr>
                         <tr>
                             <th><spring:message code="store.label.res_unit" text="예약단위" /></th>

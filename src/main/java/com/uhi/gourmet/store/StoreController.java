@@ -64,6 +64,9 @@ public class StoreController {
     @Value("${portone.channel.key}")
     private String portOneChannelKey;
 
+    @Value("${upload.path:}")
+    private String uploadPath;
+
     @GetMapping("/list")
     public String storeList(
             @RequestParam(value = "pageNum", defaultValue = "1") int pageNum,
@@ -154,7 +157,7 @@ public class StoreController {
         }
         if (file != null && !file.isEmpty()) {
             String savedName = buildStoredFileName(principal, "store_img", vo.getStore_id(), file);
-            vo.setStore_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload"), savedName));
+            vo.setStore_img(storeService.uploadFile(file, resolveUploadPath(), savedName));
         }
         storeService.registerStore(vo, principal.getName());
         return "redirect:/member/mypage";
@@ -176,7 +179,7 @@ public class StoreController {
                                      RedirectAttributes rttr) {
         if (file != null && !file.isEmpty()) {
             String savedName = buildStoredFileName(principal, "store_img", vo.getStore_id(), file);
-            vo.setStore_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload"), savedName));
+            vo.setStore_img(storeService.uploadFile(file, resolveUploadPath(), savedName));
         }
         try {
             storeService.modifyStore(vo, principal.getName());
@@ -208,7 +211,7 @@ public class StoreController {
         }
         if (file != null && !file.isEmpty()) {
             String savedName = buildStoredFileName(principal, "menu_img", menuVO.getMenu_id(), file);
-            menuVO.setMenu_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload"), savedName));
+            menuVO.setMenu_img(storeService.uploadFile(file, resolveUploadPath(), savedName));
         }
         try {
             storeService.addMenu(menuVO, principal.getName());
@@ -237,7 +240,7 @@ public class StoreController {
     public String menuUpdateProcess(@ModelAttribute MenuVO vo, @RequestParam(value="file", required=false) MultipartFile file, HttpServletRequest request, Principal principal) {
         if (file != null && !file.isEmpty()) {
             String savedName = buildStoredFileName(principal, "menu_img", vo.getMenu_id(), file);
-            vo.setMenu_img(storeService.uploadFile(file, request.getSession().getServletContext().getRealPath("/resources/upload"), savedName));
+            vo.setMenu_img(storeService.uploadFile(file, resolveUploadPath(), savedName));
         }
         storeService.modifyMenu(vo, principal.getName());
         return "redirect:/member/mypage";
@@ -258,5 +261,12 @@ public class StoreController {
             return "";
         }
         return fileName.substring(dotIndex);
+    }
+
+    private String resolveUploadPath() {
+        if (uploadPath == null || uploadPath.trim().isEmpty()) {
+            throw new IllegalStateException("upload.path 설정이 필요합니다.");
+        }
+        return uploadPath.trim();
     }
 }

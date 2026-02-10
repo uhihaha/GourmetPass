@@ -3,6 +3,7 @@ package com.uhi.gourmet.photo;
 import com.uhi.gourmet.store.StoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +22,9 @@ public class PhotoController {
 
     @Autowired
     private StoreService storeService;
+
+    @Value("${upload.path:}")
+    private String uploadPath;
 
     @PostMapping("/upload")
     public String uploadPhotos(@RequestParam("store_id") int store_id,
@@ -43,7 +47,7 @@ public class PhotoController {
             return "redirect:/member/mypage";
         }
 
-        String realPath = request.getSession().getServletContext().getRealPath("/resources/upload");
+        String realPath = resolveUploadPath();
         boolean hasThumbnail = photoService.getThumbnailByStore(store_id) != null;
         boolean thumbnailSet = hasThumbnail;
 
@@ -144,5 +148,12 @@ public class PhotoController {
             }
         }
         return userId + "_" + type + "_" + seq + ext;
+    }
+
+    private String resolveUploadPath() {
+        if (uploadPath == null || uploadPath.trim().isEmpty()) {
+            throw new IllegalStateException("upload.path 설정이 필요합니다.");
+        }
+        return uploadPath.trim();
     }
 }

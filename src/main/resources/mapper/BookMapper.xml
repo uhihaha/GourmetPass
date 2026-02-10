@@ -48,7 +48,7 @@
         WHERE store_id = #{store_id} 
           AND TO_CHAR(book_date, 'YYYY-MM-DD') = #{date}
           AND TO_CHAR(book_date, 'HH24:MI') = #{time}
-          AND book_status NOT IN ('CANCELLED', 'NOSHOW')
+          AND book_status NOT IN ('CANCELED', 'NOSHOW')
     </select>
 
     <select id="checkUserDailyBook" resultType="int">
@@ -70,18 +70,6 @@
 	    ORDER BY B.book_date ASC
 	</select>
 	
-	<!-- 내 예약 목록 조회 (시간순 정렬) -->
-    <!-- <select id="selectMyBookList" resultType="com.uhi.gourmet.book.BookVO">
-        SELECT 
-            b.book_id, b.user_id, b.store_id, b.book_date, b.book_time,
-            b.people_cnt, b.book_status, b.book_price, b.pay_id,
-            s.store_name, s.store_img,
-            r.review_id
-        FROM BOOK b
-        LEFT JOIN STORE s ON b.store_id = s.store_id
-        LEFT JOIN REVIEW r ON b.book_id = r.book_id
-        WHERE b.user_id = #{user_id}
-        ORDER BY b.book_date DESC  
-    </select> -->
+	
 
 </mapper>

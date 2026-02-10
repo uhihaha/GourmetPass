@@ -130,7 +130,7 @@
 		</c:choose>
 	</div>
 
-	<%-- 2. 이용 히스토리 (결제 및 리뷰 통합) --%>
+
 	<%-- 2. 이용 히스토리 (결제 및 리뷰 통합) --%>
 <div class="dashboard-card status-history-card">
     <div class="card-header"

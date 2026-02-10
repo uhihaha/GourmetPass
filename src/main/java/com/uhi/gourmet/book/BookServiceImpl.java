@@ -52,6 +52,8 @@ public class BookServiceImpl implements BookService {
 	@Override
 	public int checkDuplicateTime(int storeId,  String userId, String date, String time) {
 		// 1. 데이터 가공: 문자열 날짜와 시간을 하나의 Date 객체로 병합
+		System.out.println("BookServiceImpl checkDuplicateTime...");
+		
 		System.out.println("Date : " + date);
 		System.out.println("Time : " + time);
 

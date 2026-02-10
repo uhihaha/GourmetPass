@@ -1,7 +1,7 @@
 /* src/main/webapp/resources/css/wait_status.css */
 @charset "UTF-8";
 
-/* �씠�슜 �쁽�솴 �쟾�슜 �븷�땲硫붿씠�뀡 諛� �뒪���씪 */
+/* 이용 현황 전용 애니메이션 및 스타일 */
 .wait-status-wrapper { max-width: 900px; }
 
 .dining-mode {
@@ -95,7 +95,7 @@
 
 .status-history-card { margin-top: 30px; }
 
-/* �엳�뒪�넗由� �쟾�슜 �뒪���씪 */
+/* 히스토리 전용 스타일 */
 .history-item {
     display: flex;
     justify-content: space-between;

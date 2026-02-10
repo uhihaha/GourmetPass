@@ -112,7 +112,7 @@
 <%-- [주의] member.js는 member-signup.js와 충돌하므로 로드하지 않음 --%>
 
 <script type="text/javascript">
-    [cite_start]<%-- 전역 설정 객체 [cite: 16] --%>
+    [cite_start]<%-- 전역 설정 객체 --%>
     var APP_CONFIG = APP_CONFIG || {
         contextPath: "${pageContext.request.contextPath}",
         csrfName: "${_csrf.parameterName}",

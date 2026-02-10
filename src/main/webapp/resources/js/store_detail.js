@@ -1,17 +1,16 @@
 /**
- * 고메패스 맛집 상세 페이지 전용 스크립트 [v1.1.8]
- * 수정사항: 구문 오류(괄호 불일치) 해결 및 코드 구조 안정화
+ * 고메패스 맛집 상세 페이지 전용 스크립트 [v2.0.0]
+ * 수정사항: I18N_UTIL.t() 방식으로 통일, STORE_I18N 제거
  */
 
 // ================================================================
 // [A] 전역 함수 영역
 // ================================================================
-var STORE_I18N = (window.I18N && window.I18N.storeDetail) ? window.I18N.storeDetail : {};
 
+// ✅ main.js 방식으로 통일: I18N_UTIL.t 사용
 var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
     ? window.I18N_UTIL.t
     : function(key, fallback) { return fallback || key; };
-
 
 window.loadAvailableSlots = function () {
     const app = document.getElementById('storeDetailApp');
@@ -33,8 +32,9 @@ window.loadAvailableSlots = function () {
     const bufferTime = new Date(now.getTime() + 10 * 60000);
     const currentTimeStr = String(bufferTime.getHours()).padStart(2, '0') + ":" + String(bufferTime.getMinutes()).padStart(2, '0');
 
-    var loadingMsg = STORE_I18N.loading || "";
-    container.html("<p class='status-text'>" + loadingMsg + "</p>");
+    container.html("<p class='status-text'>" + 
+        t("storeDetail.loading", "예약 가능 시간 조회 중...") + 
+        "</p>");
     $("#selectedTime").val("");
 
     $.ajax({
@@ -52,19 +52,22 @@ window.loadAvailableSlots = function () {
 
                 if (isBooked || isPast) {
                     const reason = isPast
-                        ? (STORE_I18N.reasonClosed || "")
-                        : (STORE_I18N.reasonBooked || "");
+                        ? t("storeDetail.reasonClosed", "마감")
+                        : t("storeDetail.reasonBooked", "예약완료");
                     html += `<button type="button" class="time-btn disabled" disabled title="${reason}">${time}</button>`;
                 } else {
                     html += `<button type="button" class="time-btn" data-time="${time}">${time}</button>`;
                 }
             });
-            var noHoursMsg = STORE_I18N.noHours || "";
-            container.html(html || "<p>" + noHoursMsg + "</p>");
+
+            container.html(html || "<p>" + 
+                t("storeDetail.noHours", "선택 가능한 시간이 없습니다.") + 
+                "</p>");
         },
         error: function () {
-            var loadFail = STORE_I18N.loadFail || "";
-            container.html("<p class='error-text'>" + loadFail + "</p>");
+            container.html("<p class='error-text'>" + 
+                t("storeDetail.loadFail", "시간 로드 실패") + 
+                "</p>");
         }
     });
 };
@@ -122,12 +125,13 @@ window.checkAccount = function () {
 window.updateFavoriteButton = function (isFavorite) {
     const btn = $("#favoriteBtn");
     if (!btn.length) return;
-    const favoriteOnText = btn.data("favoriteOn") || STORE_I18N.favoriteOn || "";
-    const favoriteOffText = btn.data("favoriteOff") || STORE_I18N.favoriteOff || "";
+
     if (isFavorite) {
-        btn.addClass("active").text("❤️ " + favoriteOnText);
+        btn.addClass("active").text("❤️ " + 
+            t("storeDetail.favoriteOn", "즐겨찾기 해제"));
     } else {
-        btn.removeClass("active").text("🤍 " + favoriteOffText);
+        btn.removeClass("active").text("🤍 " + 
+            t("storeDetail.favoriteOff", "즐겨찾기 추가"));
     }
 };
 
@@ -135,8 +139,8 @@ window.updateFavoriteCount = function (count) {
     const countEl = $("#favoriteCount");
     if (!countEl.length) return;
     const safeCount = typeof count === "number" ? count : parseInt(count, 10) || 0;
-    const countPrefix = countEl.data("countPrefix") || STORE_I18N.favoriteCountPrefix || "";
-    countEl.text(countPrefix + " " + safeCount);
+    // [수정] "❤️" 대신 프로퍼티의 "즐겨찾기" 키 사용
+    countEl.text(t("storeDetail.favoriteCountPrefix", "즐겨찾기") + " " + safeCount);
 };
 
 window.showToast = function (message) {
@@ -159,7 +163,9 @@ window.loadFavoriteStatus = function () {
         return;
     }
     const storeId = app.dataset.storeId;
-    const contextPath = (typeof APP_CONFIG !== "undefined" && APP_CONFIG.contextPath) ? APP_CONFIG.contextPath : app.dataset.context;
+    const contextPath = (typeof APP_CONFIG !== "undefined" && APP_CONFIG.contextPath) 
+        ? APP_CONFIG.contextPath 
+        : app.dataset.context;
 
     $.ajax({
         url: contextPath + "/favorite/status",
@@ -182,7 +188,9 @@ $(document).ready(function () {
 
     // 1. 날짜 초기값
     const now = new Date();
-    const today = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0') + "-" + String(now.getDate()).padStart(2, '0');
+    const today = now.getFullYear() + "-" + 
+        String(now.getMonth() + 1).padStart(2, '0') + "-" + 
+        String(now.getDate()).padStart(2, '0');
     $("#bookDate").val(today).attr("min", today);
     $("#bookDate").on("input change", function () {
         this.setCustomValidity("");
@@ -192,7 +200,10 @@ $(document).ready(function () {
     if (app.dataset.lat && app.dataset.lng && typeof kakao !== 'undefined') {
         const container = document.getElementById('map');
         if (container) {
-            const options = { center: new kakao.maps.LatLng(app.dataset.lat, app.dataset.lng), level: 3 };
+            const options = { 
+                center: new kakao.maps.LatLng(app.dataset.lat, app.dataset.lng), 
+                level: 3 
+            };
             const map = new kakao.maps.Map(container, options);
             new kakao.maps.Marker({position: options.center}).setMap(map);
         }
@@ -212,8 +223,7 @@ $(document).ready(function () {
     const bDate = urlParams.get('book_date');
     const bTime = urlParams.get('book_time');
     const pCnt = urlParams.get('people_cnt');
-	
-	
+
     if (paymentStatus === 'success' && payId && bDate && bTime) {
         $("#payIdField").val(payId);
         $("#bookDate").val(bDate);
@@ -221,10 +231,10 @@ $(document).ready(function () {
         $("#people_cnt").val(pCnt || '1');
         alert(t("storeDetail.paySuccessBooking", "결제가 완료되었습니다! 예약을 진행합니다."));
         $("#bookForm").submit();
-        
     } else if (paymentStatus === 'fail') {
         alert(t("storeDetail.payFail", "결제가 실패했습니다."));
-        window.history.replaceState({}, document.title, window.location.pathname + '?storeId=' + app.dataset.storeId);
+        window.history.replaceState({}, document.title, 
+            window.location.pathname + '?storeId=' + app.dataset.storeId);
     }
 
     // 5. 예약 폼 제출 핸들러
@@ -235,14 +245,15 @@ $(document).ready(function () {
         const form = this;
         const selectedTime = $("#selectedTime").val();
         const bookDate = $("#bookDate").val();
-		const peopleCnt = $("select[name='people_cnt']").val() || 1;        
-		const storeId = $("input[name='store_id']").val();
+        const peopleCnt = $("select[name='people_cnt']").val() || 1;
+        const storeId = $("input[name='store_id']").val();
         const contextPath = app.dataset.context;
         var bookDateInput = document.getElementById("bookDate");
 
         if (!bookDate) {
             if (bookDateInput) {
-                bookDateInput.setCustomValidity(t("storeDetail.bookDateRequired", "예약 날짜를 선택해 주세요."));
+                bookDateInput.setCustomValidity(
+                    t("storeDetail.bookDateRequired", "예약 날짜를 선택해 주세요."));
                 bookDateInput.reportValidity();
             }
             return;
@@ -267,8 +278,11 @@ $(document).ready(function () {
             data: {store_id: storeId, book_date: bookDate, book_time: selectedTime},
             success: async function (result) {
                 if (result === "AVAILABLE") {
-                    var confirmSuffix = t("storeDetail.confirmPaymentSuffix", "예약을 위해 결제를 진행하시겠습니까?");
-                    if (!confirm(bookDate + " " + selectedTime + " " + confirmSuffix)) return;
+                    if (!confirm(bookDate + " " + selectedTime + " " + 
+                        t("storeDetail.confirmPaymentSuffix", "예약을 위해 결제를 진행하시겠습니까?"))) {
+                        return;
+                    }
+
                     try {
                         const paymentId = "pay-" + new Date().getTime();
                         const response = await PortOne.requestPayment({
@@ -279,8 +293,17 @@ $(document).ready(function () {
                             totalAmount: 1000,
                             currency: "CURRENCY_KRW",
                             payMethod: "CARD",
-                            customer: { fullName: loginUserInfo.name, phoneNumber: loginUserInfo.tel, email: loginUserInfo.email },
-                            redirectUrl: window.location.origin + contextPath + "/pay/api/v2/payment/complete/mobile?paymentId=" + paymentId + "&storeId=" + storeId + "&book_date=" + encodeURIComponent(bookDate) + "&book_time=" + encodeURIComponent(selectedTime) + "&people_cnt=" + peopleCnt
+                            customer: { 
+                                fullName: loginUserInfo.name, 
+                                phoneNumber: loginUserInfo.tel, 
+                                email: loginUserInfo.email 
+                            },
+                            redirectUrl: window.location.origin + contextPath + 
+                                "/pay/api/v2/payment/complete/mobile?paymentId=" + paymentId + 
+                                "&storeId=" + storeId + 
+                                "&book_date=" + encodeURIComponent(bookDate) + 
+                                "&book_time=" + encodeURIComponent(selectedTime) + 
+                                "&people_cnt=" + peopleCnt
                         });
 
                         if (response.code == null) {
@@ -290,7 +313,9 @@ $(document).ready(function () {
                                 contentType: 'application/json',
                                 data: JSON.stringify({paymentId: response.paymentId}),
                                 beforeSend: function (xhr) {
-                                    if (typeof APP_CONFIG !== 'undefined') xhr.setRequestHeader("X-CSRF-TOKEN", APP_CONFIG.csrfToken);
+                                    if (typeof APP_CONFIG !== 'undefined') {
+                                        xhr.setRequestHeader("X-CSRF-TOKEN", APP_CONFIG.csrfToken);
+                                    }
                                 }
                             }).done(function (pId) {
                                 $("#payIdField").val(pId);
@@ -300,17 +325,20 @@ $(document).ready(function () {
                                 alert(t("storeDetail.payVerifyFail", "결제 검증에 실패했습니다."));
                             });
                         } else {
-                            var payCancelledPrefix = t("storeDetail.payCancelledPrefix", "결제가 취소되었습니다:");
-                            alert(payCancelledPrefix + " " + response.message);
+                            alert(t("storeDetail.payCancelledPrefix", "결제가 취소되었습니다:") + 
+                                " " + response.message);
                         }
                     } catch (err) {
                         alert(t("storeDetail.payPopupError", "결제창 호출 중 오류가 발생했습니다."));
                     }
                 } else {
-                    var unavailablePrefix = t("storeDetail.bookUnavailablePrefix", "예약이 불가능합니다. (사유:");
-                    var unavailableSuffix = t("storeDetail.bookUnavailableSuffix", ")");
-                    alert(unavailablePrefix + " " + result + unavailableSuffix);
+                    alert(t("storeDetail.bookUnavailablePrefix", "예약이 불가능합니다. (사유:") + 
+                        " " + result + 
+                        t("storeDetail.bookUnavailableSuffix", ")"));
                 }
+            },
+            error: function() {
+                alert(t("common.serverError", "서버 오류가 발생했습니다."));
             }
         });
     });
@@ -322,18 +350,24 @@ $(document).ready(function () {
             return;
         }
         const storeId = app.dataset.storeId;
-        const contextPath = (typeof APP_CONFIG !== "undefined" && APP_CONFIG.contextPath) ? APP_CONFIG.contextPath : app.dataset.context;
+        const contextPath = (typeof APP_CONFIG !== "undefined" && APP_CONFIG.contextPath) 
+            ? APP_CONFIG.contextPath 
+            : app.dataset.context;
 
         $.ajax({
             url: contextPath + "/favorite/toggle",
             type: "POST",
             data: {store_id: storeId},
             beforeSend: function (xhr) {
-                if (typeof APP_CONFIG !== "undefined") xhr.setRequestHeader("X-CSRF-TOKEN", APP_CONFIG.csrfToken);
+                if (typeof APP_CONFIG !== "undefined") {
+                    xhr.setRequestHeader("X-CSRF-TOKEN", APP_CONFIG.csrfToken);
+                }
             }
         }).done(function (res) {
             window.updateFavoriteButton(!!res.favorite);
             window.updateFavoriteCount(res.count);
+        }).fail(function() {
+            alert(t("common.favoriteError", "즐겨찾기 처리 중 오류가 발생했습니다."));
         });
     });
 
@@ -341,17 +375,19 @@ $(document).ready(function () {
     window.loadFavoriteStatus();
     window.loadAvailableSlots();
 
-    // 8. WebSocket (선택사항)
+    // 8. WebSocket (실시간 조회 인원)
     if (typeof SockJS !== "undefined" && typeof Stomp !== "undefined") {
         const socket = new SockJS(app.dataset.context + "/ws_waiting");
         const stomp = Stomp.over(socket);
         stomp.connect({}, function () {
             stomp.subscribe("/topic/store/" + app.dataset.storeId + "/viewers", (msg) => {
                 const viewerCountEl = $("#viewerCount");
-                const viewerPrefix = viewerCountEl.data("viewerPrefix") || STORE_I18N.viewerPrefix || "";
-                const viewerSuffix = viewerCountEl.data("viewerSuffix") || STORE_I18N.viewerSuffix || "";
-                viewerCountEl.text(viewerPrefix + " " + msg.body + viewerSuffix);
+                // [수정] 프로퍼티 정의에 맞춰 Prefix("현재 조회 중:") 적용
+                viewerCountEl.text(
+                    t("storeDetail.viewerPrefix", "현재 조회 중:") + " " + 
+                    msg.body + 
+                    t("storeDetail.viewerSuffix", "명"));
             });
         });
     }
-}); 
+});

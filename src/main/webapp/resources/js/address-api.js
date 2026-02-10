@@ -1,8 +1,13 @@
-/* /resources/js/address-api.js */
+/* /resources/js/address-api.js [v2.0.0] */
+/* 수정사항: I18N_UTIL.t() 방식으로 통일 */
+
+// ✅ main.js 방식으로 통일: I18N_UTIL.t 사용
+var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+    ? window.I18N_UTIL.t
+    : function(key, fallback) { return fallback || key; };
 
 // Geocoder 객체 전역 생성 (카카오 맵 API 로드 필수)
 const geocoder = new kakao.maps.services.Geocoder();
-const ADDRESS_I18N = (window.I18N && window.I18N.address) ? window.I18N.address : {};
 
 /**
  * 주소 검색 및 좌표 추출 공통 함수
@@ -13,7 +18,7 @@ function execDaumPostcode(prefix = 'user') {
         oncomplete: function(data) {
             // 1. 주소 조합 (도로명/지번)
             var addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
-            
+
             // 2. 입력 필드 요소 가져오기 (prefix 결합) 
             const zipField = document.getElementById(prefix + '_zip');
             const addr1Field = document.getElementById(prefix + '_addr1');
@@ -31,16 +36,18 @@ function execDaumPostcode(prefix = 'user') {
                     var result = results[0];
                     if (latField) latField.value = result.y; // 위도
                     if (lonField) lonField.value = result.x; // 경도
-                    
-                    // 성공 메시지 (jQuery 활용) [cite: 11, 34]
-                    var successMsg = ADDRESS_I18N.coordSuccess || "";
-                    $("#coordStatus").html("<span class='msg-ok'>📍 " + successMsg + "</span>");
+
+                    // 성공 메시지 (jQuery 활용)
+                    $("#coordStatus").html("<span class='msg-ok'>📍 " + 
+                        t("address.coordSuccess", "좌표 변환 성공") + 
+                        "</span>");
                 } else {
-                    var failMsg = ADDRESS_I18N.coordFail || "";
-                    $("#coordStatus").html("<span class='msg-no'>❌ " + failMsg + "</span>");
+                    $("#coordStatus").html("<span class='msg-no'>❌ " + 
+                        t("address.coordFail", "좌표 변환 실패") + 
+                        "</span>");
                 }
             });
-            
+
             // 5. 상세주소 포커스 (필드 존재 여부 확인)
             if (addr2Field) addr2Field.focus();
         }

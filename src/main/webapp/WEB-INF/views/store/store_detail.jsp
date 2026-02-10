@@ -9,13 +9,13 @@
 <link rel="stylesheet" href="<c:url value='/resources/css/member.css'/>">
 
 <script type="text/javascript">
-    // 서버에서 전달된 메시지(예: 중복 예약 알림) 처리
+    // 1. 서버 메시지 처리 (예: 중복 예약 등)
     var msg = "${msg}";
     if (msg && msg !== "null" && msg !== "") {
         alert(msg);
     }
 
-    // 결제 모듈(Iamport) 연동에 필요한 사용자 정보 바인딩
+    // 2. 글로벌 사용자 정보 객체 (PortOne 결제 및 권한 체크용)
     window.loginUserInfo = {
         loginUserId: "${loginUser.user_id}",
         email: "${loginUser.user_email}",
@@ -28,6 +28,7 @@
         isOwner: false
     };
 </script>
+
 <sec:authorize access="hasRole('ROLE_OWNER')">
     <script type="text/javascript">
         if (window.loginUserInfo) {
@@ -36,15 +37,19 @@
     </script>
 </sec:authorize>
 
+<%-- 3. 메인 앱 컨테이너: JS 엔진이 모든 설정값을 여기서 읽어갑니다. --%>
 <div class="detail-wrapper" id="storeDetailApp"
-     data-store-id="${store.store_id}" data-lat="${store.store_lat}"
+     data-store-id="${store.store_id}" 
+     data-lat="${store.store_lat}"
      data-owner-id="${store.user_id}"
-     data-lng="${store.store_lon}" data-name="${store.store_name}"
+     data-lng="${store.store_lon}" 
+     data-name="${store.store_name}"
      data-open-time="${store.open_time}"
-     data-close-time="${store.close_time}" data-res-unit="${store.res_unit}"
+     data-close-time="${store.close_time}" 
+     data-res-unit="${store.res_unit}"
      data-context="${pageContext.request.contextPath}">
 
-    <%-- 1. 상단 타이틀 섹션 --%>
+    <%-- 상단 타이틀 및 메타 정보 --%>
     <div class="detail-header">
         <h1 class="store-main-title">🏠 ${store.store_name}</h1>
         <div class="store-meta-info">
@@ -62,18 +67,20 @@
             <span class="rating-box">
                 <spring:message code="store.detail.rating.info" arguments="${store.avg_rating},${store.review_cnt}" text="⭐ ${store.avg_rating} (${store.review_cnt}개의 리뷰)" />
             </span>
+            
+            <%-- 실시간 카운트 영역: JS가 i18n 접두사를 data속성에서 읽어 동적 업데이트함 --%>
             <span class="favorite-count" id="favoriteCount"
-                  data-count-prefix="<spring:message code='store.detail.favorite.count_prefix' text='❤️' />">
-                <spring:message code="store.detail.favorite.count_prefix" text="❤️" /> 0
+                  data-count-prefix="<spring:message code='storeDetail.favoriteCountPrefix' text='즐겨찾기' />">
+                <spring:message code="storeDetail.favoriteCountPrefix" text="즐겨찾기" /> 0
             </span>
             <span class="viewer-count" id="viewerCount"
-                  data-viewer-prefix="<spring:message code='store.detail.viewer.prefix' text='👥' />"
-                  data-viewer-suffix="<spring:message code='store.detail.viewer.suffix' text='명' />">
-                <spring:message code="store.detail.viewer.prefix" text="👥" /> 0<spring:message code="store.detail.viewer.suffix" text="명" />
+                  data-viewer-prefix="<spring:message code='storeDetail.viewerPrefix' text='현재 조회 중:' />"
+                  data-viewer-suffix="<spring:message code='storeDetail.viewerSuffix' text='명' />">
+                <spring:message code="storeDetail.viewerPrefix" text="현재 조회 중:" /> 0<spring:message code="storeDetail.viewerSuffix" text="명" />
             </span>
-            <button type="button" class="favorite-inline" id="favoriteBtn"
-                    data-favorite-on="<spring:message code='store.detail.favorite.on' text='즐겨찾기 해제' />"
-                    data-favorite-off="<spring:message code='store.detail.favorite.off' text='즐겨찾기' />">
+
+            <%-- 인터랙션 버튼: ID가 JS와 정확히 매핑되어야 함 --%>
+            <button type="button" class="favorite-inline" id="favoriteBtn">
                 <spring:message code="store.detail.btn.favorite" text="🤍 즐겨찾기" />
             </button>
             <button type="button" class="share-inline" id="copyLinkBtn">
@@ -82,7 +89,7 @@
         </div>
     </div>
 
-    <%-- 2. 메인 정보 카드 --%>
+    <%-- 메인 정보 카드 (이미지 슬라이더 & 텍스트 안내) --%>
     <div class="info-main-card">
         <div class="store-img-section">
             <c:choose>
@@ -97,7 +104,7 @@
                     </div>
                 </c:when>
                 <c:when test="${not empty store.store_img}">
-                    <img src="<c:url value='/upload/${store.store_img}'/>" class="main-thumb">
+                    <img src="<c:url value='/upload/${store.store_img}'/>" class="main-thumb" alt="Store Image">
                 </c:when>
                 <c:otherwise>
                     <div class="no-img-box">NO IMAGE</div>
@@ -105,28 +112,19 @@
             </c:choose>
         </div>
         <div class="store-text-section">
-            <p><b><spring:message code="store.detail.label.addr" text="📍 주소" /></b>
-                <span class="badge-cat">
-                    <c:choose>
-                        <c:when test="${store.store_category eq '한식'}"><c:set var="catKey" value="category.Korean" /></c:when>
-                        <c:when test="${store.store_category eq '일식'}"><c:set var="catKey" value="category.Japanese" /></c:when>
-                        <c:when test="${store.store_category eq '중식'}"><c:set var="catKey" value="category.Chinese" /></c:when>
-                        <c:when test="${store.store_category eq '양식'}"><c:set var="catKey" value="category.Western" /></c:when>
-                        <c:when test="${store.store_category eq '카페'}"><c:set var="catKey" value="category.Cafe" /></c:when>
-                        <c:otherwise><c:set var="catKey" value="category.Etc" /></c:otherwise>
-                    </c:choose>
-                    <spring:message code="${catKey}" text="${store.store_category}" />
-                </span>
-                ${store.store_addr1} ${store.store_addr2}
-            </p>
+            <p><b><spring:message code="store.detail.label.addr" text="📍 주소" /></b> ${store.store_addr1} ${store.store_addr2}</p>
             <p><b><spring:message code="store.detail.label.tel" text="📞 전화" /></b> ${store.store_tel}</p>
             <p><b><spring:message code="store.detail.label.hours" text="⏰ 영업" /></b> ${store.open_time} ~ ${store.close_time}</p>
-            <p><b><spring:message code="store.detail.label.wait" text="🚶 대기" /></b> <span class="wait-count-text"><spring:message code="store.detail.wait.status" arguments="${currentWaitCount}" text="현재 ${currentWaitCount}팀 대기 중" /></span></p>
+            <p><b><spring:message code="store.detail.label.wait" text="🚶 대기" /></b> 
+               <span class="wait-count-text">
+                   <spring:message code="store.detail.wait.status" arguments="${currentWaitCount}" text="현재 ${currentWaitCount}팀 대기 중" />
+               </span>
+            </p>
             <p><b><spring:message code="store.detail.label.intro" text="📝 소개" /></b> ${store.store_desc}</p>
         </div>
     </div>
 
-    <%-- 2-1. 메뉴 리스트 섹션 --%>
+    <%-- 메뉴 리스트 섹션 --%>
     <div class="menu-section">
         <div class="card-header">
             <h3 class="card-title"><spring:message code="store.menu.title" text="🍽️ 메뉴" /></h3>
@@ -153,7 +151,9 @@
                                     </c:if>
                                     ${menu.menu_name}
                                 </span>
-                                <span class="menu-price"><fmt:formatNumber value="${menu.menu_price}" pattern="#,###"/><spring:message code="common.unit.won" text="원" /></span>
+                                <span class="menu-price">
+                                    <fmt:formatNumber value="${menu.menu_price}" pattern="#,###"/><spring:message code="common.unit.won" text="원" />
+                                </span>
                             </div>
                         </div>
                     </c:forEach>
@@ -165,23 +165,21 @@
         </div>
     </div>
 
-    <%-- 3. 인터랙션 버튼 그룹 --%>
+    <%-- 인터랙션 버튼 그룹 --%>
     <div class="detail-action-group">
-        <button type="button" class="btn-main-wire btn-booking"
-                onclick="showInteraction('booking')"><spring:message code="store.detail.btn.book" text="📅 예약하기" />
+        <button type="button" class="btn-main-wire btn-booking" onclick="showInteraction('booking')">
+            <spring:message code="store.detail.btn.book" text="📅 예약하기" />
         </button>
-        <button type="button" class="btn-main-wire btn-waiting"
-                onclick="showInteraction('waiting')"><spring:message code="store.detail.btn.wait" text="🚶 웨이팅하기" />
+        <button type="button" class="btn-main-wire btn-waiting" onclick="showInteraction('waiting')">
+            <spring:message code="store.detail.btn.wait" text="🚶 웨이팅하기" />
         </button>
     </div>
 
-    <%-- 4. 예약 신청 영역 --%>
-    <div id="booking-area" class="interaction-card">
+    <%-- 예약 신청 영역 --%>
+    <div id="booking-area" class="interaction-card" style="display:none;">
         <h3 class="section-title"><spring:message code="store.form.book.title" text="📅 당일 예약 신청" /></h3>
         <sec:authorize access="hasRole('ROLE_OWNER')">
-            <div class="auth-guide-box">
-                <spring:message code="store.form.owner.block.book" text="점주 계정은 예약을 할 수 없습니다." />
-            </div>
+            <div class="auth-guide-box"><spring:message code="storeDetail.ownerBlock" text="점주 계정은 예약/웨이팅을 할 수 없습니다." /></div>
         </sec:authorize>
         <sec:authorize access="hasRole('ROLE_USER')">
             <form id="bookForm" action="<c:url value='/book/register'/>" method="post" novalidate>
@@ -193,7 +191,7 @@
                     <tr>
                         <th><spring:message code="store.form.label.people" text="예약 인원" /></th>
                         <td>
-                            <select name="people_cnt" class="login-input">
+                            <select name="people_cnt" id="people_cnt" class="login-input">
                                 <c:forEach var="i" begin="1" end="${store.max_capacity}">
                                     <option value="${i}"><spring:message code="store.form.unit.person" arguments="${i}" text="${i}명" /></option>
                                 </c:forEach>
@@ -203,8 +201,7 @@
                     <tr>
                         <th><spring:message code="store.form.label.date" text="예약 날짜" /></th>
                         <td>
-                            <input type="date" name="book_date" id="bookDate"
-                                   class="login-input" onchange="loadAvailableSlots()"
+                            <input type="date" name="book_date" id="bookDate" class="login-input" required
                                    min="<%=new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date())%>">
                             <p class="info-text"><spring:message code="store.form.info.date" text="* 당일 및 이후 날짜만 선택 가능합니다." /></p>
                         </td>
@@ -213,13 +210,15 @@
                         <th><spring:message code="store.form.label.time" text="예약 시간" /></th>
                         <td>
                             <div id="timeSlotContainer" class="time-grid">
-                                    <%-- JS에 의해 타임 버튼이 동적으로 생성됨 --%>
+                                <%-- JS: loadAvailableSlots()에 의해 버튼 동적 생성 --%>
                             </div>
                             <input type="hidden" name="book_time" id="selectedTime">
                         </td>
                     </tr>
                 </table>
-                <button type="submit" class="btn-submit-wire"><spring:message code="store.form.btn.book" text="🚀 예약 확정하기" /></button>
+                <button type="submit" class="btn-submit-wire">
+                    <spring:message code="store.form.btn.book" text="🚀 예약 확정하기" />
+                </button>
             </form>
         </sec:authorize>
         <sec:authorize access="isAnonymous()">
@@ -231,13 +230,11 @@
         </sec:authorize>
     </div>
 
-    <%-- 5. 웨이팅 신청 영역 --%>
-    <div id="waiting-area" class="interaction-card">
+    <%-- 웨이팅 신청 영역 --%>
+    <div id="waiting-area" class="interaction-card" style="display:none;">
         <h3 class="section-title"><spring:message code="store.form.wait.title" text="🚶 실시간 웨이팅 신청" /></h3>
         <sec:authorize access="hasRole('ROLE_OWNER')">
-            <div class="auth-guide-box">
-                <spring:message code="store.form.owner.block.wait" text="점주 계정은 웨이팅을 할 수 없습니다." />
-            </div>
+            <div class="auth-guide-box"><spring:message code="storeDetail.ownerBlock" text="점주 계정은 예약/웨이팅을 할 수 없습니다." /></div>
         </sec:authorize>
         <sec:authorize access="hasRole('ROLE_USER')">
             <form id="waitForm" action="<c:url value='/wait/register'/>" method="post">
@@ -255,7 +252,9 @@
                         </td>
                     </tr>
                 </table>
-                <button type="submit" class="btn-submit-wire dark-btn"><spring:message code="store.form.btn.wait" text="줄서기 신청하기" /></button>
+                <button type="submit" class="btn-submit-wire dark-btn">
+                    <spring:message code="store.form.btn.wait" text="줄서기 신청하기" />
+                </button>
             </form>
         </sec:authorize>
         <sec:authorize access="isAnonymous()">
@@ -267,15 +266,15 @@
         </sec:authorize>
     </div>
 
-    <%-- 6. 지도 및 리뷰 섹션 --%>
-    <div id="map"></div>
+    <%-- 지도 및 리뷰 --%>
+    <div id="map" style="width:100%; height:350px; margin-top:30px; border-radius:12px;"></div>
 
     <div class="review-summary-section">
         <div class="card-header">
             <h3 class="card-title"><spring:message code="store.review.recent" text="💬 최근 리뷰" /></h3>
-            <%-- [수정] 리뷰 도메인 분리에 따른 경로 최신화 (/store/reviews -> /review/list) --%>
-            <a href="<c:url value='/review/list?store_id=${store.store_id}'/>"
-               class="btn-wire-small"><spring:message code="store.review.viewall" text="전체보기" /> ❯</a>
+            <a href="<c:url value='/review/list?store_id=${store.store_id}'/>" class="btn-wire-small">
+                <spring:message code="store.review.viewall" text="전체보기" /> ❯
+            </a>
         </div>
         <div class="review-grid">
             <c:choose>
@@ -284,9 +283,7 @@
                         <div class="item-card">
                             <div class="review-item-header">
                                 <span class="user-nm-text">${rev.user_nm}</span>
-                                <span class="stars-text">
-									<c:forEach begin="1" end="${rev.rating}">⭐</c:forEach>
-								</span>
+                                <span class="stars-text"><c:forEach begin="1" end="${rev.rating}">⭐</c:forEach></span>
                             </div>
                             <p class="review-content-text">${rev.content}</p>
                         </div>
@@ -300,12 +297,22 @@
     </div>
 </div>
 
-<%-- 필수 라이브러리 및 스크립트 연동 --%>
+<%-- 전역 설정 및 라이브러리 (순서 준수) --%>
+<script type="text/javascript">
+    var APP_CONFIG = APP_CONFIG || {
+        contextPath: "${pageContext.request.contextPath}",
+        csrfName: "${_csrf.parameterName}",
+        csrfToken: "${_csrf.token}"
+    };
+</script>
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
 <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoJsKey}&libraries=services"></script>
+
+<%-- 핵심 엔진: 수정된 링크 복사 로직이 포함된 파일 --%>
 <script src="<c:url value='/resources/js/store_detail.js'/>"></script>
 
 <jsp:include page="../common/footer.jsp"/>

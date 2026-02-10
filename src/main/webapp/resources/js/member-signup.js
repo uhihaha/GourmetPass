@@ -1,199 +1,181 @@
-/* GourmetPass 통합 회원 관리 스크립트 (가입/수정/탈퇴/알림/가게정보) */
+/* src/main/webapp/resources/js/member-signup.js */
 
 (function($) {
-    const MEMBER_I18N = (window.I18N && window.I18N.member) ? window.I18N.member : {};
-    // 1. 전역 상태 변수 설정
+    // ✅ i18n 유틸리티 초기화
+    var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+        ? window.I18N_UTIL.t
+        : function(key, fallback) { return fallback || key; };
+
+    // 1. 전역 상태 변수 (검증 성공 여부 플래그)
     let isIdChecked = false; 
     let isPwMatched = false;
     let isEmailChecked = false; 
     let authCode = "";         
     let timerInterval;
     let initialEmail = ""; 
+    
+    // 정규표현식 수정 (JavaScript 리터럴 형식에 맞게 \ 하나로 조정)
     const ID_PATTERN = /^[a-zA-Z0-9_]{4,20}$/;
-    const PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,20}$/;
+    const PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,20}$/;
 
     $(document).ready(function() {
         const isSocialSignup = $("#joinForm input[name='social_signup']").length > 0;
         const skipEmailAuth = $("#joinForm input[name='skip_email_auth']").length > 0;
-        
-        // [A] 로그인/로그아웃 알림 (기존 member.js 이관)
+
+        // [A] 로그인/로그아웃 알림 (기존 member.js 통합)
         const authMsgBox = $("#auth-msg");
         if(authMsgBox.length > 0) {
             const error = authMsgBox.data("error");
             const logout = authMsgBox.data("logout");
-            if (error) alert(MEMBER_I18N.loginError || "");
-            if (logout) alert(MEMBER_I18N.logoutSuccess || "");
+            if (error) alert(t("member.loginError", "로그인 중 오류가 발생했습니다."));
+            if (logout) alert(t("member.logoutSuccess", "로그아웃되었습니다."));
         }
 
-        // [B] 초기 데이터 세팅 및 수정 모드 감지
+        // [B] 초기 데이터 세팅 및 모드 감지
         initialEmail = $("#user_email").val() || ""; 
-        
-        // 수정 페이지 대응: 아이디가 readonly라면 중복확인 및 이메일인증 초기값 통과
-        if($("#user_id").prop("readonly")) {
-            isIdChecked = true;
-            isEmailChecked = true; 
-            console.log("Mode: Edit Mode Detected (Validation Adjusted)");
-        }
-        if (isSocialSignup) {
+
+        // 수정 모드 혹은 소셜 가입일 경우 초기 검증 패스 설정
+        if($("#user_id").prop("readonly") || isSocialSignup) {
             isIdChecked = true;
             isPwMatched = true;
-            isEmailChecked = true;
+            isEmailChecked = true; 
+            console.log("Validation: Pre-verified (Edit/Social Mode)");
         }
+        
         if (skipEmailAuth) {
             isEmailChecked = true;
             $("#btnEmailAuth").prop("disabled", true);
             $("#auth_code").prop("disabled", true);
-            $("#timer").text("");
-            $("#authMsg").text("");
         }
 
-        // 1. 아이디 중복 확인 (AJAX)
+        // 1. [AJAX] 아이디 중복 확인
         $("#btnIdCheck").click(function() {
             if($("#user_id").prop("readonly")) return;
 
             const userId = $("#user_id").val();
             if(!ID_PATTERN.test(userId)) {
-                var idRule = MEMBER_I18N.idRule || "";
-                $("#idCheckMsg").html("<span class='msg-no'>" + idRule + "</span>");
+                $("#idCheckMsg").html("<span class='msg-no'>" + 
+                    t("signup.idPattern", "아이디 형식이 올바르지 않습니다.") + 
+                    "</span>");
                 isIdChecked = false;
                 return;
             }
 
-            const ajaxData = { user_id: userId };
-            if (typeof APP_CONFIG !== 'undefined') {
-                ajaxData[APP_CONFIG.csrfName] = APP_CONFIG.csrfToken;
-            }
-
             $.ajax({
-                url: (typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.contextPath : "") + "/member/idCheck",
+                url: APP_CONFIG.contextPath + "/member/idCheck",
                 type: "POST",
-                data: ajaxData,
+                data: { 
+                    user_id: userId, 
+                    [APP_CONFIG.csrfName]: APP_CONFIG.csrfToken 
+                },
                 success: function(res) {
                     if(res === "success") { 
-                        var idAvailable = MEMBER_I18N.idAvailable || "";
-                        $("#idCheckMsg").html("<span class='msg-ok'>" + idAvailable + "</span>"); 
+                        $("#idCheckMsg").html("<span class='msg-ok'>" + 
+                            t("member.idAvailable", "사용 가능한 아이디입니다.") + 
+                            "</span>"); 
                         isIdChecked = true; 
-                    } else if (res === "invalid") {
-                        var idInvalid = MEMBER_I18N.idInvalid || "";
-                        $("#idCheckMsg").html("<span class='msg-no'>" + idInvalid + "</span>");
-                        isIdChecked = false;
                     } else { 
-                        var idInUse = MEMBER_I18N.idInUse || "";
-                        $("#idCheckMsg").html("<span class='msg-no'>" + idInUse + "</span>");
+                        $("#idCheckMsg").html("<span class='msg-no'>" + 
+                            t("member.idInUse", "이미 사용 중인 아이디입니다.") + 
+                            "</span>");
                         isIdChecked = false; 
                     }
                 },
-                error: function() { alert(MEMBER_I18N.serverError || ""); }
+                error: function() { 
+                    alert(t("common.serverError", "서버 오류가 발생했습니다."));
+                }
             });
         });
 
-        // 아이디 입력 시 상태 초기화 (가입 모드 전용)
+        // 아이디 재입력 시 중복체크 리셋
         $("#user_id").on("input", function() {
             if(!$(this).prop("readonly")) {
                 isIdChecked = false; 
-                const userId = $(this).val();
-                if (userId.length === 0) {
-                    $("#idCheckMsg").text("");
-                    return;
-                }
-                if (!ID_PATTERN.test(userId)) {
-                    var idRule = MEMBER_I18N.idRule || "";
-                    $("#idCheckMsg").html("<span class='msg-no'>" + idRule + "</span>");
-                } else {
-                    $("#idCheckMsg").text("");
-                }
+                $("#idCheckMsg").text("");
             }
         });
 
-        // 2. 비밀번호 일치 확인 (실시간)
+        // 2. 비밀번호 실시간 확인 (Match & Regex)
         $("#user_pw, #user_pw_confirm").on("keyup change input", function() {
             const pw = $("#user_pw").val();
             const pwConfirm = $("#user_pw_confirm").val();
-            
-            // 수정 시: 변경하지 않을 경우(둘 다 공백) 통과
+
             if(pw === "" && pwConfirm === "") { 
                 $("#pwCheckMsg").text(""); 
-                if($("#user_id").prop("readonly")) isPwMatched = true; 
                 return; 
             }
 
             if (!PASSWORD_PATTERN.test(pw)) {
-                var pwRule = MEMBER_I18N.pwRule || "";
-                $("#pwCheckMsg").html("<span class='msg-no'>" + pwRule + "</span>");
+                $("#pwCheckMsg").html("<span class='msg-no'>" + 
+                    t("signup.pwPattern", "비밀번호 형식이 올바르지 않습니다.") + 
+                    "</span>");
                 isPwMatched = false;
                 return;
             }
-            
+
             if(pw === pwConfirm) { 
-                var pwMatch = MEMBER_I18N.pwMatch || "";
-                $("#pwCheckMsg").html("<span class='msg-ok'>" + pwMatch + "</span>"); 
+                $("#pwCheckMsg").html("<span class='msg-ok'>" + 
+                    t("member.pwMatch", "비밀번호가 일치합니다.") + 
+                    "</span>"); 
                 isPwMatched = true; 
             } else { 
-                var pwMismatch = MEMBER_I18N.pwMismatch || "";
-                $("#pwCheckMsg").html("<span class='msg-no'>" + pwMismatch + "</span>"); 
+                $("#pwCheckMsg").html("<span class='msg-no'>" + 
+                    t("member.pwMismatch", "비밀번호가 일치하지 않습니다.") + 
+                    "</span>"); 
                 isPwMatched = false; 
             }
         });
 
-        // 3. 이메일 변경 감지 (수정 모드 대응)
-        $("#user_email").on("input change", function() {
-            const currentEmail = $(this).val();
-            if (currentEmail === initialEmail) {
-                $("#emailMsg").text("");
-                isEmailChecked = true; 
-            } else {
-                var emailChangeAuth = MEMBER_I18N.emailChangeAuth || "";
-                $("#emailMsg").html("<span class='msg-no'>" + emailChangeAuth + "</span>");
-                isEmailChecked = false;
-            }
-        });
-
-        // 4. 이메일 인증코드 발송
+        // 3. [AJAX] 이메일 인증코드 발송
         $("#btnEmailAuth").click(function() {
             const email = $("#user_email").val();
-            if(!email) { alert(MEMBER_I18N.emailRequired || ""); return; }
-
-            const ajaxData = { email: email };
-            if (typeof APP_CONFIG !== 'undefined') {
-                ajaxData[APP_CONFIG.csrfName] = APP_CONFIG.csrfToken;
+            if(!email) { 
+                alert(t("signup.emailRequired", "이메일을 입력해 주세요."));
+                return; 
             }
 
             $.ajax({
-                url: (typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.contextPath : "") + "/member/emailAuth",
+                url: APP_CONFIG.contextPath + "/member/emailAuth",
                 type: "POST",
-                data: ajaxData,
+                data: { 
+                    email: email, 
+                    [APP_CONFIG.csrfName]: APP_CONFIG.csrfToken 
+                },
                 success: function(res) {
-                    alert(MEMBER_I18N.emailAuthSent || "");
+                    alert(t("memberFind.authSent", "인증 코드가 발송되었습니다."));
                     authCode = res; 
                     $("#auth_code").prop("disabled", false).val("").focus();
                     startTimer();
                 },
-                error: function() { alert(MEMBER_I18N.emailSendFail || ""); }
+                error: function() { 
+                    alert(t("memberFind.authUnavailable", "코드 발송에 실패했습니다."));
+                }
             });
         });
 
-        // 5. 인증번호 실시간 확인
+        // 4. 인증코드 실시간 확인
         $("#auth_code").on("keyup", function() {
             const inputCode = $(this).val();
             if(inputCode.length === 6) {
-                if(Number(inputCode) === authCode) { 
-                    var authSuccess = MEMBER_I18N.authSuccess || "";
-                    $("#authMsg").html("<span class='msg-ok'>" + authSuccess + "</span>");
+                if(Number(inputCode) === Number(authCode)) { 
+                    $("#authMsg").html("<span class='msg-ok'>" + 
+                        t("member.authSuccess", "인증이 완료되었습니다.") + 
+                        "</span>");
                     clearInterval(timerInterval);
                     $("#timer").text("");
                     $("#btnEmailAuth, #auth_code").prop("disabled", true);
                     $("#user_email").prop("readonly", true);
                     isEmailChecked = true;
-                    initialEmail = $("#user_email").val(); // 인증된 이메일을 기준값으로 갱신
                 } else {
-                    var authMismatch = MEMBER_I18N.authMismatch || "";
-                    $("#authMsg").html("<span class='msg-no'>" + authMismatch + "</span>");
+                    $("#authMsg").html("<span class='msg-no'>" + 
+                        t("member.pwMismatch", "일치하지 않습니다.") + 
+                        "</span>");
                     isEmailChecked = false;
                 }
             }
         });
 
-        // 타이머 기능
+        // 타이머 엔진
         function startTimer() {
             let time = 180;
             clearInterval(timerInterval);
@@ -203,51 +185,40 @@
                 $("#timer").text((min < 10 ? "0" + min : min) + ":" + (sec < 10 ? "0" + sec : sec));
                 if (time-- <= 0) {
                     clearInterval(timerInterval);
-                    $("#timer").text(MEMBER_I18N.timerExpired || "");
+                    $("#timer").text(t("member.timerExpired", "시간 만료"));
                     $("#auth_code").prop("disabled", true);
                 }
             }, 1000);
         }
 
-        // 6. 폼 전송 최종 검증 (가입 / 수정 공통)
+        // 5. [핵심] 최종 폼 전송 검증 로직
         $("#joinForm").on("submit", function(e) {
-            // 수정 모드일 경우 제출 직전 플래그 최종 동기화
-            if($("#user_id").prop("readonly")) {
-                isIdChecked = true; 
-                if($("#user_pw").val() === "" && $("#user_pw_confirm").val() === "") isPwMatched = true;
-                if($("#user_email").val() === initialEmail) isEmailChecked = true;
-            }
+            if (isSocialSignup) return true;
 
-            if (isSocialSignup) {
-                return true;
-            }
             if(!isIdChecked) { 
-                alert(MEMBER_I18N.idCheckRequired || ""); 
+                alert(t("member.idCheckPrompt", "아이디 중복확인을 해주세요.")); 
                 $("#user_id").focus();
                 e.preventDefault(); return false; 
             }
             if(!isPwMatched) { 
-                alert(MEMBER_I18N.pwCheckRequired || ""); 
+                alert(t("member.pwMismatchAlert", "비밀번호를 확인해주세요.")); 
                 $("#user_pw").focus();
                 e.preventDefault(); return false; 
             }
             if(!skipEmailAuth && !isEmailChecked) { 
-                alert(MEMBER_I18N.emailAuthRequired || ""); 
+                alert(t("member.emailAuthRequired", "이메일 인증이 필요합니다.")); 
                 $("#user_email").focus();
                 e.preventDefault(); return false; 
             }
-            
+
             return true; 
         });
 
-        // 7. 점주 가입 2단계 최종 검증
+        // 6. 점주 2단계 위치 검증
         $("#ownerStep2Form").on("submit", function(e) {
             const lat = $("#store_lat").val();
-            const lon = $("#store_lon").val();
-
-            // 주소 검색을 통한 좌표 설정 여부 확인
-            if(!lat || lat === "0.0" || !lon || lon === "0.0") {
-                alert(MEMBER_I18N.storeCoordRequired || "");
+            if(!lat || lat === "0.0" || lat === "0") {
+                alert(t("member.storeLocationRequired", "주소 검색을 완료해 주세요."));
                 e.preventDefault();
                 return false;
             }
@@ -255,24 +226,19 @@
         });
     });
 
-    // [C] 회원 탈퇴 함수 (전역 노출 - JSP onclick 대응)
+    // 7. 회원 탈퇴 (전역)
     window.dropUser = function(userId) {
-        var withdrawConfirm = MEMBER_I18N.withdrawConfirm || "";
-        if (confirm(withdrawConfirm)) {
+        if (confirm(t("member.withdrawConfirmSimple"))) {
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = (typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.contextPath : "") + '/member/delete';
+            form.action = APP_CONFIG.contextPath + '/member/delete';
             
             const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = APP_CONFIG.csrfName;
-            csrfInput.value = APP_CONFIG.csrfToken;
-  
-            const userIdInput = document.createElement('input');
-            userIdInput.type = 'hidden';
-            userIdInput.name = 'user_id';
-            userIdInput.value = userId;
+            csrfInput.type = 'hidden'; csrfInput.name = APP_CONFIG.csrfName; csrfInput.value = APP_CONFIG.csrfToken;
             
+            const userIdInput = document.createElement('input');
+            userIdInput.type = 'hidden'; userIdInput.name = 'user_id'; userIdInput.value = userId;
+
             form.appendChild(csrfInput);
             form.appendChild(userIdInput);
             document.body.appendChild(form);

@@ -1,5 +1,10 @@
-/* src/main/webapp/resources/js/member_mypage.js [v1.0.6] */
-var MYPAGE_I18N = (window.I18N && window.I18N.mypage) ? window.I18N.mypage : {};
+/* src/main/webapp/resources/js/member_mypage.js [v2.0.0] */
+/* 수정사항: I18N_UTIL.t() 방식으로 통일 */
+
+// ✅ main.js 방식으로 통일: I18N_UTIL.t 사용
+var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+    ? window.I18N_UTIL.t
+    : function(key, fallback) { return fallback || key; };
 
 /**
  * [공통 함수] POST 폼 생성 및 전송 (CSRF 자동 포함)
@@ -32,8 +37,7 @@ function submitPostForm(url, params) {
  * 메뉴 삭제 (점주용)
  */
 function deleteMenu(menuId) {
-    var menuDeleteConfirm = MYPAGE_I18N.menuDeleteConfirm || "";
-    if (!confirm(menuDeleteConfirm)) return;
+    if (!confirm(t("mypage.menuDeleteConfirm", "정말 이 메뉴를 삭제하시겠습니까?"))) return;
     submitPostForm('/store/menu/delete', { 'menu_id': menuId });
 }
 
@@ -41,8 +45,7 @@ function deleteMenu(menuId) {
  * 웨이팅 취소 (사용자용)
  */
 function cancelWait(waitId) {
-    var waitCancelConfirm = MYPAGE_I18N.waitCancelConfirm || "";
-    if (!confirm(waitCancelConfirm)) return;
+    if (!confirm(t("mypage.waitCancelConfirm", "웨이팅을 취소하시겠습니까?"))) return;
     submitPostForm('/wait/cancel', { 'wait_id': waitId });
 }
 
@@ -50,19 +53,18 @@ function cancelWait(waitId) {
  * 리뷰 삭제 (공통)
  */
 function confirmDeleteReview(reviewId, storeId, returnUrl) {  // ← returnUrl 파라미터 추가
-    var reviewDeleteConfirm = MYPAGE_I18N.reviewDeleteConfirm || "";
-    if (!confirm(reviewDeleteConfirm)) return;
-    
+    if (!confirm(t("mypage.reviewDeleteConfirm", "정말 이 리뷰를 삭제하시겠습니까?"))) return;
+
     var params = { 
         'review_id': reviewId, 
         'store_id': storeId 
     };
-    
+
     // returnUrl이 있으면 추가
     if (returnUrl) {
         params['returnUrl'] = returnUrl;
     }
-    
+
     submitPostForm('/review/delete', params);
 }
 
@@ -70,8 +72,7 @@ function confirmDeleteReview(reviewId, storeId, returnUrl) {  // ← returnUrl �
  * 회원 탈퇴 (Fetch API 사용)
  */
 function dropUser(userId) {
-    var userDropConfirm = MYPAGE_I18N.userDropConfirm || "";
-    if (!confirm(userDropConfirm)) return;
+    if (!confirm(t("mypage.userDropConfirm", "정말 탈퇴하시겠습니까? 모든 데이터가 삭제됩니다."))) return;
 
     fetch(APP_CONFIG.contextPath + '/member/delete', {
         method: 'POST',
@@ -83,8 +84,7 @@ function dropUser(userId) {
     })
     .then(function(response) {
         if (response.redirected) {
-            var userDropSuccess = MYPAGE_I18N.userDropSuccess || "";
-            alert(userDropSuccess);
+            alert(t("mypage.userDropSuccess", "회원 탈퇴가 완료되었습니다."));
             location.href = response.url;
             return;
         }
@@ -101,18 +101,17 @@ function dropUser(userId) {
 function toggleHistory() {
     var area = document.getElementById('full-history-area') || document.getElementById('history-area');
     var btn = document.getElementById('history-toggle-btn') || document.getElementById('toggle-history');
-    
+
     if (!area || !btn) return;
 
     if (area.style.display === 'none' || area.style.display === '') {
         area.style.display = 'block';
-        var historyClose = MYPAGE_I18N.historyClose || "";
-        var historyCollapse = MYPAGE_I18N.historyCollapse || "";
-        btn.innerText = (btn.id === 'history-toggle-btn') ? historyClose : historyCollapse;
+        btn.innerText = (btn.id === 'history-toggle-btn') 
+            ? t("mypage.historyClose", "내역 닫기")
+            : t("mypage.historyCollapse", "접기");
     } else {
         area.style.display = 'none';
-        var historyOpen = MYPAGE_I18N.historyOpen || "";
-        btn.innerText = historyOpen;
+        btn.innerText = t("mypage.historyOpen", "전체 이용 내역 보기");
     }
 }
 
@@ -149,8 +148,7 @@ function initMyPageWebSocket(userId, role, storeId) {
 }
 
 function showNotification(message) {
-    var notificationPrefix = MYPAGE_I18N.notificationPrefix || "";
-    alert(notificationPrefix + " " + message);
+    alert(t("mypage.notificationPrefix", "📢 알림") + " " + message);
     location.reload(); // 상태 변경 즉시 반영을 위해 새로고침
 }
 

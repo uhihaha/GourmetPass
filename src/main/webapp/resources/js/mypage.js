@@ -1,13 +1,18 @@
-/* src/main/webapp/resources/js/mypage.js */
-var MYPAGE_I18N = (window.I18N && window.I18N.mypage) ? window.I18N.mypage : {};
+/* src/main/webapp/resources/js/mypage.js [v2.0.0] */
+/* 수정사항: I18N_UTIL.t() 방식으로 통일 */
+
+// ✅ main.js 방식으로 통일: I18N_UTIL.t 사용
+var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+    ? window.I18N_UTIL.t
+    : function(key, fallback) { return fallback || key; };
 
 /**
  * 1. 메뉴 삭제 처리 (점주 전용)
  * @param {number} menuId - 삭제할 메뉴의 고유 ID
  */
 function deleteMenu(menuId) {
-    var menuDeleteConfirmStrong = MYPAGE_I18N.menuDeleteConfirmStrong || "";
-    if(confirm(menuDeleteConfirmStrong)) {
+    // 키 일치 확인: mypage.menuDeleteConfirmStrong
+    if(confirm(t("mypage.menuDeleteConfirmStrong", "정말 이 메뉴를 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다."))) {
         submitPostRequest('/store/menu/delete', {
             'menu_id': menuId
         });
@@ -20,8 +25,8 @@ function deleteMenu(menuId) {
  * @param {string} storeId - 해당 맛집 ID
  */
 function confirmDeleteReview(reviewId, storeId) {
-    var reviewDeleteConfirm = MYPAGE_I18N.reviewDeleteConfirm || "";
-    if(confirm(reviewDeleteConfirm)) {
+    // 키 일치 확인: mypage.reviewDeleteConfirm
+    if(confirm(t("mypage.reviewDeleteConfirm", "정말 이 리뷰를 삭제하시겠습니까?"))) {
         submitPostRequest('/review/delete', {
             'review_id': reviewId,
             'store_id': storeId
@@ -38,8 +43,7 @@ function submitPostRequest(url, params) {
     var form = document.createElement('form');
     form.method = 'POST';
     form.action = APP_CONFIG.contextPath + url;
-    
-    // [오류 수정] 최신 문법(Spread Operator) 대신 표준 할당 방식 사용
+
     var fields = params || {};
     fields[APP_CONFIG.csrfName] = APP_CONFIG.csrfToken;
 

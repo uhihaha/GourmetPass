@@ -51,7 +51,7 @@ if(authMsgBox.length > 0) {
     // setTimeout을 사용하여 브라우저가 HTML을 모두 그리도록 기회를 줍니다.
     setTimeout(function() {
         if (error) {
-            alert(t("member.loginError", "로그인 중 오류가 발생했습니다."));
+            alert(t("member.loginError", "로그인 정보가 불일치합니다."));
         }
         if (logout) {
             alert(t("member.logoutSuccess", "로그아웃되었습니다."));

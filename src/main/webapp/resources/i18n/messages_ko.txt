@@ -39,7 +39,7 @@ signup.storeImageRecommend=매장 이미지를 등록하시면 더 많은 고객
 # ============================================
 # member.* - 로그인 및 회원 상태 관리
 # ============================================
-member.loginError=로그인 중 오류가 발생했습니다.
+member.loginError=로그인 정보가 일치하지 않습니다.
 member.logoutSuccess=로그아웃되었습니다.
 member.idMinLength=아이디는 최소 3자 이상이어야 합니다.
 member.idAvailable=사용 가능한 아이디입니다.
@@ -145,3 +145,5 @@ storeList.searchRequired=검색어를 입력해 주세요.
 # ============================================
 # 파일 끝
 # ============================================
+storeDetail.favoriteOwnerBlock=점주 계정은 즐겨찾기를 할 수 없습니다.
+member.authCodeRequired=인증 코드를 입력해주세요.

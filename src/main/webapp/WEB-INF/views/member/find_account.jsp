@@ -9,10 +9,11 @@
 <div class="edit-wrapper">
     <div class="edit-title"><spring:message code="member.find.title" text="🔎 아이디/비밀번호 찾기" /></div>
 
-    <%-- [1] 아이디 찾기 섹션 --%>
+    <%-- [1] 아이디 찾기 섹션: novalidate 추가로 브라우저 기본 말풍선 차단 --%>
     <div class="find-section">
         <h3><spring:message code="member.find.id.title" text="아이디 찾기" /></h3>
-        <form action="<c:url value='/member/find/id'/>" method="post">
+        <%-- AJAX 연동을 위해 id="findIdForm"과 novalidate를 적용했습니다. --%>
+        <form id="findIdForm" method="post" novalidate>
             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
             
             <div class="form-group">
@@ -33,21 +34,13 @@
                 </button>
             </div>
         </form>
-
-        <c:if test="${not empty idResult}">
-            <div class="find-result msg-ok">
-                <spring:message code="member.find.id.result" arguments="${idResult}" text="회원님의 아이디는 {0} 입니다." />
-            </div>
-        </c:if>
-        <c:if test="${not empty idError}">
-            <div class="find-result msg-no">${idError}</div>
-        </c:if>
     </div>
 
     <%-- [2] 비밀번호 재설정 섹션 --%>
     <div class="find-section">
         <h3><spring:message code="member.find.pw.title" text="비밀번호 재설정" /></h3>
-        <form action="<c:url value='/member/find/password'/>" method="post">
+        <%-- [교정] 수동 검증 로직 연동을 위해 novalidate 속성을 추가했습니다. --%>
+        <form action="<c:url value='/member/find/password'/>" method="post" novalidate>
             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
             
             <div class="form-group">
@@ -100,7 +93,6 @@
     </div>
 </div>
 
-<%-- 전역 설정 객체 선언 --%>
 <script type="text/javascript">
     var APP_CONFIG = APP_CONFIG || {
         contextPath: "${pageContext.request.contextPath}",
@@ -109,7 +101,6 @@
     };
 </script>
 
-<%-- 통합 엔진 로드 (라이브러리 로드 순서 준수) --%>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="<c:url value='/resources/js/member-find.js'/>"></script>
 

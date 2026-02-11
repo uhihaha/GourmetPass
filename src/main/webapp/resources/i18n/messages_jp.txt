@@ -39,7 +39,7 @@ signup.storeImageRecommend=店舗画像を登録すると、より多くのお�
 # ============================================
 # member.* - ログイン及び会員状態管理
 # ============================================
-member.loginError=ログイン中にエラーが発生しました。
+member.loginError=ログイン情報が一致しません。
 member.logoutSuccess=ログアウトしました。
 member.idMinLength=IDは少なくとも3文字以上である必要があります。
 member.idAvailable=使用可能なIDです。
@@ -144,3 +144,5 @@ storeList.searchRequired=検索ワードを入力してください。
 # ============================================
 # ファイル末尾
 # ============================================
+storeDetail.favoriteOwnerBlock=オーナーアカウントはお気に入り待機を利用できません。
+member.authCodeRequired=認証コードを入力してください。

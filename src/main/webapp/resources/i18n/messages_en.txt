@@ -39,7 +39,7 @@ signup.storeImageRecommend=Registering a store image will help attract more cust
 # ============================================
 # member.* - Login and Account Management
 # ============================================
-member.loginError=An error occurred during login.
+member.loginError=Incorrect username or password.
 member.logoutSuccess=You have been logged out.
 member.idMinLength=ID must be at least 3 characters long.
 member.idAvailable=This ID is available.
@@ -144,3 +144,5 @@ storeList.searchRequired=Please enter a search term.
 # ============================================
 # End of File
 # ============================================
+storeDetail.favoriteOwnerBlock=Owner accounts cannot use favorite. 
+member.authCodeRequired=Please enter the authentication code.

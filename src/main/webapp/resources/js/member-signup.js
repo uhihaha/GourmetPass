@@ -42,13 +42,22 @@
         }
 
         // [C] 로그인/로그아웃 알림 처리
-        const authMsgBox = $("#auth-msg");
-        if(authMsgBox.length > 0) {
-            const error = authMsgBox.data("error");
-            const logout = authMsgBox.data("logout");
-            if (error) alert(t("member.loginError", "로그인 중 오류가 발생했습니다."));
-            if (logout) alert(t("member.logoutSuccess", "로그아웃되었습니다."));
+        // [교체] 44~51행: 화면 렌더링 후 alert 실행 보장 로직
+const authMsgBox = $("#auth-msg");
+if(authMsgBox.length > 0) {
+    const error = authMsgBox.data("error");
+    const logout = authMsgBox.data("logout");
+
+    // setTimeout을 사용하여 브라우저가 HTML을 모두 그리도록 기회를 줍니다.
+    setTimeout(function() {
+        if (error) {
+            alert(t("member.loginError", "로그인 중 오류가 발생했습니다."));
         }
+        if (logout) {
+            alert(t("member.logoutSuccess", "로그아웃되었습니다."));
+        }
+    }, 100); // 0.1초의 지연으로 화면 렌더링 우선순위 확보
+}
 
         // 1. [AJAX] 아이디 중복 확인
         $("#btnIdCheck").click(function() {

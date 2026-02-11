@@ -3,7 +3,9 @@ package com.uhi.gourmet.member;
 
 import java.security.Principal;
 import java.security.SecureRandom;
+import java.util.HashMap; // [추가] AJAX 응답용
 import java.util.List;
+import java.util.Map;      // [추가] AJAX 응답용
 import java.util.Random;
 import java.util.UUID;
 
@@ -29,7 +31,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo; // 추가
+import com.github.pagehelper.PageInfo; 
 import com.uhi.gourmet.book.BookService;
 import com.uhi.gourmet.book.BookVO;
 import com.uhi.gourmet.favorite.FavoriteService;
@@ -337,13 +339,12 @@ public class MemberController {
         
         String user_id = principal.getName();
         
-        // 한 페이지에 10개씩 출력하도록 설정
         PageInfo<ReviewVO> pageMaker = review_service.getMyReviewsPaginated(user_id, pageNum, 3);
         
         model.addAttribute("allReviews", pageMaker.getList());
         model.addAttribute("pageMaker", pageMaker);
         
-        return "review/review_mine"; // 신규 JSP 경로
+        return "review/review_mine"; 
     }
 
     @GetMapping("/wait_status")
@@ -443,6 +444,26 @@ public class MemberController {
         }
         model.addAttribute("idResult", userId);
         return "member/find_account";
+    }
+
+    // [추가] 아이디 찾기 AJAX 요청 처리 핸들러
+    @PostMapping(value = "/find/id/ajax", produces = "application/json; charset=UTF-8")
+    @ResponseBody
+    public Map<String, Object> findIdAjax(@RequestParam("user_nm") String name,
+                                          @RequestParam("user_email") String email) {
+        Map<String, Object> response = new HashMap<>();
+        
+        // 서비스의 기존 아이디 찾기 로직 활용
+        String userId = memberService.findUserIdByNameEmail(name.trim(), email.trim());
+        
+        if (userId != null) {
+            response.put("status", "success");
+            response.put("userId", userId);
+        } else {
+            response.put("status", "not_found");
+        }
+        
+        return response;
     }
 
     @PostMapping("/find/password")

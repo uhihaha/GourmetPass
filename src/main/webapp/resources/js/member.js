@@ -5,13 +5,6 @@ $(document).ready(function() {
         ? window.I18N_UTIL.t
         : function(key, fallback) { return fallback || key; };
 
-    // [1] 기존 로직: 로그인/로그아웃 알림
-    const error = $("#auth-msg").data("error");
-    const logout = $("#auth-msg").data("logout");
-
-    if (error) alert(t("member.loginError", "로그인 중 오류가 발생했습니다."));
-    if (logout) alert(t("member.logoutSuccess", "로그아웃되었습니다."));
-
 
     // [2] 새 로직: 회원가입 상태 관리 변수
     let isIdChecked = false;
@@ -94,31 +87,3 @@ $(document).ready(function() {
         return true;
     });
 });
-
-/**
- * 회원 탈퇴 처리 (전역 함수)
- */
-function dropUser(userId) {
-    // i18n 유틸리티 함수
-    var t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
-        ? window.I18N_UTIL.t
-        : function(key, fallback) { return fallback || key; };
-
-    var withdrawConfirm = t("member.withdrawConfirmSimple", "정말 탈퇴하시겠습니까? 탈퇴 후 모든 예약 및 웨이팅 내역이 삭제됩니다.");
-
-    if (confirm(withdrawConfirm)) {
-        // 탈퇴 프로세스 호출 (CSRF 토큰 필요)
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = APP_CONFIG.contextPath + '/member/withdraw';
-
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = APP_CONFIG.csrfName;
-        csrfInput.value = APP_CONFIG.csrfToken;
-
-        form.appendChild(csrfInput);
-        document.body.appendChild(form);
-        form.submit();
-    }
-}

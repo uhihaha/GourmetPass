@@ -35,6 +35,7 @@ $(document).ready(function() {
         if (confirm(t("manage.confirmNoShow", "노쇼 처리하시겠습니까? 결제 금액이 환불됩니다."))) {
             // 환불 함수 호출
             cancelPay(pay_id, form);
+            location.reload();
         }
     });
 

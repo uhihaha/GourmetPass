@@ -232,9 +232,29 @@
 
         // 5. 모바일 결제 복귀 처리
         const urlParams = new URLSearchParams(window.location.search);
+	    const paymentStatus = urlParams.get('status');
+	    const payId = urlParams.get('pay_id');
+	    const bDate = urlParams.get('book_date');
+	    const bTime = urlParams.get('book_time');
+	    const pCnt = urlParams.get('people_cnt');
         if (urlParams.get('status') === 'success') {
-            alert(t("storeDetail.paySuccessBooking", "결제가 완료되었습니다! 예약을 진행합니다."));
-            $("#bookForm").submit();
+        	
+            
+            // 1. 값 강제 세팅 (name 속성으로 접근하는 것이 더 정확합니다)
+		    $("input[name='pay_id']").val(payId);
+		    $("input[name='book_date']").val(bDate);
+		    $("input[name='book_time']").val(bTime); // id="selectedTime"과 동일
+		    
+		    // 2. select box는 name으로 찾아야 함 (JSP에 id="people_cnt"가 없음)
+		    $("select[name='people_cnt']").val(pCnt || '1');
+		
+		    console.log("제출 전 데이터 확인:", $("#bookForm").serialize());
+		
+		    // 3. 알림 후 즉시 제출 (1초 대기 중 다른 이벤트 발생 방지)
+            alert(("storeDetail.paySuccessBooking", "결제가 완료되었습니다! 예약을 진행합니다."));
+		    $("#bookForm").off("submit").submit(); // 중복 방지 로직 우회하여 즉시 제출
+            
+            
         } else if (urlParams.get('status') === 'fail') {
             alert(t("storeDetail.payFail", "결제가 실패했습니다."));
             window.history.replaceState({}, document.title, 

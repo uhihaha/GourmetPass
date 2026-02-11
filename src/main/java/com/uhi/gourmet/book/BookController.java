@@ -241,14 +241,26 @@ public class BookController {
     @PostMapping("/updateStatus")
     public String updateBookStatus(@RequestParam("book_id") int bookId, @RequestParam("status") String status,
                                    @RequestParam(value = "user_id", required = false) String userId, Authentication auth) {// 권한 확인을 위해
-        // Authentication 추가
+        System.out.println("BookController updateBookStatus....");
+    	
+    	// Authentication 추가
         System.out.println("Status : " + status);
+        
 
         // 현재 로그인한 사용자의 권한을 확인합니다.
         boolean isOwner = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_OWNER"));
-
+        if (isOwner) {
+            // DB에서 현재 예약 상태를 가져옴
+            String currentStatus = book_service.getBookStatusById(bookId);
+            
+            // 사용자가 이미 취소(CANCELED)한 상태라면 업데이트 진행하지 않고 리다이렉트
+            if ("CANCELED".equals(currentStatus)) {
+                System.out.println("중복 처리 방지: 이미 사용자가 취소한 예약(ID: " + bookId + ")입니다.");
+                return "redirect:/book/manage";
+            }
+        }
+        
         book_service.update_book_status(bookId, status);
-
         if (userId != null && !userId.isEmpty()) {
             String msg = "예약 상태가 [" + status + "]로 변경되었습니다.";
             messagingTemplate.convertAndSend("/topic/wait/" + userId, msg);

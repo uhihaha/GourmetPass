@@ -25,5 +25,7 @@ public interface BookService {
 
 
 	List<BookVO> get_store_book_list_by_date(int store_id, String bookDate);
+	
+	String getBookStatusById(int book_id);
     
 }

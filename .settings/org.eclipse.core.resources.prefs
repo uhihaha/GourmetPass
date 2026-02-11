@@ -4,3 +4,4 @@ encoding//src/main/resources/message/messageSource_jp.properties=ISO-8859-1
 encoding//src/main/webapp/resources/css/store_detail.css=UTF-8
 encoding//src/main/webapp/resources/css/wait_status.css=UTF-8
 encoding//src/main/webapp/resources/js/common.js=UTF-8
+encoding/<project>=UTF-8

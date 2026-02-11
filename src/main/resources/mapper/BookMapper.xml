@@ -70,6 +70,12 @@
 	    ORDER BY B.book_date ASC
 	</select>
 	
+	<select id="selectBookStatus" resultType="string">
+    SELECT book_status
+    FROM BOOK
+    WHERE book_id = #{book_id}
+</select>
+	
 	
 
 </mapper>

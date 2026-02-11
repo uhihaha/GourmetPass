@@ -35,6 +35,7 @@ $(document).ready(function() {
         if (confirm(t("manage.confirmNoShow", "노쇼 처리하시겠습니까? 결제 금액이 환불됩니다."))) {
             // 환불 함수 호출
             cancelPay(pay_id, form);
+            
         }
     });
 
@@ -58,35 +59,33 @@ function cancelPay(pay_id, form) {
         "url": APP_CONFIG.contextPath + "/pay/api/v2/payment/refund",
         "type": "POST",
         "contentType": "application/json",
-        "data": JSON.stringify({
-            "pay_id": pay_id
-        }),
-        //  post 수행하기위해 토큰만 주입
+        "data": JSON.stringify({ "pay_id": pay_id }),
         beforeSend: function(xhr) {
-            console.log("AJAX 발송 직전 헤더 설정 시도 중...");
-            console.log("설정할 토큰 값:", APP_CONFIG.csrfToken);
-
-            if (!APP_CONFIG.csrfToken) {
-                console.error("보낼 토큰이 없습니다! APP_CONFIG를 확인하세요.");
-            }
-
             xhr.setRequestHeader("X-CSRF-TOKEN", APP_CONFIG.csrfToken);
         },
         success: function () {
             alert(t("manage.refundSuccess", "환불이 완료되었습니다."));
-
-            // 폼 안에 hidden을 만들어서 값을 넣어줌
+            
+            // 성공 시 status 값을 넣고 폼 제출 (updateStatus 컨트롤러로 이동)
+            const isNoShow = form.find(".noshow-btn").length > 0;
             $('<input>').attr({
                 type: 'hidden',
                 name: 'status', 
-                value: 'NOSHOW'  
+                value: isNoShow ? 'NOSHOW' : 'FINISH'
             }).appendTo(form);
-            form.submit();	// book status noshow form submit
+            
+            form.submit();
         },
-        error: function (xhr, status, error) {
-            alert(t("manage.refundFail", "환불 처리 중 오류가 발생했습니다."));
-            console.log(APP_CONFIG.csrfToken);
-            console.error(xhr.responseText);
-        }	
+        error: function (xhr) {
+            // 서버 응답이 409(Conflict)이거나 이미 취소되었다는 메시지가 포함된 경우
+            if (xhr.status === 409 || xhr.responseText.includes("PAYMENT_ALREADY_CANCELLED")) {
+                alert(t("manage.alreadyCancelled", "이미 사용자가 취소를 완료한 예약입니다. 목록을 갱신합니다."));
+            } else {
+                alert(t("manage.refundFail", "환불 처리 중 오류가 발생했습니다."));
+            }
+            
+            // ✅ 어떤 에러든 발생하면 화면을 새로고침하여 상태를 동기화함
+            location.reload(); 
+        }
     });
 }

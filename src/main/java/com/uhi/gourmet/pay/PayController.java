@@ -88,10 +88,12 @@ public class PayController {
             if(service.paymentVal(paymentId)) {
                 int payId = service.getPayIdByImpUid(paymentId);
                 
-                // 검증 성공 후 예약 정보와 함께 상세 페이지로 리다이렉트
+                
+                String encodedTime = URLEncoder.encode(bookTime, "UTF-8"); // "13%3A30" 형태로 인코딩
+
                 String redirectUrl = String.format(
                     "%s/store/detail?storeId=%d&pay_id=%d&book_date=%s&book_time=%s&people_cnt=%d&status=success",
-                    contextPath, storeId, payId, bookDate, bookTime, peopleCnt
+                    contextPath, storeId, payId, bookDate, encodedTime, peopleCnt
                 );
                 
                 System.out.println("리다이렉트 URL: " + redirectUrl);

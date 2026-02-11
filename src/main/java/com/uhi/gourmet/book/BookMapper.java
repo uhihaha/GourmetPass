@@ -48,5 +48,7 @@ public interface BookMapper {
 
     // 점주전용 : 날짜별 예약 리스트
 	List<BookVO> selectStoreBookListByDate(@Param("store_id")int store_id, @Param("book_date")String book_date);
+	
+	String selectBookStatus(@Param("book_id")int book_id);
 
 }

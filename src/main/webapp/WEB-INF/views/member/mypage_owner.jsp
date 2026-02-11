@@ -314,32 +314,51 @@
             clearBtn.style.display = "none";
         }
 
-        input.addEventListener("change", function () {
+        function resizeImageFile(file, maxWidth, maxHeight, quality) {
+            return new Promise(function(resolve) {
+                if (!file.type || file.type.indexOf("image/") !== 0) {
+                    resolve(file);
+                    return;
+                }
+
+                var img = new Image();
+                var url = URL.createObjectURL(file);
+                img.onload = function() {
+                    var width = img.width;
+                    var height = img.height;
+                    var ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+                    var canvas = document.createElement("canvas");
+                    canvas.width = Math.round(width * ratio);
+                    canvas.height = Math.round(height * ratio);
+                    var ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    URL.revokeObjectURL(url);
+
+                    canvas.toBlob(function(blob) {
+                        if (!blob) {
+                            resolve(file);
+                            return;
+                        }
+
+                        var resized = new File([blob], file.name, {
+                            type: blob.type,
+                            lastModified: Date.now()
+                        });
+                        resolve(resized);
+                    }, file.type === "image/png" ? "image/png" : "image/jpeg", quality);
+                };
+
+                img.onerror = function() {
+                    URL.revokeObjectURL(url);
+                    resolve(file);
+                };
+
+                img.src = url;
+            });
+        }
+
+        function renderPreview(files) {
             preview.innerHTML = "";
-            var files = Array.from(input.files || []);
-            if (files.length > 5) {
-                alert(I18N.photoMax);
-                input.value = "";
-                previewWrap.classList.add("is-hidden");
-                if (clearBtn) {
-                    clearBtn.classList.add("is-hidden");
-                    clearBtn.style.display = "none";
-                }
-                return;
-            }
-            if (files.length) {
-                previewWrap.classList.remove("is-hidden");
-                if (clearBtn) {
-                    clearBtn.classList.remove("is-hidden");
-                    clearBtn.style.display = "inline-block";
-                }
-            } else {
-                previewWrap.classList.add("is-hidden");
-                if (clearBtn) {
-                    clearBtn.classList.add("is-hidden");
-                    clearBtn.style.display = "none";
-                }
-            }
             files.forEach(function (file) {
                 if (!file.type || !file.type.startsWith("image/")) {
                     return;
@@ -358,6 +377,49 @@
                     preview.appendChild(card);
                 };
                 reader.readAsDataURL(file);
+            });
+        }
+
+        input.addEventListener("change", function () {
+            var files = Array.from(input.files || []);
+            if (files.length > 5) {
+                alert(I18N.photoMax);
+                input.value = "";
+                previewWrap.classList.add("is-hidden");
+                if (clearBtn) {
+                    clearBtn.classList.add("is-hidden");
+                    clearBtn.style.display = "none";
+                }
+                preview.innerHTML = "";
+                return;
+            }
+            if (files.length) {
+                previewWrap.classList.remove("is-hidden");
+                if (clearBtn) {
+                    clearBtn.classList.remove("is-hidden");
+                    clearBtn.style.display = "inline-block";
+                }
+            } else {
+                previewWrap.classList.add("is-hidden");
+                if (clearBtn) {
+                    clearBtn.classList.add("is-hidden");
+                    clearBtn.style.display = "none";
+                }
+                preview.innerHTML = "";
+                return;
+            }
+
+            Promise.all(files.map(function(file) {
+                return resizeImageFile(file, 1200, 1200, 0.8);
+            })).then(function(resizedFiles) {
+                var dataTransfer = new DataTransfer();
+                resizedFiles.forEach(function(file) {
+                    dataTransfer.items.add(file);
+                });
+                input.files = dataTransfer.files;
+                renderPreview(resizedFiles);
+            }).catch(function() {
+                renderPreview(files);
             });
         });
 

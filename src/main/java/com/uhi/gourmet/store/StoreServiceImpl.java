@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.uhi.gourmet.common.ImageProcessingService;
 
 @Service
 public class StoreServiceImpl implements StoreService {
@@ -22,6 +23,8 @@ public class StoreServiceImpl implements StoreService {
     @Autowired
     private StoreMapper storeMapper;
 
+    @Autowired
+    private ImageProcessingService imageProcessingService;
     // 1. 맛집 목록 조회 (PageHelper 반영)
     @Override
     public PageInfo<StoreVO> getStoreList(int pageNum, int pageSize, String category, String region, String keyword) {
@@ -238,13 +241,25 @@ public class StoreServiceImpl implements StoreService {
             savedName = System.currentTimeMillis() + "_" + originalName;
         }
 
+        File targetFile = new File(dir, savedName);
         try {
-            file.transferTo(new File(dir, savedName));
+            file.transferTo(targetFile);
+            if (isImageFile(file)) {
+                imageProcessingService.processImage(targetFile, 1200, 1200, 0.85f);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
         return savedName;
+    }
+
+    private boolean isImageFile(MultipartFile file) {
+        if (file == null) {
+            return false;
+        }
+        String contentType = file.getContentType();
+        return contentType != null && contentType.startsWith("image/");
     }
 
     @Override

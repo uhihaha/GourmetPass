@@ -179,7 +179,7 @@ public class BookController {
 
         book_service.register_book(vo);
         messagingTemplate.convertAndSend("/topic/store/" + store_id + "/bookUpdate", "REFRESH");
-        rttr.addFlashAttribute("msg", "예약이 완료되었습니다.");
+//        rttr.addFlashAttribute("msg", "예약이 완료되었습니다.");
         return "redirect:/member/mypage";
     }
 

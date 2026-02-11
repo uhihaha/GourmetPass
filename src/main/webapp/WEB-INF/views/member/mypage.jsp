@@ -190,4 +190,19 @@
 	});
 </script>
 
+<script>
+	// 리뷰 삭제 버튼 이벤트 처리
+	document.addEventListener('click', function(e) {
+		if (e.target.classList.contains('btn-delete-review')) {
+			const reviewId = e.target.dataset.reviewId;
+			const storeId = e.target.dataset.storeId;
+			const returnUrl = e.target.dataset.returnUrl;
+
+			if (typeof confirmDeleteReview === 'function') {
+				confirmDeleteReview(reviewId, storeId, returnUrl);
+			}
+		}
+	});
+</script>
+
 <jsp:include page="../common/footer.jsp" />

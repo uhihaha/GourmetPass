@@ -80,7 +80,7 @@ public class ReviewController {
 		try {
 			// 비즈니스 로직(검증+저장)을 서비스 메서드 하나로 해결
 			review_service.registerReview(vo, principal.getName());
-			rttr.addFlashAttribute("msg", "소중한 리뷰가 등록되었습니다.");
+//			rttr.addFlashAttribute("msg", "소중한 리뷰가 등록되었습니다.");
 
 		} catch (RuntimeException e) {
 			// 서비스에서 던진 비즈니스 예외 처리

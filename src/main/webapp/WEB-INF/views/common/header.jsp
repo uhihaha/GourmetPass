@@ -23,7 +23,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script>
+<!--     <script>
         window.I18N = window.I18N || {};
         window.I18N.common = {
             loginRequired: "<spring:message code='common.msg.login_required' text='로그인이 필요합니다' />",
@@ -130,7 +130,7 @@
             authUnavailable: "<spring:message code='member.find.auth.unavailable' text='요청을 처리할 수 없습니다.' />",
             authServerError: "<spring:message code='member.find.auth.server_error' text='서버 통신 오류가 발생했습니다.' />"
         };
-    </script>
+    </script> -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             document.querySelectorAll(".lang-selector [data-lang]").forEach(function (link) {
@@ -146,7 +146,7 @@
     </script>
 </head>
 <body>
-    <%-- Flash Message Alert 처리 추가 --%>
+<%--     Flash Message Alert 처리 추가
     <c:if test="${not empty msg}">
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -154,7 +154,7 @@
             });
         </script>
     </c:if>
-    
+     --%>
     <nav class="wire-nav">
         <div class="nav-inner">
             <h2 class="logo-text">

@@ -146,9 +146,15 @@
     </script>
 </head>
 <body>
+    <%-- Flash Message Alert 처리 추가 --%>
     <c:if test="${not empty msg}">
-        <div id="flash-message" data-message="${msg}" style="display:none;"></div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                alert("${msg}");
+            });
+        </script>
     </c:if>
+    
     <nav class="wire-nav">
         <div class="nav-inner">
             <h2 class="logo-text">

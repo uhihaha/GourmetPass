@@ -3,11 +3,13 @@ package com.uhi.gourmet.wait;
 
 import java.security.Principal;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,6 +34,9 @@ public class WaitController {
 
     @Autowired
     private SimpMessagingTemplate messaging_template; // websocket 실시간 알림
+    
+    @Autowired
+    private MessageSource messageSource; // 다국어 메시지 처리
 
     // 1. 나의 웨이팅 현황 페이지 조회
     @GetMapping("/status")
@@ -48,14 +53,16 @@ public class WaitController {
 
    // 2. 웨이팅 등록
     @PostMapping("/register")
-    public String register_wait(WaitVO vo, Principal principal, HttpServletRequest request, RedirectAttributes rttr) {
+    public String register_wait(WaitVO vo, Principal principal, HttpServletRequest request, 
+                               RedirectAttributes rttr, Locale locale) {
         if (principal == null) {
             return "redirect:/member/login";
         }
         
         // 점주는 웨이팅 불가능
         if (request.isUserInRole("ROLE_OWNER")) {
-            rttr.addFlashAttribute("msg", "점주 계정은 웨이팅을 할 수 없습니다.");
+            String msg = messageSource.getMessage("store.detail.owner.block", null, locale);
+            rttr.addFlashAttribute("msg", msg);
             return "redirect:/store/detail?storeId=" + vo.getStore_id();
         }
         
@@ -64,9 +71,14 @@ public class WaitController {
         
         try {
             wait_service.register_wait(vo);
+            // 성공 메시지
+            String successMsg = messageSource.getMessage("wait.register.success", null, locale);
+            rttr.addFlashAttribute("msg", successMsg);
         } catch (IllegalStateException e) {
-            rttr.addFlashAttribute("msg", e.getMessage());
-            return "redirect:/wait/status";
+            // 에러 메시지 (다국어)
+            String errorMsg = messageSource.getMessage("wait.already.exists", null, locale);
+            rttr.addFlashAttribute("msg", errorMsg);
+            return "redirect:/store/detail?storeId=" + vo.getStore_id();
         }
         
         // 점주에게 실시간으로 알림

@@ -39,11 +39,15 @@
             f.store_id,
             f.created_at,
             s.store_name,
-            s.store_img,
+            NVL(p.file_path, s.store_img) as store_img,
             s.store_category,
             (SELECT NVL(ROUND(AVG(rating), 1), 0) FROM REVIEW r WHERE r.store_id = s.store_id) as avg_rating
         FROM FAVORITE f
         JOIN STORE s ON f.store_id = s.store_id
+        LEFT JOIN PHOTO p
+          ON p.store_id = s.store_id
+         AND p.is_thumbnail = 'Y'
+         AND p.is_active = 'Y'
         WHERE f.user_id = #{user_id}
         ORDER BY f.favorite_id DESC
     </select>

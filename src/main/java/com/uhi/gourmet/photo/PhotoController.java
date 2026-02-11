@@ -58,7 +58,7 @@ public class PhotoController {
             }
             int photoId = photoService.getNextPhotoId();
             String savedName = buildFileName(userId, "store_img", photoId, file.getOriginalFilename());
-            String savedPath = storeService.uploadFile(file, realPath, savedName, "photo");
+            String savedPath = storeService.uploadFile(file, realPath, savedName, "store");
             if (savedPath == null) {
                 continue;
             }

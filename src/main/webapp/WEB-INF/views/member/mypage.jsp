@@ -144,7 +144,7 @@
 
 <script src="<c:url value='/resources/js/member_mypage.js'/>"></script>
 <script>
-	const t = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
+	const tLocal = (window.I18N_UTIL && typeof window.I18N_UTIL.t === "function")
 		? window.I18N_UTIL.t
 		: function(key, fallback) { return fallback || key; };
 
@@ -164,43 +164,28 @@
 	document.addEventListener('click', function(e) {
 		if (e.target.classList.contains('favorite-remove')) {
 			e.preventDefault();
+			e.stopPropagation();
 			const storeId = e.target.dataset.storeId;
 			const card = e.target.closest('.favorite-card');
 
-			fetch(APP_CONFIG.contextPath + '/favorite/toggle', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-					'X-CSRF-TOKEN': APP_CONFIG.csrfToken
-				},
-				body: new URLSearchParams({ store_id: storeId })
-			}).then(function(res) {
-				if (!res.ok) {
-					throw new Error('favorite-toggle-failed');
+			$.ajax({
+				url: APP_CONFIG.contextPath + '/favorite/toggle',
+				type: 'POST',
+				data: { store_id: storeId },
+				beforeSend: function(xhr) {
+					if (APP_CONFIG && APP_CONFIG.csrfToken) {
+						xhr.setRequestHeader('X-CSRF-TOKEN', APP_CONFIG.csrfToken);
+					}
 				}
-				return res.json();
-			}).then(function(data) {
-				if (!data.favorite && card) {
+			}).done(function(data) {
+				if (data && data.favorite === false && card) {
 					card.remove();
+					return;
 				}
-			}).catch(function() {
-				alert(t("common.favoriteError", "즐겨찾기 처리 중 오류가 발생했습니다."));
+					alert(tLocal("common.favoriteError", "즐겨찾기 처리 중 오류가 발생했습니다."));
+			}).fail(function() {
+				alert(tLocal("common.favoriteError", "즐겨찾기 처리 중 오류가 발생했습니다."));
 			});
-		}
-	});
-</script>
-
-<script>
-	// 리뷰 삭제 버튼 이벤트 처리
-	document.addEventListener('click', function(e) {
-		if (e.target.classList.contains('btn-delete-review')) {
-			const reviewId = e.target.dataset.reviewId;
-			const storeId = e.target.dataset.storeId;
-			const returnUrl = e.target.dataset.returnUrl;
-
-			if (typeof confirmDeleteReview === 'function') {
-				confirmDeleteReview(reviewId, storeId, returnUrl);
-			}
 		}
 	});
 </script>

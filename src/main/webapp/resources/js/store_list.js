@@ -125,6 +125,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const contextPath = (typeof APP_CONFIG !== "undefined" && APP_CONFIG.contextPath)
         ? APP_CONFIG.contextPath
         : "";
+    const isOwner = (typeof APP_CONFIG !== "undefined" && APP_CONFIG.isOwner === true);
 
     function updateFavoriteButton(btn, isFavorite) {
         if (isFavorite) {
@@ -137,6 +138,12 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function loadFavorites() {
+        if (isOwner) {
+            favoriteButtons.forEach(function(btn) {
+                updateFavoriteButton(btn, false);
+            });
+            return;
+        }
         $.ajax({
             url: contextPath + "/favorite/list",
             type: "GET",
@@ -155,6 +162,11 @@ document.addEventListener("DOMContentLoaded", function() {
             e.preventDefault();
             e.stopPropagation();
 
+            if (isOwner) {
+                alert(t("storeDetail.favoriteOwnerBlock", "점주 계정은 즐겨찾기를 할 수 없습니다."));
+                return;
+            }
+
             $.ajax({
                 url: contextPath + "/favorite/toggle",
                 type: "POST",
@@ -169,6 +181,8 @@ document.addEventListener("DOMContentLoaded", function() {
             }).fail(function(xhr) {
                 if (xhr.status === 401) {
                     alert(t("common.loginRequired", "로그인이 필요합니다"));
+                } else if (xhr.status === 403) {
+                    alert(t("storeDetail.favoriteOwnerBlock", "점주 계정은 즐겨찾기를 할 수 없습니다."));
                 } else {
                     alert(t("common.favoriteError", "즐겨찾기 처리 중 오류가 발생했습니다."));
                 }

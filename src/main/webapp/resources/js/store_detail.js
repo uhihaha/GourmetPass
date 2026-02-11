@@ -127,10 +127,28 @@
         return true;
     };
 
+    // 4-1. 즐겨찾기 권한 사전 검증
+    window.checkFavoriteAccount = function () {
+        if (!loginUserInfo || !loginUserInfo.loginUserId) {
+            alert(t("common.loginRequired", "로그인이 필요합니다"));
+            return false;
+        }
+        if (loginUserInfo.isOwner) {
+            alert(t("storeDetail.favoriteOwnerBlock", "점주 계정은 즐겨찾기를 할 수 없습니다."));
+            return false;
+        }
+        return true;
+    };
+
     // 5. 즐겨찾기 버튼 상태 업데이트
     window.updateFavoriteButton = function (isFavorite) {
         const btn = $("#favoriteBtn");
         if (!btn.length) return;
+
+        if (loginUserInfo && loginUserInfo.isOwner) {
+            btn.prop("disabled", true).attr("hidden", "hidden");
+            return;
+        }
 
         if (isFavorite) {
             btn.addClass("active").text("❤️ " + t("storeDetail.favoriteOn", "즐겨찾기 해제"));
@@ -175,6 +193,64 @@
     $(document).ready(function () {
         const app = document.getElementById('storeDetailApp');
         if (!app) return;
+
+        // 0. 사진 슬라이더 초기화
+        (function initPhotoSlider() {
+            const slider = document.getElementById('photoSlider');
+            const dotsContainer = document.getElementById('photoDots');
+            if (!slider || !dotsContainer) return;
+
+            const slides = slider.querySelectorAll('.photo-slide');
+            if (!slides.length) return;
+
+            let currentIndex = 0;
+            let intervalId = null;
+            const intervalMs = 3000;
+
+            function setActive(index) {
+                slides.forEach(function(slide, i) {
+                    slide.classList.toggle('active', i === index);
+                });
+                const dots = dotsContainer.querySelectorAll('.photo-dot');
+                dots.forEach(function(dot, i) {
+                    dot.classList.toggle('active', i === index);
+                });
+                currentIndex = index;
+            }
+
+            function startAuto() {
+                stopAuto();
+                if (slides.length < 2) return;
+                intervalId = setInterval(function() {
+                    const nextIndex = (currentIndex + 1) % slides.length;
+                    setActive(nextIndex);
+                }, intervalMs);
+            }
+
+            function stopAuto() {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+            }
+
+            dotsContainer.innerHTML = "";
+            slides.forEach(function(_, i) {
+                const dot = document.createElement('button');
+                dot.type = "button";
+                dot.className = "photo-dot" + (i === 0 ? " active" : "");
+                dot.addEventListener('click', function() {
+                    setActive(i);
+                    startAuto();
+                });
+                dotsContainer.appendChild(dot);
+            });
+
+            setActive(0);
+            slider.addEventListener('mouseenter', stopAuto);
+            slider.addEventListener('mouseleave', startAuto);
+            startAuto();
+        })();
 
         // 1. 날짜 초기값 설정
         const now = new Date();
@@ -360,7 +436,7 @@
 
         // 7. 즐겨찾기 버튼 클릭 이벤트 (AJAX)
         $("#favoriteBtn").on("click", function () {
-            if (!window.checkAccount()) return;
+            if (!window.checkFavoriteAccount()) return;
             const storeId = app.dataset.storeId;
             const contextPath = APP_CONFIG.contextPath;
 
@@ -374,7 +450,11 @@
             }).done(function (res) {
                 window.updateFavoriteButton(!!res.favorite);
                 window.updateFavoriteCount(res.count);
-            }).fail(function() {
+            }).fail(function(xhr) {
+                if (xhr && xhr.status === 403) {
+                    alert(t("storeDetail.favoriteOwnerBlock", "점주 계정은 즐겨찾기를 할 수 없습니다."));
+                    return;
+                }
                 alert(t("common.favoriteError", "즐겨찾기 처리 중 오류가 발생했습니다."));
             });
         });

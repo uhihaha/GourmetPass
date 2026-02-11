@@ -18,6 +18,16 @@
     <link rel="stylesheet" href="<c:url value='/resources/css/common.css'/>">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="<c:url value='/resources/js/app-config.js'/>"></script>
+    <script>
+        window.APP_CONFIG = window.APP_CONFIG || {};
+        window.APP_CONFIG.isOwner = false;
+    </script>
+    <sec:authorize access="hasRole('ROLE_OWNER')">
+        <script>
+            window.APP_CONFIG = window.APP_CONFIG || {};
+            window.APP_CONFIG.isOwner = true;
+        </script>
+    </sec:authorize>
     
     <%-- [Font] Japanese header font (applied via common.css when lang=ja/jp) --%>
     <link rel="preconnect" href="https://fonts.googleapis.com">

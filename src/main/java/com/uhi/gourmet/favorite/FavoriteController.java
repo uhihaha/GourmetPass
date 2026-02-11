@@ -10,6 +10,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -67,6 +70,9 @@ public class FavoriteController {
         if (principal == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
+        if (hasRole("ROLE_OWNER")) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
 
         String userId = principal.getName();
         boolean isFavorite = favoriteService.isFavorite(userId, store_id);
@@ -84,5 +90,18 @@ public class FavoriteController {
         result.put("favorite", nowFavorite);
         result.put("count", favoriteService.getFavoriteCountByStore(store_id));
         return ResponseEntity.ok(result);
+    }
+
+    private boolean hasRole(String role) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getAuthorities() == null) {
+            return false;
+        }
+        for (GrantedAuthority authority : authentication.getAuthorities()) {
+            if (role.equals(authority.getAuthority())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

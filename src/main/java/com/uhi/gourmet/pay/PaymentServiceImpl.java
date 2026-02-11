@@ -80,34 +80,14 @@ public class PaymentServiceImpl implements PaymentService{
                  mapper.insertPayment(vo);
                  return true;
              } else {
-                 System.out.println("검증 실패: 금액 불일치 또는 결제 미완료");
-                 // 필요한 경우 여기서 V2 환불 API 호출 로직 추가
-                 // V2 환불 URL (포트원 공식 문서 기준)
-                 url = "https://api.portone.io/payments/" + paymentId + "/cancel";
-                HttpHeaders refundHeaders = new HttpHeaders();
-                refundHeaders.set("Authorization", "PortOne " + apiSecret); // properties에 저장된 V2 Secret
-         	    refundHeaders.setContentType(MediaType.APPLICATION_JSON);
-
-         	    // 4. 바디 설정 (사유는 필수값이 아닐 수 있으나 보내주는 것이 좋습니다)
-         	    Map<String, String> body = new HashMap<>();
-         	    body.put("reason", "고객 요청에 의한 환불");
-
-         	    HttpEntity<Map<String, String>> reFundentity = new HttpEntity<>(body, headers);
+            	 System.out.println("검증 실패: 금액 불일치 또는 결제 미완료");
                  
-	         	   try {
-	       	        // 5. POST 요청 전송
-	         		   
-	       	        ResponseEntity<Map> refundResponse = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
-	       	        
-	       	        if (refundResponse.getStatusCode() == HttpStatus.OK) {
-	       	            System.out.println("포트원 V2 환불 성공: " + paymentId);
-	       	            // 여기서 DB 상태를 'REFUNDED' 등으로 업데이트하는 로직을 추가하면 완벽합니다.
-	       	            return true;
-	       	        }
-	       	    } catch (Exception e) {
-	       	    	System.out.println("환불 처리 중 서버 에러: " + e.getMessage());
-	       	    }
-         	    
+                 //refund 메서드를 호출
+                 boolean refundSuccess = refund(paymentId); 
+                 
+                 if(refundSuccess) {
+                     System.out.println("검증 실패 후 자동 환불 완료");
+                 }
                  return false;
              }
          } catch (Exception e) {

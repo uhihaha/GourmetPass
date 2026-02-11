@@ -7,6 +7,7 @@
 <jsp:include page="../common/header.jsp"/>
 <link rel="stylesheet" href="<c:url value='/resources/css/store_detail.css'/>">
 <link rel="stylesheet" href="<c:url value='/resources/css/member.css'/>">
+<link rel="stylesheet" href="<c:url value='/resources/css/review_list.css'/>">
 
 <script type="text/javascript">
     var msg = "${msg}";
@@ -103,7 +104,7 @@
             <p><b><spring:message code="store.detail.label.wait" text="🚶 대기" /></b> <span class="wait-count-text"><spring:message code="store.detail.wait.status" arguments="${currentWaitCount}" text="현재 ${currentWaitCount}팀 대기 중" /></span></p>
             <p><b><spring:message code="store.detail.label.intro" text="📝 소개" /></b> ${store.store_desc}</p>
         </div>
-    </div>
+    </div>   
 
     <%-- 3. 메뉴 리스트 --%>
     <div class="menu-section">
@@ -221,27 +222,41 @@
     <div id="map" style="width:100%; height:350px; margin-top:30px; border-radius:12px;"></div>
 
     <div class="review-summary-section">
-        <div class="card-header">
-            <h3 class="card-title"><spring:message code="store.review.recent" text="💬 최근 리뷰" /></h3>
-            <a href="<c:url value='/review/list?store_id=${store.store_id}'/>" class="btn-wire-small"><spring:message code="store.review.viewall" text="전체보기" /> ❯</a>
-        </div>
-        <div class="review-grid">
-            <c:choose>
-                <c:when test="${not empty reviewList}">
-                    <c:forEach var="rev" items="${reviewList}">
-                        <div class="item-card">
-                            <div class="review-item-header">
+    <div class="card-header">
+        <h3 class="card-title"><spring:message code="store.review.recent" text="💬 최근 리뷰" /></h3>
+        <a href="<c:url value='/review/list?store_id=${store.store_id}'/>" class="btn-wire-small"><spring:message code="store.review.viewall" text="전체보기" /> ❯</a>
+    </div>
+    <div class="review-grid">
+        <c:choose>
+            <c:when test="${not empty reviewList}">
+                <c:forEach var="rev" items="${reviewList}">
+                    <div class="item-card">
+                        <div class="review-item-header">
+                            <div>
                                 <span class="user-nm-text">${rev.user_nm}</span>
                                 <span class="stars-text"><c:forEach begin="1" end="${rev.rating}">⭐</c:forEach></span>
                             </div>
-                            <p class="review-content-text">${rev.content}</p>
-                        </div>
-                    </c:forEach>
-                </c:when>
-                <c:otherwise><div class="empty-status-box"><spring:message code="store.review.empty" text="작성된 리뷰가 없습니다." /></div></c:otherwise>
-            </c:choose>
-        </div>
-    </div>
+                            
+	                            <%-- 삭제 버튼 추가 --%>
+	                            <sec:authorize access="isAuthenticated()">
+	                                <c:if test="${rev.user_id == pageContext.request.userPrincipal.name}">
+	                                    <button type="button" class="btn-delete-review"
+	                                            data-review-id="${rev.review_id}"
+	                                            data-store-id="${rev.store_id}"
+	                                            data-return-url="/store/detail?storeId=${rev.store_id}">
+	                                        <spring:message code="common.btn.delete" text="삭제" />
+	                                    </button>
+	                                </c:if>
+	                            </sec:authorize>
+	                        </div>
+	                        <p class="review-content-text">${rev.content}</p>
+	                    </div>
+	                </c:forEach>
+	            </c:when>
+	            <c:otherwise><div class="empty-status-box"><spring:message code="store.review.empty" text="작성된 리뷰가 없습니다." /></div></c:otherwise>
+	        </c:choose>
+	    </div>
+	</div>
 </div>
 
 <%-- 전역 설정 객체 (JS에서 참조) --%>
@@ -259,5 +274,22 @@
 <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
 <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoJsKey}&libraries=services"></script>
 <script src="<c:url value='/resources/js/store_detail.js'/>"></script>
+
+<%-- 리뷰 삭제 기능을 위한 JS 추가 --%>
+<script src="<c:url value='/resources/js/member_mypage.js'/>"></script>
+<script>
+// 리뷰 삭제 이벤트 리스너
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('btn-delete-review')) {
+        const reviewId = e.target.dataset.reviewId;
+        const storeId = e.target.dataset.storeId;
+        const returnUrl = e.target.dataset.returnUrl;
+        
+        if (reviewId && storeId && typeof confirmDeleteReview === 'function') {
+            confirmDeleteReview(reviewId, storeId, returnUrl);
+        }
+    }
+});
+</script>
 
 <jsp:include page="../common/footer.jsp"/>

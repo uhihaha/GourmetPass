@@ -110,7 +110,7 @@ public class ReviewController {
 		}
 
 		review_service.removeReview(review_id);
-		rttr.addFlashAttribute("msg", "리뷰가 삭제되었습니다.");
+		//rttr.addFlashAttribute("msg", "리뷰가 삭제되었습니다.");
 
 		// returnUrl이 있으면 해당 페이지로, 없으면 기본값
 		return returnUrl != null ? "redirect:" + returnUrl : "redirect:/review/list?store_id=" + store_id;

@@ -18,7 +18,8 @@
     <select id="selectStoreReviews" resultType="com.uhi.gourmet.review.ReviewVO">
         SELECT
             r.*,
-            m.user_nm
+            m.user_nm,
+            m.user_id
         FROM REVIEW r
         LEFT JOIN BOOK b ON r.book_id = b.book_id
         LEFT JOIN WAIT w ON r.wait_id = w.wait_id

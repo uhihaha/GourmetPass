@@ -8,6 +8,7 @@
 <%-- [관심사 분리] 공용 마이페이지 스타일 및 통합 스크립트 연결 --%>
 <link rel="stylesheet" href="<c:url value='/resources/css/mypage.css'/>">
 <link rel="stylesheet" href="<c:url value='/resources/css/member.css'/>">
+<link rel="stylesheet" href="<c:url value='/resources/css/store_detail.css'/>">
 <script src="<c:url value='/resources/js/mypage.js'/>"></script>
 
 <div class="edit-wrapper" style="max-width: 1200px;">

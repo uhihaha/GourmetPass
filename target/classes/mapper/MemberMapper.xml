@@ -20,7 +20,7 @@
         ) VALUES (
             #{user_id},
             #{user_pw},
-            #{user_nm},
+            SUBSTR(#{user_nm}, 1, 30),
             #{user_email, jdbcType=VARCHAR},
             #{user_tel},
             #{user_zip, jdbcType=VARCHAR},
@@ -52,7 +52,7 @@
     <update id="updateMember">
         UPDATE MEMBERS
         <set>
-            <if test="user_nm != null">user_nm = #{user_nm},</if>
+            <if test="user_nm != null">SUBSTR(#{user_nm}, 1, 30),</if>
             <if test="user_email != null">user_email = #{user_email, jdbcType=VARCHAR},</if>
             <if test="user_tel != null">user_tel = #{user_tel},</if>
             <if test="user_zip != null">user_zip = #{user_zip, jdbcType=VARCHAR},</if>

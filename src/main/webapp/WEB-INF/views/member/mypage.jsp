@@ -13,7 +13,9 @@
 <link rel="stylesheet" href="<c:url value='/resources/css/mypage.css'/>">
 <link rel="stylesheet" href="<c:url value='/resources/css/member.css'/>">
 <link rel="stylesheet" href="<c:url value='/resources/css/review_list.css'/>">
+<link rel="stylesheet" href="<c:url value='/resources/css/store_detail.css'/>">
 <script src="<c:url value='/resources/js/mypage.js'/>"></script>
+
 
 <div class="mypage-wrapper">
 	<div class="profile-card">
@@ -90,14 +92,17 @@
 	<div class="dashboard-card">
 		<div class="card-header"
 			style="display: flex; justify-content: space-between; align-items: center;">
-			<%-- [수정] 컨트롤러에서 전달받은 전체 개수(total_review_cnt) 표시 --%>
-			<h3 class="card-title"><spring:message code="mypage.user.review.recent" text="💬 최근 리뷰" />&nbsp;&nbsp;</h3>
-
-			<%-- [추가] 전체보기 링크: 신규 생성할 전체 이력 페이지(/member/review/mine)로 연결 --%>
-			<a href="<c:url value='/member/review/mine'/>" class="btn-wire"
-				style="height: 32px; line-height: 30px; padding: 0 12px; font-size: 12px; text-decoration: none; color: #333;"><spring:message code="store.review.viewall" text="전체보기" />
-				❯</a>
+			<!-- 컨트롤러에서 전달받은 전체 개수(total_review_cnt) 표시 -->
+			<h3 class="card-title">
+				<spring:message code="mypage.user.review.recent" text="💬 최근 리뷰" />
+			</h3>
+			<!-- 전체보기 링크: 신규 생성할 전체 이력 페이지(/member/review/mine)로 연결 -->
+			<a href="<c:url value='/member/review/mine'/>" class="btn-wire-small"
+				style="text-decoration: none;"> <spring:message
+					code="store.review.viewall" text="전체보기" /> ❯
+			</a>
 		</div>
+
 
 		<div class="review-list">
 			<c:choose>
@@ -121,7 +126,9 @@
 								<button type="button" class="btn-delete-review"
 									data-review-id="${review.review_id}"
 									data-store-id="${review.store_id}"
-									data-return-url="/member/mypage"><spring:message code="common.btn.delete" text="삭제" /></button>	
+									data-return-url="/member/mypage">
+									<spring:message code="common.btn.delete" text="삭제" />
+								</button>
 							</div>
 							<p
 								style="line-height: 1.6; font-size: 15px; color: #444; margin-bottom: 15px;">${review.content}</p>
@@ -135,7 +142,9 @@
 				<c:otherwise>
 					<div
 						style="text-align: center; padding: 60px 0; color: #ccc; font-weight: 900;">
-						<spring:message code="mypage.user.review.empty" text="아직 작성된 리뷰 기록이 없습니다." /></div>
+						<spring:message code="mypage.user.review.empty"
+							text="아직 작성된 리뷰 기록이 없습니다." />
+					</div>
 				</c:otherwise>
 			</c:choose>
 		</div>

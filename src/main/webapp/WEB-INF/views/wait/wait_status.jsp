@@ -11,10 +11,9 @@
 <%-- 공용 스타일시트 연결 --%>
 <link rel="stylesheet" href="<c:url value='/resources/css/member.css'/>">
 <link rel="stylesheet" href="<c:url value='/resources/css/mypage.css'/>">
-<link rel="stylesheet"
-	href="<c:url value='/resources/css/wait_status.css'/>">
-<link rel="stylesheet"
-	href="<c:url value='/resources/css/review_list.css'/>">
+<link rel="stylesheet" href="<c:url value='/resources/css/wait_status.css'/>">
+<link rel="stylesheet" href="<c:url value='/resources/css/review_list.css'/>">
+<link rel="stylesheet" href="<c:url value='/resources/css/store_detail.css'/>">
 
 <%-- 실시간 알림 라이브러리 --%>
 <script
@@ -162,15 +161,25 @@
     <%-- 날짜 포맷 패턴 로드 (messages.properties에 common.date.pattern.history=yy.MM.dd HH:mm 정의 권장) --%>
     <spring:message code="common.date.pattern.history" var="historyPattern" text="yy.MM.dd HH:mm" />
 
-    <div class="card-header"
+<%--     <div class="card-header"
         style="display: flex; justify-content: space-between; align-items: center;">
         <h3 class="card-title"><spring:message code="wait.history.title" text="📜 최근 이용 내역" /></h3>&nbsp;&nbsp;
         <a href="<c:url value='/member/history'/>" class="btn-wire"
             style="height: 32px; line-height: 30px; padding: 0 12px; font-size: 12px; text-decoration: none; color: #333;">
             <spring:message code="store.review.viewall" text="전체보기" /> ❯ </a>
-    </div>
+    </div> --%>
+		<div class="card-header"
+			style="display: flex; justify-content: space-between; align-items: center;">
+			<h3 class="card-title">
+				<spring:message code="wait.history.title" text="📜 최근 이용 내역" />
+			</h3>
+			<a href="<c:url value='/member/history'/>" class="btn-wire-small"
+				style="text-decoration: none;"> <spring:message
+					code="store.review.viewall" text="전체보기" /> ❯
+			</a>
+		</div>
 
-    <div class="history-container">
+		<div class="history-container">
         <%-- 웨이팅 섹션 --%>
         <c:if test="${not empty finishedWaits}">
             <div class="history-section">

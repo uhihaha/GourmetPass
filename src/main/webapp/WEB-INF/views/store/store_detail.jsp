@@ -222,10 +222,17 @@
     <div id="map" style="width:100%; height:350px; margin-top:30px; border-radius:12px;"></div>
 
     <div class="review-summary-section">
-    <div class="card-header">
-        <h3 class="card-title"><spring:message code="store.review.recent" text="💬 최근 리뷰" /></h3>
-        <a href="<c:url value='/review/list?store_id=${store.store_id}'/>" class="btn-wire-small"><spring:message code="store.review.viewall" text="전체보기" /> ❯</a>
-    </div>
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <h3 class="card-title" style="margin: 0;">
+        <spring:message code="store.review.recent" text="💬 최근 리뷰" />
+    </h3>
+    <%-- 디자인(클래스)은 유지, 크기만 고정 --%>
+    <a href="<c:url value='/review/list?store_id=${store.store_id}'/>" 
+       class="btn-wire-small" 
+       style="width: auto; flex: none; text-decoration: none;">
+        <spring:message code="store.review.viewall" text="전체보기" /> ❯
+    </a>
+</div>
     <div class="review-grid">
         <c:choose>
             <c:when test="${not empty reviewList}">

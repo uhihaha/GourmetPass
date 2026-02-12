@@ -93,36 +93,62 @@
 				<%-- 예약 카드 --%>
 				<%-- 예약 카드 내부 --%>
 				<c:if test="${not empty activeBook}">
-					<div class="item-card status-card">
-						<div class="status-card-row">
-							<div class="history-info">
-								<span class="badge-wire"><spring:message code="wait.badge.reserved" text="📅 예약 확정" /></span>
-								<h3 class="status-store-name">${activeBook.store_name}</h3>
-								<p class="status-subtext">
-									<fmt:formatDate var="bookDateText" value="${activeBook.book_date}" pattern="MM월 dd일 HH:mm" />
-									<spring:message code="wait.msg.visit_time" arguments="${bookDateText}" text="방문 일시: {0}" />
-								</p>
-							</div>
-
-							<div class="history-actions history-actions-right">
-								<div class="status-visit-label"><spring:message code="wait.msg.upcoming" text="방문 예정" /></div>
-
-								<%-- 예약 취소 폼 --%>
-								<form action="<c:url value='/book/updateStatus'/>" method="post"
-									id="userCancelForm">
-									<input type="hidden" name="book_id"
-										value="${activeBook.book_id}"> <input type="hidden"
-										name="_csrf" value="${_csrf.token}" />
-
-									<%-- 취소 버튼 --%>
-									<button type="button"
-										class="btn-step btn-step-danger user-cancel-btn btn-cancel"
-										data-payid="${activeBook.pay_id}"><spring:message code="wait.history.status.book_cancelled" text="예약 취소" /></button>
-								</form>
-							</div>
-						</div>
-					</div>
-				</c:if>
+                <%-- 예약도 식사 중(ING)일 때 dining-mode 클래스를 추가합니다 --%>
+                <div class="item-card status-card ${activeBook.book_status == 'ING' ? 'dining-mode' : ''}">
+                    <div class="status-card-row">
+                        <div class="history-info">
+                            <c:choose>
+                                <%-- 예약 상태가 식사 중(ING)일 때 --%>
+                                <c:when test="${activeBook.book_status == 'ING'}">
+                                    <span class="badge-wire badge-ing">
+                                        <spring:message code="wait.badge.dining" text="🍽️ 식사 중" />
+                                    </span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="badge-wire">
+                                        <spring:message code="wait.badge.reserved" text="📅 예약 확정" />
+                                    </span>
+                                </c:otherwise>
+                            </c:choose>
+            
+                            <h3 class="status-store-name">${activeBook.store_name}</h3>
+                            
+                            <p class="status-subtext">
+                                <c:choose>
+                                    <c:when test="${activeBook.book_status == 'ING'}">
+                                        <span class="dining-msg">
+                                            <spring:message code="wait.msg.enjoy" text="맛있는 식사 되세요!" />
+                                        </span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <fmt:formatDate var="bookDateText" value="${activeBook.book_date}" pattern="MM.dd HH:mm" />
+                                        <spring:message code="wait.msg.visit_time" arguments="${bookDateText}" text="방문 일시: {0}" />
+                                    </c:otherwise>
+                                </c:choose>
+                            </p>
+                        </div>
+            
+                        <div class="history-actions history-actions-right">
+                            <c:choose>
+                                <c:when test="${activeBook.book_status == 'ING'}">
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="status-visit-label"><spring:message code="wait.msg.upcoming" text="방문 예정" /></div>
+                                    <%-- 예약 취소 폼 --%>
+                                    <form action="<c:url value='/book/updateStatus'/>" method="post" id="userCancelForm">
+                                        <input type="hidden" name="book_id" value="${activeBook.book_id}">
+                                        <input type="hidden" name="_csrf" value="${_csrf.token}" />
+                                        <button type="button" class="btn-step btn-step-danger user-cancel-btn btn-cancel"
+                                                data-payid="${activeBook.pay_id}">
+                                            <spring:message code="wait.history.status.book_cancelled" text="예약 취소" />
+                                        </button>
+                                    </form>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+                </div>
+            </c:if>
 			</c:when>
 			<c:otherwise>
 				<div class="status-empty"><spring:message code="wait.msg.empty" text="현재 이용 중인 서비스가 없습니다." /></div>
@@ -133,6 +159,9 @@
 
 	<%-- 2. 이용 히스토리 (결제 및 리뷰 통합) --%>
 <div class="dashboard-card status-history-card">
+    <%-- 날짜 포맷 패턴 로드 (messages.properties에 common.date.pattern.history=yy.MM.dd HH:mm 정의 권장) --%>
+    <spring:message code="common.date.pattern.history" var="historyPattern" text="yy.MM.dd HH:mm" />
+
     <div class="card-header"
         style="display: flex; justify-content: space-between; align-items: center;">
         <h3 class="card-title"><spring:message code="wait.history.title" text="📜 최근 이용 내역" /></h3>&nbsp;&nbsp;
@@ -145,15 +174,14 @@
         <%-- 웨이팅 섹션 --%>
         <c:if test="${not empty finishedWaits}">
             <div class="history-section">
-                <h4 class="history-section-title">🚶 웨이팅</h4>
+                <h4 class="history-section-title">🚶 <spring:message code="wait.history.type.waiting" text="웨이팅" /></h4>
                 <c:forEach var="w" items="${finishedWaits}">
                     <div class="history-item">
                         <div class="history-info">
                             <div class="history-meta">
-                                <span class="history-tag">[웨이팅]</span>
-                                <%-- ★ 시간 표시 수정: 시분 포함 --%>
+                                <span class="history-tag"><spring:message code="wait.history.tag.waiting" text="[웨이팅]" /></span>
                                 <span class="history-date">
-                                    <fmt:formatDate value="${w.wait_date}" pattern="yy.MM.dd HH:mm" />
+                                    <fmt:formatDate value="${w.wait_date}" pattern="${historyPattern}" />
                                 </span>
                             </div>
                             <h4 class="history-store">${w.store_name}</h4>
@@ -186,15 +214,14 @@
         <%-- 예약 섹션 --%>
         <c:if test="${not empty finishedBooks}">
             <div class="history-section">
-                <h4 class="history-section-title">📅 예약</h4>
+                <h4 class="history-section-title">📅 <spring:message code="wait.history.type.book" text="예약" /></h4>
                 <c:forEach var="b" items="${finishedBooks}">
                     <div class="history-item">
                         <div class="history-info">
                             <div class="history-meta">
-                                <span class="history-tag">[예약]</span>
-                                <%-- ★ 시간 표시 수정: 시분 포함 --%>
+                                <span class="history-tag"><spring:message code="wait.history.tag.book" text="[예약]" /></span>
                                 <span class="history-date">
-                                    <fmt:formatDate value="${b.book_date}" pattern="yy.MM.dd HH:mm" />
+                                    <fmt:formatDate value="${b.book_date}" pattern="${historyPattern}" />
                                 </span>
                             </div>
                             <h4 class="history-store">${b.store_name}</h4>
@@ -202,8 +229,6 @@
 
                         <div class="history-actions">
                             <c:if test="${b.book_status == 'FINISH'}">
-                                <!-- <button class="btn-small btn-payment js-alert"
-                                    data-message="결제 상세 정보를 확인합니다.">결제내역</button> -->
                                 <c:choose>
                                     <c:when test="${empty b.review_id}">
                                         <button class="btn-small btn-review js-review-link"

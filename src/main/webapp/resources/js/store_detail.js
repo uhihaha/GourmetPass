@@ -418,7 +418,7 @@
                                     alert(t("storeDetail.payVerifyFail", "결제 검증에 실패했습니다."));
                                 });
                             } else {
-                                alert(t("storeDetail.payCancelledPrefix", "결제가 취소되었습니다:") + " " + response.message);
+                                alert(t("storeDetail.payCancelledPrefix", "결제가 취소되었습니다."));
                             }
                         } catch (err) {
                             alert(t("storeDetail.payPopupError", "결제창 호출 중 오류가 발생했습니다."));

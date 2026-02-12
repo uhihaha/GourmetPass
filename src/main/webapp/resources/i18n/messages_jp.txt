@@ -15,11 +15,11 @@ common.favoriteError=お気に入り処理中にエラーが発生しました�
 # signup.* - 会員登録バリデーション
 # ============================================
 signup.idRequired=IDを入力してください。
-signup.idMinLength=IDは少なくとも3文字以上である必要があります。
+signup.idMinLength=IDは3文字以上必要です。
 signup.idPattern=IDは英数字のみ使用可能です (4~20文字)。
 signup.pwRequired=パスワードを入力してください。
-signup.pwMinLength=パスワードは少なくとも8文字以上である必要があります。
-signup.pwPattern=パスワードは英字、数字、特殊文字を含める必要があります (8~20文字)。
+signup.pwMinLength=パスワードは8文字以上必要です。
+signup.pwPattern=パスワードは英字、数字、特殊文字を含む必要があります (8~20文字)。
 signup.pwConfirmRequired=パスワード確認を入力してください。
 signup.nameRequired=名前を入力してください。
 signup.emailRequired=メールアドレスを入力してください。
@@ -41,18 +41,18 @@ signup.storeImageRecommend=店舗画像を登録すると、より多くのお�
 # ============================================
 member.loginError=ログイン情報が一致しません。
 member.logoutSuccess=ログアウトしました。
-member.idMinLength=IDは少なくとも3文字以上である必要があります。
+member.idMinLength=IDは3文字以上必要です。
 member.idAvailable=使用可能なIDです。
 member.idInUse=既に使用されているIDです。
 member.pwMatch=パスワードが一致します。
 member.pwMismatch=パスワードが一致しません。
 member.idCheckPrompt=IDの重複確認を行ってください。
 member.pwMismatchAlert=パスワードが一致しません。
-member.storeLocationRequired=住所検索を通じて位置情報を入力してください。
+member.storeLocationRequired=住所検索を通じて店舗の位置情報を入力してください。
 member.withdrawConfirmSimple=本当に退会しますか？退会後はすべての予約およびウェイティング履歴が削除されます。
 
 # [新規追加: member_signup.js 同期]
-member.emailChangeAuth=メールアドレス変更には認証が必要です。
+member.emailChangeAuth=メールアドレスの変更には認証が必要です。
 member.authSuccess=認証が完了しました。
 member.timerExpired=認証時間が満了しました。
 member.emailAuthRequired=メール認証を完了してください。
@@ -61,11 +61,11 @@ member.emailAuthRequired=メール認証を完了してください。
 # storeDetail.* - 店舗詳細及び予約/決済
 # ============================================
 storeDetail.loading=予約可能時間を照会中...
-storeDetail.reasonClosed=終了
-storeDetail.reasonBooked=予約満了
+storeDetail.reasonClosed=営業終了
+storeDetail.reasonBooked=予約満席
 storeDetail.noHours=選択可能な時間がありません。
 storeDetail.loadFail=時間の照会に失敗しました。
-storeDetail.ownerBlock=店主アカウントは予約/ウェイティングを利用できません。
+storeDetail.ownerBlock=オーナーアカウントは予約/ウェイティングを利用できません。
 storeDetail.selfBlock=自身の店舗では予約/ウェイティングを利用できません。
 storeDetail.favoriteOn=お気に入り解除
 storeDetail.favoriteOff=お気に入り追加
@@ -75,12 +75,12 @@ storeDetail.selectVisitTime=訪問時間を選択してください！
 storeDetail.confirmPaymentSuffix=予約のために決済を進行しますか？
 storeDetail.orderName=予約保証金
 storeDetail.paySuccess=決済が完了しました！
-storeDetail.paySuccessBooking=決済が完了しました！予約を進行します。
+storeDetail.paySuccessBooking=決済が完了しました！予約を確定します。
 storeDetail.payFail=決済に失敗しました。
 storeDetail.payVerifyFail=決済検証に失敗しました。
 storeDetail.payCancelledPrefix=決済がキャンセルされました:
 storeDetail.payPopupError=決済ウィンドウの呼び出し中にエラーが発生しました。
-storeDetail.bookUnavailablePrefix=予約が不可能です。 (理由:
+storeDetail.bookUnavailablePrefix=予約が不可能です。(理由:
 storeDetail.bookUnavailableSuffix=)
 storeDetail.viewerPrefix=現在の閲覧者:
 storeDetail.viewerSuffix=名
@@ -90,8 +90,8 @@ storeDetail.copyFail=リンクのコピーに失敗しました。もう一度�
 # wait.* - ウェイティング及び予約キャンセル/返金
 # ============================================
 wait.payMissing=決済情報がありません。
-wait.bookCancelConfirm=予約をキャンセルしますか？決済金額が返金されます。
-wait.bookCancelConfirmRefund=予約をキャンセルしますか？決済金額が返金されます。
+wait.bookCancelConfirm=予約をキャンセルしますか？保証金が返金されます。
+wait.bookCancelConfirmRefund=予約をキャンセルしますか？保証金が返金されます。
 wait.refundDone=返金が完了しました。
 wait.refundSuccess=返金が完了しました。
 wait.refundFailPrefix=返金失敗:
@@ -105,6 +105,9 @@ wait.failPrefix=キャンセル失敗:
 # ============================================
 # mypage.* - マイページ及び管理
 # ============================================
+menu.validation.nameRequired=メニュー名を入力してください。
+menu.validation.priceRequired=価格を入力してください。
+menu.validation.priceNonNegative=価格は0円以上である必要があります。
 mypage.menuDeleteConfirm=本当にこのメニューを削除しますか？
 mypage.menuDeleteConfirmStrong=本当にこのメニューを削除しますか？削除後は復旧できません。
 mypage.waitCancelConfirm=ウェイティングをキャンセルしますか？
@@ -119,8 +122,8 @@ mypage.notificationPrefix=📢 通知
 # ============================================
 # manage.* - 店主管理センター
 # ============================================
-manage.confirmNoShow=ノーショー(No-show)処理をしますか？決済金額が返金されます。
-manage.confirmFinish=食事完了処理をしますか？決済金額が返金されます。
+manage.confirmNoShow=ノーショー(No-show)処理をしますか？保証金が返金されます。
+manage.confirmFinish=利用完了処理をしますか？保証金が返金されます。
 manage.refundSuccess=返金が完了しました。
 manage.refundFail=返金処理中にエラーが発生しました。
 
@@ -144,5 +147,5 @@ storeList.searchRequired=検索ワードを入力してください。
 # ============================================
 # ファイル末尾
 # ============================================
-storeDetail.favoriteOwnerBlock=オーナーアカウントはお気に入り待機を利用できません。
-member.authCodeRequired=認証コードを入力してください。
+storeDetail.favoriteOwnerBlock=オーナーアカウントはお気に入り機能を利用できません。
+signup.authCodeRequired=認証コードを入力してください。

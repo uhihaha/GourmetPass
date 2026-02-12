@@ -1,0 +1,149 @@
+# ============================================================
+# GourmetPass 다국어 메시지 파일 (한국어 - 최종 최적화본)
+# 작성일: 2026-02-11
+# 용도: Spring MessageSource 및 JavaScript I18N_UTIL.t() 공용
+# ============================================================
+
+# ============================================
+# common.* - 공통 메시지
+# ============================================
+common.loginRequired=로그인이 필요합니다.
+common.serverError=서버 오류가 발생했습니다. 다시 시도해 주세요.
+common.favoriteError=즐겨찾기 처리 중 오류가 발생했습니다.
+
+# ============================================
+# signup.* - 회원가입 유효성 검사
+# ============================================
+signup.idRequired=아이디를 입력해 주세요.
+signup.idMinLength=아이디는 최소 3자 이상이어야 합니다.
+signup.idPattern=아이디는 영문자와 숫자만 사용 가능합니다 (4~20자).
+signup.pwRequired=비밀번호를 입력해 주세요.
+signup.pwMinLength=비밀번호는 최소 8자 이상이어야 합니다.
+signup.pwPattern=비밀번호는 영문, 숫자, 특수문자를 포함해야 합니다 (8~20자).
+signup.pwConfirmRequired=비밀번호 확인을 입력해 주세요.
+signup.nameRequired=이름을 입력해 주세요.
+signup.emailRequired=이메일을 입력해 주세요.
+signup.emailInvalid=올바른 이메일 형식이 아닙니다.
+signup.telRequired=전화번호를 입력해 주세요.
+signup.telPattern=올바른 전화번호 형식이 아닙니다 (예: 010-1234-5678).
+signup.addressRequired=주소를 입력해 주세요.
+signup.storeNameRequired=매장명을 입력해 주세요.
+signup.storeCategoryRequired=카테고리를 선택해 주세요.
+signup.storeDescRequired=매장 설명을 입력해 주세요.
+signup.openTimeRequired=영업 시작 시간을 선택해 주세요.
+signup.closeTimeRequired=영업 종료 시간을 선택해 주세요.
+signup.resUnitRequired=예약 시간 단위를 선택해 주세요.
+signup.agreeRequired=개인정보 수집 및 이용에 동의해 주세요.
+signup.storeImageRecommend=매장 이미지를 등록하시면 더 많은 고객에게 노출됩니다.
+
+# ============================================
+# member.* - 로그인 및 회원 상태 관리
+# ============================================
+member.loginError=로그인 정보가 일치하지 않습니다.
+member.logoutSuccess=로그아웃되었습니다.
+member.idMinLength=아이디는 최소 3자 이상이어야 합니다.
+member.idAvailable=사용 가능한 아이디입니다.
+member.idInUse=이미 사용 중인 아이디입니다.
+member.pwMatch=비밀번호가 일치합니다.
+member.pwMismatch=비밀번호가 일치하지 않습니다.
+member.idCheckPrompt=아이디 중복확인을 해주세요.
+member.pwMismatchAlert=비밀번호가 일치하지 않습니다.
+member.storeLocationRequired=주소 검색을 통해 위치 정보를 입력해 주세요.
+member.withdrawConfirmSimple=정말 탈퇴하시겠습니까? 탈퇴 후 모든 예약 및 웨이팅 내역이 삭제됩니다.
+
+# [신규 추가: member_signup.js 동기화]
+member.emailChangeAuth=이메일 변경 시 인증이 필요합니다.
+member.authSuccess=인증이 완료되었습니다.
+member.timerExpired=인증 시간이 만료되었습니다.
+member.emailAuthRequired=이메일 인증을 완료해 주세요.
+
+# ============================================
+# storeDetail.* - 매장 상세 및 예약/결제
+# ============================================
+storeDetail.loading=예약 가능 시간 조회 중...
+storeDetail.reasonClosed=마감
+storeDetail.reasonBooked=예약완료
+storeDetail.noHours=선택 가능한 시간이 없습니다.
+storeDetail.loadFail=시간 조회에 실패했습니다.
+storeDetail.ownerBlock=점주 계정은 예약/웨이팅을 할 수 없습니다.
+storeDetail.selfBlock=본인 매장은 예약/웨이팅을 할 수 없습니다.
+storeDetail.favoriteOn=즐겨찾기 해제
+storeDetail.favoriteOff=즐겨찾기 추가
+storeDetail.favoriteCountPrefix=즐겨찾기
+storeDetail.bookDateRequired=예약 날짜를 선택해 주세요.
+storeDetail.selectVisitTime=방문 시간을 선택해 주세요!
+storeDetail.confirmPaymentSuffix=예약을 위해 결제를 진행하시겠습니까?
+storeDetail.orderName=예약 보증금
+storeDetail.paySuccess=결제가 완료되었습니다!
+storeDetail.paySuccessBooking=결제가 완료되었습니다! 예약을 진행합니다.
+storeDetail.payFail=결제가 실패했습니다.
+storeDetail.payVerifyFail=결제 검증에 실패했습니다.
+storeDetail.payCancelledPrefix=결제가 취소되었습니다:
+storeDetail.payPopupError=결제창 호출 중 오류가 발생했습니다.
+storeDetail.bookUnavailablePrefix=예약이 불가능합니다. (사유:
+storeDetail.bookUnavailableSuffix=)
+storeDetail.viewerPrefix=현재 조회 중:
+storeDetail.viewerSuffix=명
+storeDetail.copySuccess=링크가 클립보드에 복사되었습니다.
+storeDetail.copyFail=링크 복사에 실패했습니다. 다시 시도해 주세요.
+
+# ============================================
+# wait.* - 웨이팅 및 예약 취소/환불
+# ============================================
+wait.payMissing=결제 정보가 없습니다.
+wait.bookCancelConfirm=예약을 취소하시겠습니까? 결제 금액이 환불됩니다.
+wait.bookCancelConfirmRefund=예약을 취소하시겠습니까? 결제 금액이 환불됩니다.
+wait.refundDone=환불이 완료되었습니다.
+wait.refundSuccess=환불이 완료되었습니다.
+wait.refundFailPrefix=환불 실패:
+wait.refundFailFallback=알 수 없는 오류
+wait.refundFail=환불 처리 중 오류가 발생했습니다.
+wait.cancelConfirm=웨이팅을 취소하시겠습니까?
+wait.cancelSuccess=웨이팅이 취소되었습니다.
+wait.cancelFail=취소 실패
+wait.failPrefix=취소 실패:
+
+# ============================================
+# mypage.* - 마이페이지 및 관리
+# ============================================
+mypage.menuDeleteConfirm=정말 이 메뉴를 삭제하시겠습니까?
+mypage.menuDeleteConfirmStrong=정말 이 메뉴를 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.
+mypage.waitCancelConfirm=웨이팅을 취소하시겠습니까?
+mypage.reviewDeleteConfirm=정말 이 리뷰를 삭제하시겠습니까?
+mypage.userDropConfirm=정말 탈퇴하시겠습니까? 모든 데이터가 삭제됩니다.
+mypage.userDropSuccess=회원 탈퇴가 완료되었습니다.
+mypage.historyClose=내역 닫기
+mypage.historyCollapse=접기
+mypage.historyOpen=전체 이용 내역 보기
+mypage.notificationPrefix=📢 알림
+
+# ============================================
+# manage.* - 점주 관리 센터
+# ============================================
+manage.confirmNoShow=노쇼 처리하시겠습니까? 결제 금액이 환불됩니다.
+manage.confirmFinish=식사 완료 처리하시겠습니까? 결제 금액이 환불됩니다.
+manage.refundSuccess=환불이 완료되었습니다.
+manage.refundFail=환불 처리 중 오류가 발생했습니다.
+
+# ============================================
+# memberFind.* - 계정 찾기
+# ============================================
+memberFind.authMissing=아이디와 이메일을 모두 입력해 주세요.
+memberFind.authSent=인증 코드가 발송되었습니다.
+memberFind.authNotFound=일치하는 회원 정보가 없습니다.
+memberFind.authUnavailable=인증 코드 발송에 실패했습니다.
+memberFind.authServerError=서버 오류가 발생했습니다.
+
+# ============================================
+# 기타 모듈 (주소, 리뷰, 목록)
+# ============================================
+address.coordSuccess=좌표 변환 성공
+address.coordFail=좌표 변환 실패
+review.deleteConfirm=정말 이 리뷰를 삭제하시겠습니까?
+storeList.searchRequired=검색어를 입력해 주세요.
+
+# ============================================
+# 파일 끝
+# ============================================
+storeDetail.favoriteOwnerBlock=점주 계정은 즐겨찾기를 할 수 없습니다.
+member.authCodeRequired=인증 코드를 입력해주세요.

@@ -30,7 +30,6 @@ public class PaymentServiceImpl implements PaymentService{
 	@Autowired
 	private PaymentMapper mapper;
 	
-//	private String apiSecret = "4O1Tu4XejyKK8zIkJfdvNZcLYG7GQU3sBsHcmCRILoeTEDpdUVKhxdQdERXAFzPcmoxYlDZ6b9YkJWyX";
 	
 	@Value("${portone.api.secret}")
     private String apiSecret;

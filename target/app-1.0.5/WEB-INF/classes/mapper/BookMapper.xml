@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uhi.gourmet.book.BookMapper">
+
+    <insert id="insertBook">
+        INSERT INTO BOOK (
+            book_id, user_id, store_id, pay_id,
+            book_date, people_cnt,
+            book_price, book_status
+        ) VALUES (
+            SEQ_BOOK.NEXTVAL, 
+            #{user_id, jdbcType=VARCHAR}, 
+            #{store_id, jdbcType=INTEGER},
+            #{pay_id, jdbcType=INTEGER},
+            #{book_date, jdbcType=TIMESTAMP}, 
+            #{people_cnt, jdbcType=INTEGER},
+            #{book_price, jdbcType=INTEGER}, 
+            'RESERVED'
+        )
+    </insert>
+
+    <select id="selectMyBookList" resultType="com.uhi.gourmet.book.BookVO">
+        SELECT B.*, S.store_name, R.review_id
+        FROM BOOK B
+        JOIN STORE S ON B.store_id = S.store_id
+        LEFT OUTER JOIN REVIEW R ON B.book_id = R.book_id
+        WHERE B.user_id = #{user_id} 
+        ORDER BY B.book_id DESC
+    </select>
+
+    <select id="selectStoreBookList" resultType="com.uhi.gourmet.book.BookVO">
+        SELECT B.*, S.store_name 
+        FROM BOOK B
+        JOIN STORE S ON B.store_id = S.store_id
+        WHERE B.store_id = #{store_id} 
+        ORDER BY B.book_date ASC
+    </select>
+
+    <update id="updateBookStatus">
+        UPDATE BOOK
+        SET book_status = #{status, jdbcType=VARCHAR}
+        WHERE book_id = #{book_id, jdbcType=INTEGER}
+    </update>
+
+    <select id="checkDuplicateTime" resultType="int">
+        SELECT COUNT(*) 
+        FROM BOOK 
+        WHERE store_id = #{store_id} 
+          AND TO_CHAR(book_date, 'YYYY-MM-DD') = #{date}
+          AND TO_CHAR(book_date, 'HH24:MI') = #{time}
+          AND book_status NOT IN ('CANCELED', 'NOSHOW')
+    </select>
+
+    <select id="checkUserDailyBook" resultType="int">
+        SELECT COUNT(*) 
+        FROM BOOK 
+        WHERE store_id = #{store_id} 
+          AND user_id = #{user_id}
+          AND TO_CHAR(book_date, 'YYYY-MM-DD') = #{date}
+          AND book_status NOT IN ('CANCELED', 'NOSHOW')
+    </select>
+    
+   	<!-- 날짜별 예약 리스트 조회 -->
+	<select id="selectStoreBookListByDate" resultType="com.uhi.gourmet.book.BookVO">
+	    SELECT B.*, S.store_name 
+	    FROM BOOK B
+	    JOIN STORE S ON B.store_id = S.store_id
+	    WHERE B.store_id = #{store_id} 
+	      AND TRUNC(B.book_date) = TO_DATE(#{book_date}, 'YYYY-MM-DD')
+	    ORDER BY B.book_date ASC
+	</select>
+	
+	<select id="selectBookStatus" resultType="string">
+    SELECT book_status
+    FROM BOOK
+    WHERE book_id = #{book_id}
+</select>
+	
+	
+
+</mapper>

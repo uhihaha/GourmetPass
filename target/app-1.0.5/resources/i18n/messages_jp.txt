@@ -1,0 +1,148 @@
+# ============================================================
+# GourmetPass 多言語メッセージファイル (日本語 - 最終最適化版)
+# 作成日: 2026-02-11
+# 用途: Spring MessageSource 及び JavaScript I18N_UTIL.t() 共用
+# ============================================================
+
+# ============================================
+# common.* - 共通メッセージ
+# ============================================
+common.loginRequired=ログインが必要です。
+common.serverError=サーバーエラーが発生しました。もう一度お試しください。
+common.favoriteError=お気に入り処理中にエラーが発生しました。
+
+# ============================================
+# signup.* - 会員登録バリデーション
+# ============================================
+signup.idRequired=IDを入力してください。
+signup.idMinLength=IDは少なくとも3文字以上である必要があります。
+signup.idPattern=IDは英数字のみ使用可能です (4~20文字)。
+signup.pwRequired=パスワードを入力してください。
+signup.pwMinLength=パスワードは少なくとも8文字以上である必要があります。
+signup.pwPattern=パスワードは英字、数字、特殊文字を含める必要があります (8~20文字)。
+signup.pwConfirmRequired=パスワード確認を入力してください。
+signup.nameRequired=名前を入力してください。
+signup.emailRequired=メールアドレスを入力してください。
+signup.emailInvalid=正しいメール形式ではありません。
+signup.telRequired=電話番号を入力してください。
+signup.telPattern=正しい電話番号形式ではありません (例: 010-1234-5678)。
+signup.addressRequired=住所を入力してください。
+signup.storeNameRequired=店舗名を入力してください。
+signup.storeCategoryRequired=カテゴリーを選択してください。
+signup.storeDescRequired=店舗説明を入力してください。
+signup.openTimeRequired=営業開始時間を選択してください。
+signup.closeTimeRequired=営業終了時間を選択してください。
+signup.resUnitRequired=予約時間の単位を選択してください。
+signup.agreeRequired=個人情報の収集および利用に同意してください。
+signup.storeImageRecommend=店舗画像を登録すると、より多くのお客様にアピールできます。
+
+# ============================================
+# member.* - ログイン及び会員状態管理
+# ============================================
+member.loginError=ログイン情報が一致しません。
+member.logoutSuccess=ログアウトしました。
+member.idMinLength=IDは少なくとも3文字以上である必要があります。
+member.idAvailable=使用可能なIDです。
+member.idInUse=既に使用されているIDです。
+member.pwMatch=パスワードが一致します。
+member.pwMismatch=パスワードが一致しません。
+member.idCheckPrompt=IDの重複確認を行ってください。
+member.pwMismatchAlert=パスワードが一致しません。
+member.storeLocationRequired=住所検索を通じて位置情報を入力してください。
+member.withdrawConfirmSimple=本当に退会しますか？退会後はすべての予約およびウェイティング履歴が削除されます。
+
+# [新規追加: member_signup.js 同期]
+member.emailChangeAuth=メールアドレス変更には認証が必要です。
+member.authSuccess=認証が完了しました。
+member.timerExpired=認証時間が満了しました。
+member.emailAuthRequired=メール認証を完了してください。
+
+# ============================================
+# storeDetail.* - 店舗詳細及び予約/決済
+# ============================================
+storeDetail.loading=予約可能時間を照会中...
+storeDetail.reasonClosed=終了
+storeDetail.reasonBooked=予約満了
+storeDetail.noHours=選択可能な時間がありません。
+storeDetail.loadFail=時間の照会に失敗しました。
+storeDetail.ownerBlock=店主アカウントは予約/ウェイティングを利用できません。
+storeDetail.selfBlock=自身の店舗では予約/ウェイティングを利用できません。
+storeDetail.favoriteOn=お気に入り解除
+storeDetail.favoriteOff=お気に入り追加
+storeDetail.favoriteCountPrefix=お気に入り
+storeDetail.bookDateRequired=予約日を選択してください。
+storeDetail.selectVisitTime=訪問時間を選択してください！
+storeDetail.confirmPaymentSuffix=予約のために決済を進行しますか？
+storeDetail.orderName=予約保証金
+storeDetail.paySuccess=決済が完了しました！
+storeDetail.paySuccessBooking=決済が完了しました！予約を進行します。
+storeDetail.payFail=決済に失敗しました。
+storeDetail.payVerifyFail=決済検証に失敗しました。
+storeDetail.payCancelledPrefix=決済がキャンセルされました:
+storeDetail.payPopupError=決済ウィンドウの呼び出し中にエラーが発生しました。
+storeDetail.bookUnavailablePrefix=予約が不可能です。 (理由:
+storeDetail.bookUnavailableSuffix=)
+storeDetail.viewerPrefix=現在の閲覧者:
+storeDetail.viewerSuffix=名
+storeDetail.copySuccess=リンクがクリップボードにコピーされました。
+storeDetail.copyFail=リンクのコピーに失敗しました。もう一度お試しください。
+# ============================================
+# wait.* - ウェイティング及び予約キャンセル/返金
+# ============================================
+wait.payMissing=決済情報がありません。
+wait.bookCancelConfirm=予約をキャンセルしますか？決済金額が返金されます。
+wait.bookCancelConfirmRefund=予約をキャンセルしますか？決済金額が返金されます。
+wait.refundDone=返金が完了しました。
+wait.refundSuccess=返金が完了しました。
+wait.refundFailPrefix=返金失敗:
+wait.refundFailFallback=不明なエラー
+wait.refundFail=返金処理中にエラーが発生しました。
+wait.cancelConfirm=ウェイティングをキャンセルしますか？
+wait.cancelSuccess=ウェイティングがキャンセルされました。
+wait.cancelFail=キャンセル失敗
+wait.failPrefix=キャンセル失敗:
+
+# ============================================
+# mypage.* - マイページ及び管理
+# ============================================
+mypage.menuDeleteConfirm=本当にこのメニューを削除しますか？
+mypage.menuDeleteConfirmStrong=本当にこのメニューを削除しますか？削除後は復旧できません。
+mypage.waitCancelConfirm=ウェイティングをキャンセルしますか？
+mypage.reviewDeleteConfirm=本当にこのレビューを削除しますか？
+mypage.userDropConfirm=本当に退会しますか？すべてのデータが削除されます。
+mypage.userDropSuccess=会員退会が完了しました。
+mypage.historyClose=履歴を閉じる
+mypage.historyCollapse=折りたたむ
+mypage.historyOpen=全利用履歴を表示
+mypage.notificationPrefix=📢 通知
+
+# ============================================
+# manage.* - 店主管理センター
+# ============================================
+manage.confirmNoShow=ノーショー(No-show)処理をしますか？決済金額が返金されます。
+manage.confirmFinish=食事完了処理をしますか？決済金額が返金されます。
+manage.refundSuccess=返金が完了しました。
+manage.refundFail=返金処理中にエラーが発生しました。
+
+# ============================================
+# memberFind.* - アカウント探し
+# ============================================
+memberFind.authMissing=IDとメールアドレスの両方を入力してください。
+memberFind.authSent=認証コードが送信されました。
+memberFind.authNotFound=一致する会員情報がありません。
+memberFind.authUnavailable=認証コードの送信に失敗しました。
+memberFind.authServerError=サーバーエラーが発生しました。
+
+# ============================================
+# その他モジュール (住所、レビュー、リスト)
+# ============================================
+address.coordSuccess=座標変換成功
+address.coordFail=座標変換失敗
+review.deleteConfirm=本当にこのレビューを削除しますか？
+storeList.searchRequired=検索ワードを入力してください。
+
+# ============================================
+# ファイル末尾
+# ============================================
+storeDetail.favoriteOwnerBlock=オーナーアカウントはお気に入り待機を利用できません。
+member.authCodeRequired=認証コードを入力してください。

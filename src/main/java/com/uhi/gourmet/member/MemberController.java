@@ -3,11 +3,12 @@ package com.uhi.gourmet.member;
 
 import java.security.Principal;
 import java.security.SecureRandom;
-import java.util.HashMap; // [추가] AJAX 응답용
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;      // [추가] AJAX 응답용
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.Locale;
 
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +16,8 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -84,6 +87,9 @@ public class MemberController {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
+    @Autowired
+    private MessageSource messageSource;
+
     @Value("${kakao.js.key}")
     private String kakaoJsKey;
 
@@ -95,15 +101,29 @@ public class MemberController {
         model.addAttribute("kakaoJsKey", kakaoJsKey);
     }
 
+    // [수정 핵심] 회원가입 이메일 인증
     @PostMapping("/emailAuth")
     @ResponseBody
     public int emailAuth(@RequestParam("email") String email) {
         log.info("이메일 인증 요청 수신: " + email);
         int checkNum = generateAuthCode();
-        String title = "Gourmet 회원가입 인증 이메일입니다.";
-        String content = "GourmetPass를 이용해주셔서 감사합니다.<br><br>" +
-                         "인증 코드는 <b>" + checkNum + "</b> 입니다.<br>" +
-                         "해당 인증 코드를 인증 코드 확인란에 기입하여 주세요.";
+        
+        String title = getMessage(
+            "mail.auth.signup.subject",
+            null,
+            "Gourmet 회원가입 인증 이메일입니다."
+        );
+        
+        // MessageSource에 인자(args)를 넘기지 않고 원문을 가져옵니다.
+        String content = getMessage(
+            "mail.auth.signup.body",
+            null,
+            "GourmetPass를 이용해주셔서 감사합니다.<br><br>인증 코드는 <b>{0}</b> 입니다.<br>해당 인증 코드를 인증 코드 확인란에 기입하여 주세요."
+        );
+        
+        // 자바 코드로 직접 {0}을 문자열 숫자로 치환하여 콤마 발생을 원천 차단합니다.
+        content = content.replace("{0}", String.valueOf(checkNum));
+        
         sendEmail(email, title, content);
         return checkNum;
     }
@@ -288,10 +308,6 @@ public class MemberController {
         return "redirect:/member/login";
     }
 
-    /**
-     * 마이페이지 메인
-     * 일반 사용자의 경우 최근 리뷰 3개만 요약해서 보여주도록 수정
-     */
     @GetMapping("/mypage")
     public String mypage(Principal principal, Model model, HttpServletRequest request) {
         String user_id = principal.getName();
@@ -309,41 +325,29 @@ public class MemberController {
                 model.addAttribute("menuList", storeMapper.getMenuList(store.getStore_id()));
                 model.addAttribute("store_book_list", book_service.get_store_book_list(store.getStore_id()));
                 model.addAttribute("photo_list", photoService.getPhotosByStoreAll(store.getStore_id()));
-                
-                // 점주 마이페이지는 최근 리뷰 10개 표시
                 model.addAttribute("store_review_list", review_service.getStoreReviews(store.getStore_id(), 1, 10).getList());
             } else {
                 model.addAttribute("noStoreMsg", "등록된 매장 정보가 없습니다.");
             }
             return "member/mypage_owner";
         } else {
-            // [수정] 일반 사용자: 마이페이지용으로 최근 리뷰 3개만 로드 (PageHelper 활용)
             PageInfo<ReviewVO> reviewPage = review_service.getMyReviewsPaginated(user_id, 1, 3);
-            
             model.addAttribute("my_review_list", reviewPage.getList());
-            model.addAttribute("total_review_cnt", reviewPage.getTotal()); // UI에서 '전체보기(N)' 표시용
+            model.addAttribute("total_review_cnt", reviewPage.getTotal()); 
             model.addAttribute("favorite_list", favoriteService.getFavoritesByUser(user_id));
             return "member/mypage"; 
         }
     }
 
-    /**
-     * [신규] 내가 쓴 리뷰 이력 전체 보기 (페이징 게시판)
-     */
     @GetMapping("/review/mine")
     public String myReviewList(
             @RequestParam(value = "pageNum", defaultValue = "1") int pageNum,
             Principal principal, Model model) {
-        
         if (principal == null) return "redirect:/member/login";
-        
         String user_id = principal.getName();
-        
         PageInfo<ReviewVO> pageMaker = review_service.getMyReviewsPaginated(user_id, pageNum, 3);
-        
         model.addAttribute("allReviews", pageMaker.getList());
         model.addAttribute("pageMaker", pageMaker);
-        
         return "review/review_mine"; 
     }
 
@@ -354,38 +358,25 @@ public class MemberController {
         return "wait/wait_status"; 
     }
     
-  
-    /**
-     * ★ 전체 이용 내역 페이지 (페이징 적용)
-     */
     @GetMapping("/history")
     public String myHistory(
             @RequestParam(value = "waitPage", defaultValue = "1") int waitPage,
             @RequestParam(value = "bookPage", defaultValue = "1") int bookPage,
             Principal principal, Model model) {
-        
         if (principal == null) return "redirect:/member/login";
-        
         String userId = principal.getName();
-        
-        // ★ 웨이팅 내역 페이징 (한 페이지에 5개)
         PageHelper.startPage(waitPage, 5);
         List<WaitVO> waitList = wait_service.get_my_wait_list(userId);
         PageInfo<WaitVO> waitPageInfo = new PageInfo<>(waitList);
-        
-        // ★ 예약 내역 페이징 (한 페이지에 5개)
         PageHelper.startPage(bookPage, 5);
         List<BookVO> bookList = book_service.get_my_book_list(userId);
         PageInfo<BookVO> bookPageInfo = new PageInfo<>(bookList);
-        
         model.addAttribute("waitPageInfo", waitPageInfo);
         model.addAttribute("bookPageInfo", bookPageInfo);
         model.addAttribute("my_wait_list", waitList);
         model.addAttribute("my_book_list", bookList);
-        
         return "wait/wait_history";
     }
-    
     
     @GetMapping("/edit")
     public String editPage(Principal principal, Model model) {
@@ -446,23 +437,18 @@ public class MemberController {
         return "member/find_account";
     }
 
-    // [추가] 아이디 찾기 AJAX 요청 처리 핸들러
     @PostMapping(value = "/find/id/ajax", produces = "application/json; charset=UTF-8")
     @ResponseBody
     public Map<String, Object> findIdAjax(@RequestParam("user_nm") String name,
                                           @RequestParam("user_email") String email) {
         Map<String, Object> response = new HashMap<>();
-        
-        // 서비스의 기존 아이디 찾기 로직 활용
         String userId = memberService.findUserIdByNameEmail(name.trim(), email.trim());
-        
         if (userId != null) {
             response.put("status", "success");
             response.put("userId", userId);
         } else {
             response.put("status", "not_found");
         }
-        
         return response;
     }
 
@@ -497,6 +483,7 @@ public class MemberController {
         return "member/find_account";
     }
 
+    // [수정 핵심] 비밀번호 찾기 이메일 인증
     @PostMapping("/password/emailAuth")
     @ResponseBody
     public String passwordEmailAuth(@RequestParam("user_id") String userId,
@@ -511,10 +498,23 @@ public class MemberController {
             return "not_found";
         }
         int checkNum = generateAuthCode();
-        String title = "Gourmet 비밀번호 재설정 인증 코드입니다.";
-        String content = "비밀번호 재설정을 요청하셨습니다.<br><br>" +
-                         "인증 코드는 <b>" + checkNum + "</b> 입니다.<br>" +
-                         "인증 코드를 입력한 뒤 임시 비밀번호 발급을 진행해주세요.";
+        
+        String title = getMessage(
+            "mail.auth.password.subject",
+            null,
+            "Gourmet 비밀번호 재설정 인증 코드입니다."
+        );
+        
+        // MessageSource가 콤마를 찍지 않도록 null 인자를 전달합니다.
+        String content = getMessage(
+            "mail.auth.password.body",
+            null,
+            "비밀번호 재설정을 요청하셨습니다.<br><br>인증 코드는 <b>{0}</b> 입니다.<br>인증 코드를 입력한 뒤 임시 비밀번호 발급을 진행해주세요."
+        );
+        
+        // {0}을 String.valueOf()로 감싼 숫자와 치환합니다.
+        content = content.replace("{0}", String.valueOf(checkNum));
+        
         sendEmail(trimEmail, title, content);
         session.setAttribute("pwAuthCode", String.valueOf(checkNum));
         session.setAttribute("pwAuthUserId", trimUserId);
@@ -524,26 +524,16 @@ public class MemberController {
     }
 
     private boolean isPasswordAuthValid(HttpSession session, String authCode, String userId, String email) {
-        if (authCode == null || authCode.trim().isEmpty()) {
-            return false;
-        }
-        if (session == null) {
-            return false;
-        }
+        if (authCode == null || authCode.trim().isEmpty()) return false;
+        if (session == null) return false;
         Object storedCode = session.getAttribute("pwAuthCode");
         Object storedUserId = session.getAttribute("pwAuthUserId");
         Object storedEmail = session.getAttribute("pwAuthEmail");
         Object issuedAt = session.getAttribute("pwAuthIssuedAt");
-        if (storedCode == null || storedUserId == null || storedEmail == null || issuedAt == null) {
-            return false;
-        }
+        if (storedCode == null || storedUserId == null || storedEmail == null || issuedAt == null) return false;
         long issuedTime = (Long) issuedAt;
-        if (System.currentTimeMillis() - issuedTime > 180_000) {
-            return false;
-        }
-        return authCode.trim().equals(storedCode)
-            && userId.equals(storedUserId)
-            && email.equals(storedEmail);
+        if (System.currentTimeMillis() - issuedTime > 180_000) return false;
+        return authCode.trim().equals(storedCode) && userId.equals(storedUserId) && email.equals(storedEmail);
     }
 
     private void clearPasswordAuthSession(HttpSession session) {
@@ -594,14 +584,12 @@ public class MemberController {
         }
         String userId = createSocialUserId(profile.getProvider(), profile.getProviderId());
         profile.setUserId(userId);
-
         MemberVO existing = memberService.getMember(userId);
         if (existing != null) {
             authenticateUser(request, userId);
             clearSocialSignupSession(session);
             return redirectByRole(existing.getUser_role());
         }
-
         session.setAttribute(SOCIAL_PROFILE_SESSION_KEY, profile);
         session.setAttribute(SOCIAL_SIGNUP_FLAG, true);
         return "redirect:/member/signup/select?social=true";
@@ -630,9 +618,7 @@ public class MemberController {
         member.setUser_id(profile.getUserId());
         member.setUser_pw(getOrCreateSocialPassword(session));
         String nickname = profile.getNickname();
-        if (nickname == null || nickname.trim().isEmpty()) {
-            nickname = profile.getUserId();
-        }
+        if (nickname == null || nickname.trim().isEmpty()) nickname = profile.getUserId();
         member.setUser_nm(nickname);
         member.setUser_email(profile.getEmail());
         member.setUser_tel("010-0000-0000");
@@ -641,9 +627,7 @@ public class MemberController {
 
     private String getOrCreateSocialPassword(HttpSession session) {
         Object stored = session.getAttribute(SOCIAL_PASSWORD_SESSION_KEY);
-        if (stored instanceof String) {
-            return (String) stored;
-        }
+        if (stored instanceof String) return (String) stored;
         String password = generateSocialPassword();
         session.setAttribute(SOCIAL_PASSWORD_SESSION_KEY, password);
         return password;
@@ -657,32 +641,16 @@ public class MemberController {
 
     private String generateSocialPassword() {
         SecureRandom random = new SecureRandom();
-        String upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-        String lower = "abcdefghijkmnopqrstuvwxyz";
-        String digits = "23456789";
-        String special = "!@#$%^&*";
-        String all = upper + lower + digits + special;
-
+        String all = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*";
         StringBuilder sb = new StringBuilder();
-        sb.append(upper.charAt(random.nextInt(upper.length())));
-        sb.append(lower.charAt(random.nextInt(lower.length())));
-        sb.append(digits.charAt(random.nextInt(digits.length())));
-        sb.append(special.charAt(random.nextInt(special.length())));
-        for (int i = 0; i < 8; i++) {
-            sb.append(all.charAt(random.nextInt(all.length())));
-        }
+        for (int i = 0; i < 12; i++) sb.append(all.charAt(random.nextInt(all.length())));
         return sb.toString();
     }
 
     private String createSocialUserId(String provider, String providerId) {
-        String prefix = "KAKAO_";
-        if ("GOOGLE".equalsIgnoreCase(provider)) {
-            prefix = "GOOGLE_";
-        }
+        String prefix = "GOOGLE_".equalsIgnoreCase(provider) ? "GOOGLE_" : "KAKAO_";
         String raw = prefix + providerId;
-        if (raw.length() <= 20) {
-            return raw;
-        }
+        if (raw.length() <= 20) return raw;
         String digest = SocialUserIdHasher.hash(providerId);
         return prefix + digest.substring(0, Math.max(0, 20 - prefix.length()));
     }
@@ -692,23 +660,17 @@ public class MemberController {
         UsernamePasswordAuthenticationToken authentication =
             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        request.getSession().setAttribute(
-            HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
-            SecurityContextHolder.getContext()
-        );
+        request.getSession().setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
     }
 
     private String redirectByRole(String role) {
-        if ("ROLE_OWNER".equals(role)) {
-            return "redirect:/member/mypage";
-        }
-        return "redirect:/";
+        return "ROLE_OWNER".equals(role) ? "redirect:/member/mypage" : "redirect:/";
     }
 
     private void sendTempPasswordEmail(String email, String tempPassword) {
-        String title = "Gourmet 임시 비밀번호 안내입니다.";
-        String content = "임시 비밀번호는 <b>" + tempPassword + "</b> 입니다.<br>" +
-                         "로그인 후 반드시 비밀번호를 변경해주세요.";
+        String title = getMessage("mail.temp_password.subject", null, "Gourmet 임시 비밀번호 안내입니다.");
+        String content = getMessage("mail.temp_password.body", null, "임시 비밀번호는 <b>{0}</b> 입니다.<br>로그인 후 반드시 비밀번호를 변경해주세요.");
+        content = content.replace("{0}", tempPassword);
         sendEmail(email, title, content);
     }
 
@@ -727,18 +689,16 @@ public class MemberController {
         }
     }
 
+    private String getMessage(String code, Object[] args, String defaultMessage) {
+        return messageSource.getMessage(code, args, defaultMessage, LocaleContextHolder.getLocale());
+    }
+
     private String validateUserInput(MemberVO vo, boolean requirePassword) {
-        if (!MemberValidation.isValidUserId(vo.getUser_id())) {
-            return "아이디는 영문/숫자/언더바 4~20자만 가능합니다.";
-        }
+        if (!MemberValidation.isValidUserId(vo.getUser_id())) return "아이디는 영문/숫자/언더바 4~20자만 가능합니다.";
         if (requirePassword) {
-            if (!MemberValidation.isValidPassword(vo.getUser_pw())) {
-                return "비밀번호는 영문/숫자/특수문자를 포함한 8~20자여야 합니다.";
-            }
+            if (!MemberValidation.isValidPassword(vo.getUser_pw())) return "비밀번호는 영문/숫자/특수문자를 포함한 8~20자여야 합니다.";
         } else if (vo.getUser_pw() != null && !vo.getUser_pw().trim().isEmpty()) {
-            if (!MemberValidation.isValidPassword(vo.getUser_pw())) {
-                return "비밀번호는 영문/숫자/특수문자를 포함한 8~20자여야 합니다.";
-            }
+            if (!MemberValidation.isValidPassword(vo.getUser_pw())) return "비밀번호는 영문/숫자/특수문자를 포함한 8~20자여야 합니다.";
         }
         return null;
     }

@@ -1,0 +1,152 @@
+/* /resources/css/store_list.css */
+@charset "UTF-8";
+
+.list-wrapper { width: 90%; max-width: 1200px; margin: 40px auto; }
+
+/* 필터 카드 스타일 */
+.filter-card {
+    border: 2px solid #333;
+    border-radius: 15px;
+    padding: 25px;
+    background: #fff;
+    box-shadow: 8px 8px 0px #333;
+    margin-bottom: 40px;
+}
+
+.filter-item { margin-bottom: 20px; }
+.filter-item label { display: block; font-weight: 900; margin-bottom: 10px; font-size: 16px; }
+
+/* 카테고리 칩 */
+.chip-group { display: flex; gap: 10px; flex-wrap: wrap; }
+.cat-chip {
+    padding: 8px 20px;
+    border: 2px solid #333;
+    border-radius: 20px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s;
+    background: #fff;
+}
+.cat-chip.active, .cat-chip:hover { background: #333; color: #fff; }
+
+/* 맛집 그리드 레이아웃 */
+.store-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+/* 맛집 카드 (Bold Wire) */
+.store-card {
+    border: 2px solid #333;
+    border-radius: 15px;
+    background: #fff;
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 6px 6px 0px #333;
+    position: relative;
+}
+.store-card:hover { transform: translateY(-5px); box-shadow: 10px 10px 0px #333; }
+
+.store-img-box {
+    width: 100%;
+    height: 200px;
+    background: #f4f4f4;
+    border-bottom: 2px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.favorite-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: 2px solid #333;
+    background: #fff;
+    font-size: 16px;
+    padding: 6px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0px #333;
+    transition: 0.2s;
+}
+
+.favorite-toggle.active {
+    background: #ffe9e9;
+}
+
+.favorite-toggle:hover {
+    transform: translateY(-2px);
+}
+
+.store-thumb { width: 100%; height: 100%; object-fit: cover; }
+
+.no-img-placeholder {
+    font-weight: 900;
+    color: #ccc;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.store-info { padding: 20px; }
+.store-name { font-size: 20px; font-weight: 900; margin: 10px 0; }
+.store-meta { display: flex; justify-content: space-between; align-items: center; }
+.rating { color: #ff3d00; font-weight: 800; }
+.view-cnt { color: #999; font-size: 13px; font-weight: 700; }
+
+.badge-cat {
+    display: inline-block;
+    padding: 3px 10px;
+    border: 2px solid #333;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 900;
+    background: #fff;
+}
+
+/* === 페이징 스타일 추가 === */
+.pagination-container {
+    margin-top: 50px;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination {
+    display: flex;
+    list-style: none;
+    gap: 10px;
+}
+
+.page-item {
+    display: inline-block;
+}
+
+.page-link {
+    display: block;
+    padding: 10px 15px;
+    border: 2px solid #333;
+    background: #fff;
+    color: #333;
+    text-decoration: none;
+    font-weight: 900;
+    border-radius: 8px;
+    transition: 0.2s;
+    box-shadow: 3px 3px 0px #333;
+}
+
+.page-item.active .page-link {
+    background: #333;
+    color: #fff;
+    transform: translate(2px, 2px);
+    box-shadow: none;
+}
+
+.page-link:hover:not(.active) {
+    transform: translateY(-2px);
+    box-shadow: 5px 5px 0px #333;
+}
